@@ -106,6 +106,8 @@ class Protocol
 
     void NotifyGrenade(const GrenadeEvent& event);
 
+    void NotifyChatMessage(const Player& player, const ChatEvent& event);
+
     void TryConnect(ENetPeer* peer);
 
     void TryDisconnect(ENetPeer* peer);

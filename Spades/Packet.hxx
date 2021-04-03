@@ -7,6 +7,7 @@
 #pragma once
 
 #include "DataStream.hxx"
+#include "Enums.hxx"
 
 typedef struct _ENetPeer ENetPeer;
 
@@ -25,6 +26,14 @@ struct HitEvent
     uint8   player;
     uint8   target;
     HitType type;
+};
+
+struct ChatEvent
+{
+    uint8    player;
+    ChatType type;
+    char*    message;
+    uint16   length;
 };
 
 class Packet : public DataStream

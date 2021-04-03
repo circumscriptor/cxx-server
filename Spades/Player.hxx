@@ -9,6 +9,7 @@
 #include "Compress.hxx"
 #include "DataStream.hxx"
 #include "Enums.hxx"
+#include "Packet.hxx"
 #include "Peer.hxx"
 #include "Protocol.hxx"
 
@@ -253,6 +254,32 @@ class Player
         event.fuseLength = stream.ReadFloat();
         event.position   = stream.ReadVector3f();
         event.velocity   = stream.ReadVector3f();
+    }
+
+    void ReadChatMessage(DataStream& stream, ChatEvent& event)
+    {
+        if (mID != stream.ReadByte()) {
+            // something wrong
+        }
+        event.player = mID;
+        event.type   = stream.Read<ChatType>();
+        event.length = stream.Left();
+        if (event.length > 255) {
+            event.length = 255;
+        }
+        event.message               = new char[event.length + 1];
+        event.message[event.length] = 0;
+        stream.ReadArray(event.message, event.length);
+    }
+
+    void SendChatMessage(const ChatEvent& event)
+    {
+        Packet packet(3 + event.length);
+        packet.Write(PacketType::ChatMessage);
+        packet.WriteByte(event.player);
+        packet.Write(event.type);
+        packet.WriteArray(event.message, event.length);
+        mPeer.Send(packet);
     }
 
     void SendGrenadePacket(const GrenadeEvent& event)

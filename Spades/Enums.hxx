@@ -96,4 +96,6 @@ enum class KillType { Weapon = 0, Headshot = 1, Melee = 2, Grenade = 3, Fall = 4
  */
 enum class HitType { Torso = 0, Head = 1, Arms = 2, Legs = 3, Melee = 4 };
 
+enum class ChatType { All = 0, Team = 1, System = 2 };
+
 } // namespace Spades

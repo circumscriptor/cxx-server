@@ -174,6 +174,18 @@ void Spades::Protocol::NotifyGrenade(const GrenadeEvent& event)
     }
 }
 
+void Spades::Protocol::NotifyChatMessage(const Player& player, const ChatEvent& event)
+{
+    for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (mPlayers[i].GetState() != State::Disconnected) {
+            if (event.type == ChatType::Team && player.mTeam != mPlayers[i].mTeam) {
+                continue;
+            }
+            mPlayers[i].SendChatMessage(event);
+        }
+    }
+}
+
 void Spades::Protocol::TryDisconnect(ENetPeer* peer)
 {
     if (!peer || !peer->data) {
@@ -254,6 +266,15 @@ void Spades::Protocol::ProcessInput(Player& player, DataStream& stream)
             }
             std::cout << "existing player data\n";
             break;
+        case PacketType::ChatMessage:
+        {
+
+            ChatEvent event;
+            player.ReadChatMessage(stream, event);
+            NotifyChatMessage(player, event);
+            std::cout << "message: " << event.message << '\n';
+            delete[] event.message; // TODO: change
+        } break;
         case PacketType::WeaponReload:
         {
             auto reserve = player.ReadWeaponReload(stream);
@@ -363,7 +384,6 @@ void Spades::Protocol::Update(double time)
         for (uint8 i = 0; i < mMaxPlayers; ++i) {
             if (mPlayers[i].GetState() != State::Disconnected && mPlayers[i].mRespawnTime != 0) {
                 mPlayers[i].mRespawnTime--;
-                std::cout << "seconds left: " << static_cast<int>(mPlayers[i].mRespawnTime) << '\n';
             }
         }
     }
