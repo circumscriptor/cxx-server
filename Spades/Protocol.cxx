@@ -32,7 +32,7 @@ Spades::Protocol::~Protocol()
     delete[] mPlayers;
 }
 
-Spades::Vector3f Spades::Protocol::GetSpawnLocation(Team::TeamE team)
+Spades::Vector3f Spades::Protocol::GetSpawnLocation(Team::Enum team)
 {
     switch (team) {
         case Team::A:
@@ -93,12 +93,9 @@ void Spades::Protocol::TryConnect(ENetPeer* peer)
     std::cout << "connected\n";
 }
 
-void Spades::Protocol::NotifyCreatePlayer(const Player& player, bool exclude)
+void Spades::Protocol::NotifyCreatePlayer(const Player& player)
 {
     for (uint8 i = 0; i < mMaxPlayers; ++i) {
-        if (exclude && i == player.mID) {
-            continue;
-        }
         if (mPlayers[i].GetState() != State::Disconnected) {
             mPlayers[i].SendCreatePlayer(player);
         }
@@ -159,11 +156,11 @@ void Spades::Protocol::NotifyWeaponReload(const Player& player)
     }
 }
 
-void Spades::Protocol::NotifyKillAction(const Player& player, uint8 killer, KillType type, uint8 respawnTime)
+void Spades::Protocol::NotifyKillAction(const Player& player, const Player& target, KillType type, uint8 respawnTime)
 {
     for (uint8 i = 0; i < mMaxPlayers; ++i) {
         if (mPlayers[i].GetState() != State::Disconnected) {
-            mPlayers[i].SendKillAction(player, killer, type, respawnTime);
+            mPlayers[i].SendKillAction(player, target, type, respawnTime);
         }
     }
 }
@@ -206,6 +203,34 @@ void Spades::Protocol::ProcessInput(Player& player, DataStream& stream)
             player.ReadSetColor(stream);
             NotifySetColor(player);
             break;
+        case PacketType::HitPacket:
+        {
+            HitEvent hit = player.ReadHitPacket(stream);
+            // check
+
+            KillType kill;
+
+            switch (hit.type) {
+                case HitType::Torso:
+                case HitType::Arms:
+                case HitType::Legs:
+                    kill = KillType::Weapon;
+                    break;
+                case HitType::Head:
+                    kill = KillType::Headshot;
+                    break;
+                case HitType::Melee:
+                    kill = KillType::Melee;
+                    break;
+            }
+
+            Player& target = mPlayers[hit.target];
+            std::cout << static_cast<int>(player.mID) << " kills " << static_cast<int>(target.mID) << '\n';
+
+            NotifyKillAction(player, target, kill, 5);
+            target.mRespawnTime = 5; // TODO: change
+            target.mState       = State::Respawning;
+        } break;
         case PacketType::ExistingPlayer:
             if (player.mState != State::Respawning) {
                 if (player.ReadExistingPlayer(stream)) {
@@ -226,7 +251,7 @@ void Spades::Protocol::ProcessInput(Player& player, DataStream& stream)
             auto team = player.ReadTeamChange(stream);
             // check whether it's possible
             player.mTeam = team;
-            NotifyKillAction(player, player.mID, KillType::Headshot, 5);
+            NotifyKillAction(player, player, KillType::TeamChange, 5);
             player.mState       = State::Respawning;
             player.mRespawnTime = 5;
         } break;
@@ -274,13 +299,13 @@ void Spades::Protocol::UpdatePlayer(Player& player)
         case State::Joining:
         {
             std::cout << "sending state data packet\n";
-            if (player.SendStateData()) {
-                player.mState = State::Waiting;
-            }
             for (uint8 i = 0; i < mMaxPlayers; ++i) {
                 if (i != player.mID && mPlayers[i].GetState() != State::Disconnected) {
                     player.SendCreatePlayer(mPlayers[i]);
                 }
+            }
+            if (player.SendStateData()) {
+                player.mState = State::Waiting;
             }
         } break;
         case State::Waiting:
@@ -297,7 +322,7 @@ void Spades::Protocol::UpdatePlayer(Player& player)
         {
             std::cout << "spawning player\n";
             player.mPosition = GetSpawnLocation(player.mTeam);
-            NotifyCreatePlayer(player, false);
+            NotifyCreatePlayer(player);
             player.mState = State::Ready;
         } break;
         case State::Ready:

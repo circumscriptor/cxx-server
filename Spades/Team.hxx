@@ -21,7 +21,7 @@ struct Team
      * @brief Team enum
      *
      */
-    enum TeamE {
+    enum Enum {
         SPECTATOR = 0xFF,
         A         = 0,
         B         = 1,

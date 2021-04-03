@@ -16,6 +16,13 @@ typedef struct _ENetPeer ENetPeer;
 
 namespace Spades {
 
+struct HitEvent
+{
+    uint8   player;
+    uint8   target;
+    HitType type;
+};
+
 class Player
 {
     friend class Protocol;
@@ -136,10 +143,19 @@ class Player
         mColor = stream.ReadVector3b();
     }
 
-    Team::TeamE ReadTeamChange(DataStream& stream)
+    Team::Enum ReadTeamChange(DataStream& stream)
     {
         stream.ReadByte(); // ID
-        return stream.Read<Team::TeamE>();
+        return stream.Read<Team::Enum>();
+    }
+
+    HitEvent ReadHitPacket(DataStream& stream)
+    {
+        HitEvent event;
+        event.player = mID;
+        event.target = stream.ReadByte();
+        event.type   = stream.Read<HitType>();
+        return event;
     }
 
     uint8 ReadWeaponReload(DataStream& stream)
@@ -196,12 +212,12 @@ class Player
         mPeer.Send(packet);
     }
 
-    void SendKillAction(const Player& player, uint8 killer, KillType type, uint8 respawnTime)
+    void SendKillAction(const Player& player, const Player& target, KillType type, uint8 respawnTime)
     {
         Packet packet(5);
         packet.Write(PacketType::KillAction);
+        packet.WriteByte(target.mID);
         packet.WriteByte(player.mID);
-        packet.WriteByte(killer);
         packet.Write(type);
         packet.WriteByte(respawnTime);
         mPeer.Send(packet);
@@ -213,7 +229,7 @@ class Player
             // something wrong
             return false;
         }
-        mTeam   = stream.Read<Team::TeamE>();
+        mTeam   = stream.Read<Team::Enum>();
         mWeapon = stream.Read<Weapon>();
         mTool   = stream.Read<Tool>();
         mKills  = stream.ReadInt();
@@ -231,7 +247,7 @@ class Player
         if (mID != stream.ReadByte()) {
             // something wrong
         }
-        mTeam   = stream.Read<Team::TeamE>();
+        mTeam   = stream.Read<Team::Enum>();
         mWeapon = stream.Read<Weapon>();
     }
 
@@ -381,24 +397,24 @@ class Player
     }
 
   private:
-    Peer        mPeer;                       //!< Peer (connection)
-    char        mName[17];                   //!< Player name
-    uint32      mID;                         //!< Player ID
-    Vector3f    mPosition;                   //!< Position
-    Vector3f    mOrientation;                //!< Orientation
-    State       mState{State::Disconnected}; //!< Player state
-    Weapon      mWeapon;                     //!< Weapon
-    Team::TeamE mTeam;                       //!< Team
-    Tool        mTool;                       //!< Currently held tool
-    uint32      mKills{0};                   //!< Player kills
-    Vector3b    mColor;                      //!< Block color
-    uint8       mInput{0};                   //!< Input keys
-    uint8       mWeaponInput{0};             //!< Weapon input (primary, secondary)
-    Protocol*   mProtocol;                   //!< Common protocol
-    DataChunk*  mMapChunk{nullptr};          //!< Pointer to the next chunk to be sent
-    uint8       mRespawnTime{0};             //!< Time to respawn
-    uint8       mClipAmmo{0};
-    uint8       mReserveAmmo{0};
+    Peer       mPeer;                       //!< Peer (connection)
+    char       mName[17];                   //!< Player name
+    uint32     mID;                         //!< Player ID
+    Vector3f   mPosition;                   //!< Position
+    Vector3f   mOrientation;                //!< Orientation
+    State      mState{State::Disconnected}; //!< Player state
+    Weapon     mWeapon;                     //!< Weapon
+    Team::Enum mTeam;                       //!< Team
+    Tool       mTool;                       //!< Currently held tool
+    uint32     mKills{0};                   //!< Player kills
+    Vector3b   mColor;                      //!< Block color
+    uint8      mInput{0};                   //!< Input keys
+    uint8      mWeaponInput{0};             //!< Weapon input (primary, secondary)
+    Protocol*  mProtocol;                   //!< Common protocol
+    DataChunk* mMapChunk{nullptr};          //!< Pointer to the next chunk to be sent
+    uint8      mRespawnTime{0};             //!< Time to respawn
+    uint8      mClipAmmo{0};
+    uint8      mReserveAmmo{0};
 };
 
 } // namespace Spades

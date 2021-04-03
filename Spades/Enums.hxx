@@ -90,4 +90,10 @@ enum class Tool { Spade = 0, Block = 1, Gun = 2, Grenade = 3 };
  */
 enum class KillType { Weapon = 0, Headshot = 1, Melee = 2, Grenade = 3, Fall = 4, TeamChange = 5, ClassChange = 6 };
 
+/**
+ * @brief Hit type (used by hit event)
+ *
+ */
+enum class HitType { Torso = 0, Head = 1, Arms = 2, Legs = 3, Melee = 4 };
+
 } // namespace Spades

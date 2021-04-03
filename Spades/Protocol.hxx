@@ -52,7 +52,7 @@ class Protocol
         return flags;
     }
 
-    void SetSpawn(Team::TeamE team, const Quad2f& quad)
+    void SetSpawn(Team::Enum team, const Quad2f& quad)
     {
         switch (team) {
             case Team::A:
@@ -66,7 +66,7 @@ class Protocol
         }
     }
 
-    void SetColor(Team::TeamE team, const Vector3b& color)
+    void SetColor(Team::Enum team, const Vector3b& color)
     {
         switch (team) {
             case Team::A:
@@ -80,7 +80,7 @@ class Protocol
         }
     }
 
-    Vector3f GetSpawnLocation(Team::TeamE team);
+    Vector3f GetSpawnLocation(Team::Enum team);
 
     void Setup();
 
@@ -88,7 +88,7 @@ class Protocol
 
     void BroadcastWorldUpdate();
 
-    void NotifyCreatePlayer(const Player& player, bool exclude);
+    void NotifyCreatePlayer(const Player& player);
 
     void NotifyPlayerLeft(const Player& player);
 
@@ -102,7 +102,7 @@ class Protocol
 
     void NotifyWeaponReload(const Player& player);
 
-    void NotifyKillAction(const Player& player, uint8 killer, KillType type, uint8 respawnTime);
+    void NotifyKillAction(const Player& player, const Player& target, KillType type, uint8 respawnTime);
 
     void TryConnect(ENetPeer* peer);
 
