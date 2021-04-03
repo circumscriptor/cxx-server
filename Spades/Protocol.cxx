@@ -183,6 +183,8 @@ void Spades::Protocol::ProcessInput(Player& player, DataStream& stream)
     switch (type) {
         case PacketType::PositionData:
             player.ReadPosition(stream);
+            std::cout << static_cast<int>(player.mID) << " pos " << player.mPosition.x << ' ' << player.mPosition.y
+                      << ' ' << player.mPosition.z << '\n';
             break;
         case PacketType::OrientationData:
             player.ReadOrientation(stream);
@@ -300,7 +302,8 @@ void Spades::Protocol::UpdatePlayer(Player& player)
         {
             std::cout << "sending state data packet\n";
             for (uint8 i = 0; i < mMaxPlayers; ++i) {
-                if (i != player.mID && mPlayers[i].GetState() != State::Disconnected) {
+                if (i != player.mID &&
+                    (mPlayers[i].GetState() == State::Respawning || mPlayers[i].GetState() == State::Ready)) {
                     player.SendCreatePlayer(mPlayers[i]);
                 }
             }
@@ -334,7 +337,7 @@ void Spades::Protocol::UpdatePlayer(Player& player)
     }
 }
 
-void Spades::Protocol::Update()
+void Spades::Protocol::Update(double time)
 {
     for (uint8 i = 0; i < mMaxPlayers; ++i) {
         UpdatePlayer(mPlayers[i]);
@@ -352,8 +355,14 @@ void Spades::Protocol::Update()
         }
     }
 
-    if (std::chrono::duration<double>(now - mWorldUpdateTimer).count() >= 0.05) {
+    double delta = std::chrono::duration<double>(now - mWorldUpdateTimer).count();
+    if (delta >= time) {
         mWorldUpdateTimer = now;
+        for (uint8 i = 0; i < mMaxPlayers; ++i) {
+            if (mPlayers[i].GetState() == State::Ready) {
+                mPlayers[i].SetCrouch(mPlayers[i].mInput & 0x20);
+            }
+        }
         BroadcastWorldUpdate();
     }
 }

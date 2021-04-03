@@ -110,7 +110,7 @@ class Protocol
 
     void ProcessInput(Player& player, DataStream& stream);
 
-    void Update();
+    void Update(double time);
 
   private:
     void UpdatePlayer(Player& player);

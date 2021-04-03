@@ -77,8 +77,8 @@ int Spades::Server::Run(uint32 timeout)
                     break;
             }
         }
-        mProtocol.Update();
-        enet_host_flush(mHost);
+        mProtocol.Update(double(1) / 20);
+        // enet_host_flush(mHost);
     }
     return 0;
 }

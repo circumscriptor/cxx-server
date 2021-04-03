@@ -265,7 +265,7 @@ class Player
 
     void SendWorldUpdate()
     {
-        Packet packet(1 + 32 * 24);
+        Packet packet(1 + 32 * 24, true);
         packet.Write(PacketType::WorldUpdate);
         for (uint8 i = 0; i < 32; ++i) {
             packet.WriteVector3f(mProtocol->mPlayers[i].mPosition);
@@ -396,12 +396,25 @@ class Player
         return mState;
     }
 
+    void SetCrouch(bool value)
+    {
+        if (value != mCrouch) {
+            if (value) {
+                mPosition.z += 0.9f;
+            } else {
+                mPosition.z -= 0.9f;
+            }
+            mCrouch = value;
+        }
+    }
+
   private:
     Peer       mPeer;                       //!< Peer (connection)
     char       mName[17];                   //!< Player name
     uint32     mID;                         //!< Player ID
     Vector3f   mPosition;                   //!< Position
     Vector3f   mOrientation;                //!< Orientation
+    Vector3f   mVelocity;                   //!< Player velocity
     State      mState{State::Disconnected}; //!< Player state
     Weapon     mWeapon;                     //!< Weapon
     Team::Enum mTeam;                       //!< Team
@@ -415,6 +428,8 @@ class Player
     uint8      mRespawnTime{0};             //!< Time to respawn
     uint8      mClipAmmo{0};
     uint8      mReserveAmmo{0};
+    bool       mAirborne{false};
+    bool       mCrouch{false};
 };
 
 } // namespace Spades
