@@ -1,6 +1,7 @@
 #include "Protocol.hxx"
 
 #include "Compress.hxx"
+#include "Enums.hxx"
 #include "Player.hxx"
 
 #include <chrono>
@@ -92,9 +93,12 @@ void Spades::Protocol::TryConnect(ENetPeer* peer)
     std::cout << "connected\n";
 }
 
-void Spades::Protocol::NotifyCreatePlayer(const Player& player)
+void Spades::Protocol::NotifyCreatePlayer(const Player& player, bool exclude)
 {
     for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (exclude && i == player.mID) {
+            continue;
+        }
         if (mPlayers[i].GetState() != State::Disconnected) {
             mPlayers[i].SendCreatePlayer(player);
         }
@@ -110,6 +114,60 @@ void Spades::Protocol::NotifyPlayerLeft(const Player& player)
     }
 }
 
+void Spades::Protocol::NotifyPlayerInput(const Player& player)
+{
+    for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (i != player.mID && mPlayers[i].GetState() != State::Disconnected) {
+            mPlayers[i].SendInputData(player);
+        }
+    }
+}
+
+void Spades::Protocol::NotifyWeaponInput(const Player& player)
+{
+    for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (i != player.mID && mPlayers[i].GetState() != State::Disconnected) {
+            mPlayers[i].SendWeaponInput(player);
+        }
+    }
+}
+
+void Spades::Protocol::NotifySetTool(const Player& player)
+{
+    for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (i != player.mID && mPlayers[i].GetState() != State::Disconnected) {
+            mPlayers[i].SendSetTool(player);
+        }
+    }
+}
+
+void Spades::Protocol::NotifySetColor(const Player& player)
+{
+    for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (i != player.mID && mPlayers[i].GetState() != State::Disconnected) {
+            mPlayers[i].SendSetColor(player);
+        }
+    }
+}
+
+void Spades::Protocol::NotifyWeaponReload(const Player& player)
+{
+    for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (i != player.mID && mPlayers[i].GetState() != State::Disconnected) {
+            mPlayers[i].SendWeaponReload(player);
+        }
+    }
+}
+
+void Spades::Protocol::NotifyKillAction(const Player& player, uint8 killer, KillType type, uint8 respawnTime)
+{
+    for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (mPlayers[i].GetState() != State::Disconnected) {
+            mPlayers[i].SendKillAction(player, killer, type, respawnTime);
+        }
+    }
+}
+
 void Spades::Protocol::TryDisconnect(ENetPeer* peer)
 {
     if (!peer || !peer->data) {
@@ -119,6 +177,7 @@ void Spades::Protocol::TryDisconnect(ENetPeer* peer)
     peer->data     = nullptr;
     NotifyPlayerLeft(*player);
     player->Reset();
+    mNumPlayers--;
 }
 
 void Spades::Protocol::ProcessInput(Player& player, DataStream& stream)
@@ -131,13 +190,48 @@ void Spades::Protocol::ProcessInput(Player& player, DataStream& stream)
         case PacketType::OrientationData:
             player.ReadOrientation(stream);
             break;
-        case PacketType::ExistingPlayer:
-            if (player.ReadExistingPlayer(stream)) {
-                player.mState = State::Spawning;
-            }
+        case PacketType::InputData:
+            player.ReadInputData(stream);
+            NotifyPlayerInput(player);
             break;
+        case PacketType::WeaponInput:
+            player.ReadWeaponInput(stream);
+            NotifyWeaponInput(player);
+            break;
+        case PacketType::SetTool:
+            player.ReadSetTool(stream);
+            NotifySetTool(player);
+            break;
+        case PacketType::SetColor:
+            player.ReadSetColor(stream);
+            NotifySetColor(player);
+            break;
+        case PacketType::ExistingPlayer:
+            if (player.mState != State::Respawning) {
+                if (player.ReadExistingPlayer(stream)) {
+                    player.mState = State::Spawning;
+                }
+            }
+            std::cout << "existing player data\n";
+            break;
+        case PacketType::WeaponReload:
+        {
+            auto reserve = player.ReadWeaponReload(stream);
+            // check reserve
+            NotifyWeaponReload(player);
+        } break;
+        case PacketType::ChangeTeam:
+        {
+            std::cout << "team change request\n";
+            auto team = player.ReadTeamChange(stream);
+            // check whether it's possible
+            player.mTeam = team;
+            NotifyKillAction(player, player.mID, KillType::Headshot, 5);
+            player.mState       = State::Respawning;
+            player.mRespawnTime = 5;
+        } break;
         default:
-            std::cout << "unhandled packet " << static_cast<uint8>(type) << '\n';
+            std::cout << "unhandled packet " << static_cast<int>(type) << '\n';
             break;
     }
 }
@@ -159,7 +253,8 @@ void Spades::Protocol::Setup()
     mTeams[0].intel = GetSpawnLocation(Team::A);
     mTeams[1].intel = GetSpawnLocation(Team::B);
 
-    mPreviousTime = std::chrono::steady_clock::now();
+    mWorldUpdateTimer = std::chrono::steady_clock::now();
+    mRespawnTimer     = mWorldUpdateTimer;
 }
 
 void Spades::Protocol::UpdatePlayer(Player& player)
@@ -173,7 +268,7 @@ void Spades::Protocol::UpdatePlayer(Player& player)
         } break;
         case State::LoadingChunks:
         {
-            std::cout << "sending map chunk packet\n";
+            // std::cout << "sending map chunk packet\n";
             player.ContinueSendingMap();
         } break;
         case State::Joining:
@@ -190,13 +285,19 @@ void Spades::Protocol::UpdatePlayer(Player& player)
         } break;
         case State::Waiting:
         {
+        } break;
+        case State::Respawning:
+        {
             // std::cout << "waiting for respawn\n";
+            if (player.mRespawnTime == 0) {
+                player.mState = State::Spawning;
+            }
         } break;
         case State::Spawning:
         {
             std::cout << "spawning player\n";
             player.mPosition = GetSpawnLocation(player.mTeam);
-            NotifyCreatePlayer(player);
+            NotifyCreatePlayer(player, false);
             player.mState = State::Ready;
         } break;
         case State::Ready:
@@ -215,8 +316,19 @@ void Spades::Protocol::Update()
     }
 
     auto now = std::chrono::steady_clock::now();
-    if (std::chrono::duration<double>(now - mPreviousTime).count() > 0.1) {
-        mPreviousTime = now;
+
+    if (std::chrono::duration<double>(now - mRespawnTimer).count() >= 1) {
+        mRespawnTimer = now;
+        for (uint8 i = 0; i < mMaxPlayers; ++i) {
+            if (mPlayers[i].GetState() != State::Disconnected && mPlayers[i].mRespawnTime != 0) {
+                mPlayers[i].mRespawnTime--;
+                std::cout << "seconds left: " << static_cast<int>(mPlayers[i].mRespawnTime) << '\n';
+            }
+        }
+    }
+
+    if (std::chrono::duration<double>(now - mWorldUpdateTimer).count() >= 0.05) {
+        mWorldUpdateTimer = now;
         BroadcastWorldUpdate();
     }
 }

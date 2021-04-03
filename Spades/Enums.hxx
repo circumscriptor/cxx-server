@@ -12,7 +12,7 @@ namespace Spades {
  * @brief Player state
  *
  */
-enum class State { Disconnected, StartingMap, LoadingChunks, Joining, Spawning, Waiting, Ready };
+enum class State { Disconnected, StartingMap, LoadingChunks, Joining, Respawning, Spawning, Waiting, Ready };
 
 /**
  * @brief Weapon types
@@ -54,8 +54,8 @@ enum class PacketType {
     BlockAction      = 13,
     BlockLine        = 14,
     StateData        = 15,
+    KillAction       = 16,
     ChatMessage      = 17,
-    KillAction       = 18,
     MapStart         = 18,
     MapChunk         = 19,
     PlayerLeft       = 20,
@@ -83,5 +83,11 @@ enum class Mode { CTF = 0, TC = 1 };
  *
  */
 enum class Tool { Spade = 0, Block = 1, Gun = 2, Grenade = 3 };
+
+/**
+ * @brief Kill type (used by kill action)
+ *
+ */
+enum class KillType { Weapon = 0, Headshot = 1, Melee = 2, Grenade = 3, Fall = 4, TeamChange = 5, ClassChange = 6 };
 
 } // namespace Spades

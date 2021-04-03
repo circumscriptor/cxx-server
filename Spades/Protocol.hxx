@@ -88,9 +88,21 @@ class Protocol
 
     void BroadcastWorldUpdate();
 
-    void NotifyCreatePlayer(const Player& player);
+    void NotifyCreatePlayer(const Player& player, bool exclude);
 
     void NotifyPlayerLeft(const Player& player);
+
+    void NotifyPlayerInput(const Player& player);
+
+    void NotifyWeaponInput(const Player& player);
+
+    void NotifySetTool(const Player& player);
+
+    void NotifySetColor(const Player& player);
+
+    void NotifyWeaponReload(const Player& player);
+
+    void NotifyKillAction(const Player& player, uint8 killer, KillType type, uint8 respawnTime);
 
     void TryConnect(ENetPeer* peer);
 
@@ -115,7 +127,8 @@ class Protocol
     Team     mTeams[2];
     uint8    mScoreLimit;
 
-    std::chrono::time_point<std::chrono::steady_clock> mPreviousTime;
+    std::chrono::time_point<std::chrono::steady_clock> mRespawnTimer;
+    std::chrono::time_point<std::chrono::steady_clock> mWorldUpdateTimer;
 
     DataChunk* mChunks{nullptr};
 };

@@ -57,7 +57,7 @@ class Player
         while (mMapChunk) {
             mMapChunk = mMapChunk->Pop();
         }
-        mTeamChosen = false;
+        mRespawnTime = 0;
     }
 
     /**
@@ -110,6 +110,101 @@ class Player
     void ReadOrientation(DataStream& stream)
     {
         mOrientation = stream.ReadVector3f();
+    }
+
+    void ReadInputData(DataStream& stream)
+    {
+        stream.ReadByte(); // ID
+        mInput = stream.ReadByte();
+    }
+
+    void ReadWeaponInput(DataStream& stream)
+    {
+        stream.ReadByte(); // ID
+        mWeaponInput = stream.ReadByte();
+    }
+
+    void ReadSetTool(DataStream& stream)
+    {
+        stream.ReadByte(); // ID
+        mTool = stream.Read<Tool>();
+    }
+
+    void ReadSetColor(DataStream& stream)
+    {
+        stream.ReadByte(); // ID
+        mColor = stream.ReadVector3b();
+    }
+
+    Team::TeamE ReadTeamChange(DataStream& stream)
+    {
+        stream.ReadByte(); // ID
+        return stream.Read<Team::TeamE>();
+    }
+
+    uint8 ReadWeaponReload(DataStream& stream)
+    {
+        stream.ReadByte();
+        mClipAmmo    = stream.ReadByte();
+        mReserveAmmo = stream.ReadByte();
+        return mReserveAmmo;
+    }
+
+    void SendInputData(const Player& player)
+    {
+        Packet packet(3);
+        packet.Write(PacketType::InputData);
+        packet.Write(player.mID);
+        packet.Write(player.mInput);
+        mPeer.Send(packet);
+    }
+
+    void SendWeaponInput(const Player& player)
+    {
+        Packet packet(3);
+        packet.Write(PacketType::WeaponInput);
+        packet.WriteByte(player.mID);
+        packet.WriteByte(player.mWeaponInput);
+        mPeer.Send(packet);
+    }
+
+    void SendSetTool(const Player& player)
+    {
+        Packet packet(3);
+        packet.Write(PacketType::SetTool);
+        packet.WriteByte(player.mID);
+        packet.Write(player.mTool);
+        mPeer.Send(packet);
+    }
+
+    void SendSetColor(const Player& player)
+    {
+        Packet packet(5);
+        packet.Write(PacketType::SetColor);
+        packet.Write(player.mID);
+        packet.WriteVector3b(player.mColor);
+        mPeer.Send(packet);
+    }
+
+    void SendWeaponReload(const Player& player)
+    {
+        Packet packet(5);
+        packet.Write(PacketType::WeaponReload);
+        packet.Write(player.mID);
+        packet.Write(player.mClipAmmo);
+        packet.Write(player.mReserveAmmo);
+        mPeer.Send(packet);
+    }
+
+    void SendKillAction(const Player& player, uint8 killer, KillType type, uint8 respawnTime)
+    {
+        Packet packet(5);
+        packet.Write(PacketType::KillAction);
+        packet.WriteByte(player.mID);
+        packet.WriteByte(killer);
+        packet.Write(type);
+        packet.WriteByte(respawnTime);
+        mPeer.Send(packet);
     }
 
     bool ReadExistingPlayer(DataStream& stream)
@@ -298,9 +393,12 @@ class Player
     uint32      mKills{0};                   //!< Player kills
     Vector3b    mColor;                      //!< Block color
     uint8       mInput{0};                   //!< Input keys
+    uint8       mWeaponInput{0};             //!< Weapon input (primary, secondary)
     Protocol*   mProtocol;                   //!< Common protocol
     DataChunk*  mMapChunk{nullptr};          //!< Pointer to the next chunk to be sent
-    bool        mTeamChosen{false};          //!< Has chosen team?
+    uint8       mRespawnTime{0};             //!< Time to respawn
+    uint8       mClipAmmo{0};
+    uint8       mReserveAmmo{0};
 };
 
 } // namespace Spades
