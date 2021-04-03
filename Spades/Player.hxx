@@ -16,13 +16,6 @@ typedef struct _ENetPeer ENetPeer;
 
 namespace Spades {
 
-struct HitEvent
-{
-    uint8   player;
-    uint8   target;
-    HitType type;
-};
-
 class Player
 {
     friend class Protocol;
@@ -249,6 +242,28 @@ class Player
         }
         mTeam   = stream.Read<Team::Enum>();
         mWeapon = stream.Read<Weapon>();
+    }
+
+    void ReadGrenadePacket(DataStream& stream, GrenadeEvent& event)
+    {
+        if (mID != stream.ReadByte()) {
+            // something wrong
+        }
+        event.player     = mID;
+        event.fuseLength = stream.ReadFloat();
+        event.position   = stream.ReadVector3f();
+        event.velocity   = stream.ReadVector3f();
+    }
+
+    void SendGrenadePacket(const GrenadeEvent& event)
+    {
+        Packet packet(30);
+        packet.Write(PacketType::GrenadePacket);
+        packet.WriteByte(event.player);
+        packet.WriteFloat(event.fuseLength);
+        packet.WriteVector3f(event.position);
+        packet.WriteVector3f(event.velocity);
+        mPeer.Send(packet);
     }
 
     void SendCreatePlayer(const Player& other)

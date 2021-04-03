@@ -2,6 +2,7 @@
 
 #include "Compress.hxx"
 #include "Enums.hxx"
+#include "Packet.hxx"
 #include "Player.hxx"
 
 #include <chrono>
@@ -164,6 +165,14 @@ void Spades::Protocol::NotifyKillAction(const Player& player, const Player& targ
         }
     }
 }
+void Spades::Protocol::NotifyGrenade(const GrenadeEvent& event)
+{
+    for (uint8 i = 0; i < mMaxPlayers; ++i) {
+        if (mPlayers[i].GetState() != State::Disconnected) {
+            mPlayers[i].SendGrenadePacket(event);
+        }
+    }
+}
 
 void Spades::Protocol::TryDisconnect(ENetPeer* peer)
 {
@@ -183,8 +192,6 @@ void Spades::Protocol::ProcessInput(Player& player, DataStream& stream)
     switch (type) {
         case PacketType::PositionData:
             player.ReadPosition(stream);
-            std::cout << static_cast<int>(player.mID) << " pos " << player.mPosition.x << ' ' << player.mPosition.y
-                      << ' ' << player.mPosition.z << '\n';
             break;
         case PacketType::OrientationData:
             player.ReadOrientation(stream);
@@ -197,6 +204,12 @@ void Spades::Protocol::ProcessInput(Player& player, DataStream& stream)
             player.ReadWeaponInput(stream);
             NotifyWeaponInput(player);
             break;
+        case PacketType::GrenadePacket:
+        {
+            GrenadeEvent event;
+            player.ReadGrenadePacket(stream, event);
+            NotifyGrenade(event);
+        } break;
         case PacketType::SetTool:
             player.ReadSetTool(stream);
             NotifySetTool(player);

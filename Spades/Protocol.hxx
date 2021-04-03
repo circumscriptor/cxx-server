@@ -104,6 +104,8 @@ class Protocol
 
     void NotifyKillAction(const Player& player, const Player& target, KillType type, uint8 respawnTime);
 
+    void NotifyGrenade(const GrenadeEvent& event);
+
     void TryConnect(ENetPeer* peer);
 
     void TryDisconnect(ENetPeer* peer);

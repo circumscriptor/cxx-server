@@ -12,6 +12,21 @@ typedef struct _ENetPeer ENetPeer;
 
 namespace Spades {
 
+struct GrenadeEvent
+{
+    uint8    player;
+    float    fuseLength;
+    Vector3f position;
+    Vector3f velocity;
+};
+
+struct HitEvent
+{
+    uint8   player;
+    uint8   target;
+    HitType type;
+};
+
 class Packet : public DataStream
 {
     friend class Peer;
