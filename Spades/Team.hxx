@@ -35,6 +35,7 @@ struct Team
     char     name[11]; //!< name
     bool     taken;    //!< intel taken
     uint8    holder;   //!< intel holder (enemy team)
+    Quad2f   spawn;    //!< spanw area
 
     /**
      * @brief Construct a new Team object

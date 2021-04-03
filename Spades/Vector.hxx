@@ -36,6 +36,16 @@ struct TVector2
         y = other.y;
         return *this;
     }
+
+    constexpr TVector2 operator+(const TVector2& v) const noexcept
+    {
+        return TVector2(x + v.x, y + v.y);
+    }
+
+    constexpr TVector2 operator-(const TVector2& v) const noexcept
+    {
+        return TVector2(x - v.x, y - v.y);
+    }
 };
 
 template<typename T>
@@ -76,5 +86,28 @@ using Vector2f = TVector2<float>;
 using Vector2b = TVector2<uint8>;
 using Vector3f = TVector3<float>;
 using Vector3b = TVector3<uint8>;
+
+struct Quad2f
+{
+    Vector2f a;
+    Vector2f b;
+
+    constexpr Quad2f() noexcept = default;
+
+    constexpr Quad2f(const Vector2f& pos, float width, float height) : a{pos}, b{width, height}
+    {
+    }
+
+    constexpr Quad2f(const Quad2f& other) noexcept : a{other.a}, b{other.b}
+    {
+    }
+
+    constexpr Quad2f& operator=(const Quad2f& other) noexcept
+    {
+        a = other.a;
+        b = other.b;
+        return *this;
+    }
+};
 
 } // namespace Spades

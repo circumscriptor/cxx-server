@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Enums.hxx"
+#include "Protocol.hxx"
 #include "Types.hxx"
 #include "Vector.hxx"
 
@@ -54,6 +55,7 @@ class Server
     int Run(uint32 timeout);
 
   private:
+    Protocol  mProtocol;
     ENetHost* mHost;
 };
 

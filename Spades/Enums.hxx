@@ -36,7 +36,7 @@ enum class Reason { Banned = 1, IpLimitExceeded = 2, WrongProtocolVersion = 3, S
  * @brief Packet type
  *
  */
-enum class Packet {
+enum class PacketType {
     PositionData     = 0,
     OrientationData  = 1,
     WorldUpdate      = 2,

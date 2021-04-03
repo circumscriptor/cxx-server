@@ -6,15 +6,19 @@
 
 #pragma once
 
+#include "Compress.hxx"
+#include "DataStream.hxx"
 #include "Enums.hxx"
-#include "Player.hxx"
+#include "Packet.hxx"
 #include "Team.hxx"
 #include "Types.hxx"
 #include "Vector.hxx"
 
-#include <vector>
+#include <chrono>
 
 namespace Spades {
+
+class Player;
 
 class Protocol
 {
@@ -26,9 +30,9 @@ class Protocol
      *
      * @param maxPlayers Max number of players
      */
-    Protocol(uint8 maxPlayers) : mMaxPlayers{maxPlayers}, mTeams{{"TEAM A", 6}, {"TEAM B", 6}}
-    {
-    }
+    Protocol(uint8 maxPlayers);
+
+    ~Protocol();
 
     /**
      * @brief Get number of available connections
@@ -48,14 +52,72 @@ class Protocol
         return flags;
     }
 
-  private:
-    uint8               mNumPlayers{0};  //!< Current number of players
-    uint8               mMaxPlayers{32}; //!< Max number of players
-    std::vector<Player> mPlayers;        //!< Players
+    void SetSpawn(Team::TeamE team, const Quad2f& quad)
+    {
+        switch (team) {
+            case Team::A:
+                mTeams[0].spawn = quad;
+                break;
+            case Team::B:
+                mTeams[1].spawn = quad;
+                break;
+            default:
+                break;
+        }
+    }
 
-    Vector3b mFogColor;
+    void SetColor(Team::TeamE team, const Vector3b& color)
+    {
+        switch (team) {
+            case Team::A:
+                mTeams[0].color = color;
+                break;
+            case Team::B:
+                mTeams[1].color = color;
+                break;
+            default:
+                break;
+        }
+    }
+
+    Vector3f GetSpawnLocation(Team::TeamE team);
+
+    void Setup();
+
+    void LoadMap(const char* path);
+
+    void BroadcastWorldUpdate();
+
+    void NotifyCreatePlayer(const Player& player);
+
+    void NotifyPlayerLeft(const Player& player);
+
+    void TryConnect(ENetPeer* peer);
+
+    void TryDisconnect(ENetPeer* peer);
+
+    void ProcessInput(Player& player, DataStream& stream);
+
+    void Update();
+
+  private:
+    void UpdatePlayer(Player& player);
+
+    Compressor mCompressor;
+
+    uint8   mNumPlayers{0};  //!< Current number of players
+    uint8   mMaxPlayers{32}; //!< Max number of players
+    Player* mPlayers;
+
+    Mode mGameMode{Mode::CTF};
+
+    Vector3b mFogColor{0xff, 0xff, 0xff};
     Team     mTeams[2];
     uint8    mScoreLimit;
+
+    std::chrono::time_point<std::chrono::steady_clock> mPreviousTime;
+
+    DataChunk* mChunks{nullptr};
 };
 
 } // namespace Spades

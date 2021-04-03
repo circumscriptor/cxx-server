@@ -74,12 +74,7 @@ class DataStream
         return {ReadFloat(), ReadFloat(), ReadFloat()};
     }
 
-    void ReadArray(char* output, uint32 length)
-    {
-        for (uint32 i = 0; i < length; ++i) {
-            output[i] = Read<char>();
-        }
-    }
+    void ReadArray(void* buffer, uint32 length);
 
     template<typename T>
     void Write(T type)
@@ -125,12 +120,7 @@ class DataStream
         WriteFloat(value.z);
     }
 
-    void WriteArray(const char* output, uint32 length)
-    {
-        for (uint32 i = 0; i < length; ++i) {
-            Write(output[i]);
-        }
-    }
+    void WriteArray(const void* data, uint32 length);
 
   private:
     uint8* mData;
