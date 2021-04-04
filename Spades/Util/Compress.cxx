@@ -65,7 +65,6 @@ Spades::DataChunk* Spades::Compressor::Compress(void* data, uint32 length, uint3
         }
         chunk->mLength = chunkSize + 1 - stream->avail_out;
 
-        std::cout << "chunk length: " << chunk->mLength << '\n';
     } while (stream->avail_out == 0);
 
     return first;

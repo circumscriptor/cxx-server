@@ -95,7 +95,7 @@ class Protocol
         uint8 mHit[4];
         uint8 mChatMessage[259];
         uint8 mStateData[104];
-        uint8 mCreatePlayer[23];
+        uint8 mCreatePlayer[32];
         uint8 mExistingPlayer[28];
     } mCache;
 };

@@ -137,7 +137,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
             }
 
             DataStream packet(mCache.mMapStart, sizeof(mCache.mMapStart));
-            packet.WriteType(PacketType::MapChunk);
+            packet.WriteType(PacketType::MapStart);
             packet.WriteInt(mapSize);
             connection.Send(packet);
             connection.mMapStart = false;
@@ -211,7 +211,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                     connection.mState = State::Connected;
                 }
             } else {
-                std::cout << "sending map chunk\n";
+                // std::cout << "sending map chunk\n";
                 DataStream packet(connection.mMapChunk->mChunk, connection.mMapChunk->mLength);
                 if (connection.Send(packet)) {
                     connection.mMapChunk = connection.mMapChunk->Pop();

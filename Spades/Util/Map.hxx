@@ -36,7 +36,7 @@ class Map
 
     bool IsBlock(uint32 offset) const
     {
-        return mBlocks[offset >> 5] >> (offset & 0x1F);
+        return (mBlocks[offset >> 5] & (1 << (offset & 0x1F))) != 0;
     }
 
     bool IsBlock(uint32 x, uint32 y, uint32 z) const

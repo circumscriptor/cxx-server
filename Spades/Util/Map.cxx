@@ -75,7 +75,6 @@ bool Spades::Map::Load(uint8* data, uint32 length)
     uint8   spanSize, startTop, endTop, lengthTop, startAir, endBottom, startBottom, lengthBottom;
     uint32* color;
 
-    uint32 counter = 0; // Debugging
     for (uint32 y = 0; y < 512; ++y) {
         for (uint32 x = 0; x < 512; ++x) {
             for (uint32 z = 0;;) {
@@ -97,11 +96,10 @@ bool Spades::Map::Load(uint8* data, uint32 length)
 
                 if (spanSize == 0) {
                     data += 4 * (lengthBottom + 1);
-                    std::cout << z << ' ';
-                    if (++counter == 512) {
-                        counter = 0;
-                        std::cout << '\n';
-                    }
+                    // std::cout << z << ' ';
+                    // if (x == 511) {
+                    //     std::cout << '\n';
+                    // }
                     break;
                 }
 
@@ -125,20 +123,12 @@ void Spades::Map::Save(std::vector<uint8>& output)
 {
     output.clear();
     output.reserve(512 * 512 * 8);
-    for (uint32 x = 0; x < 512; ++x) {
-        for (uint32 y = 0; y < 512; ++y) {
+    uint8 airStart, startTop, endTop, startBottom, endBottom, lengthTop, lengthBottom, lengthColors;
+    for (uint32 y = 0; y < 512; ++y) {
+        for (uint32 x = 0; x < 512; ++x) {
             for (uint32 z = 0; z < 64;) {
-                uint8 airStart;
-                uint8 startTop;
-                uint8 endTop;
-                uint8 startBottom;
-                uint8 endBottom;
-                uint8 lengthTop;
-                uint8 lengthBottom;
-                uint8 lengthColors;
 
                 // air
-                airStart = z;
                 for (; z < 64 && !IsBlock(x, y, z); ++z) {
                 }
 
@@ -171,6 +161,11 @@ void Spades::Map::Save(std::vector<uint8>& output)
 
                 if (z == 64) {
                     output.push_back(0); // last span in column
+
+                    // std::cout << static_cast<int>(startTop) << " ";
+                    // if (x == 511) {
+                    //     std::cout << '\n';
+                    // }
                 } else {
                     output.push_back(lengthColors + 1);
                 }
