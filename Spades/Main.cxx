@@ -33,20 +33,6 @@ int main(int argc, char** argv)
     map.Load(data, size);
     delete[] data;
 
-    // std::cout << "testing map...\n";
-
-    // std::vector<Spades::uint8> mapData;
-    // map.Save(mapData);
-
-    // std::fstream file("output.vxl", std::ios::out | std::ios::binary);
-    // if (!file.is_open()) {
-    //     std::cerr << "failed to open file\n";
-    //     return 1;
-    // }
-
-    // file.write(reinterpret_cast<char*>(mapData.data()), mapData.size());
-    // file.close();
-
     std::cout << "starting server\n";
     return Spades::Server().Run(protocol, 1);
     return 0;
