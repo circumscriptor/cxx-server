@@ -18,7 +18,7 @@ namespace Spades {
  */
 struct Player
 {
-    uint32   mID;             //!< Player ID
+    uint8    mID;             //!< Player ID
     char     mName[17];       //!< Player name
     Vector3f mPosition;       //!< Position
     Vector3f mOrientation;    //!< Orientation
@@ -31,25 +31,54 @@ struct Player
 
     struct Input
     {
-        bool mUp;
-        bool mDown;
-        bool mLeft;
-        bool mRight;
-        bool mJump;
-        bool mCrouch;
-        bool mSneak;
-        bool mSprint;
-    } mKeys;
+        bool mUp{false};
+        bool mDown{false};
+        bool mLeft{false};
+        bool mRight{false};
+        bool mJump{false};
+        bool mCrouch{false};
+        bool mSneak{false};
+        bool mSprint{false};
+        bool mPrimary{false};   //!< Primary action
+        bool mSecondary{false}; //!< Secondary action
+    } mInput;
 
-    uint8 mClipAmmo;
-    uint8 mReserveAmmo;
+    uint8 mClipAmmo{0};      //!< Clip ammo
+    uint8 mReserveAmmo{0};   //!< Reserve ammo
+    bool  mCrouching{false}; //!< Crouching state
+    bool  mGliding{false};   //!< In the air (airborne)
 
-    bool mPrimary{false};   //!< Primary action
-    bool mSecondary{false}; //!< Secondary action
-    bool mCrouching{false}; //!< Crouching state
-    bool mGliding{false};   //!< In the air (airborne)
+    bool mAlive{false};    //!< Is player alive
+    bool mCanSpawn{false}; //!< Is player allowed to spawn
+    // bool mWaitingForSpawn{false}; //!< Is player waiting to be respawned
 
     State mState{State::Disconnected}; //!< Player state
+
+    Player(uint8 id) : mID{id}
+    {
+    }
+
+    void Reset()
+    {
+        mPosition         = {0.f, 0.f, 0.f};
+        mOrientation      = {0.f, 0.f, 0.f};
+        mState            = State::Disconnected;
+        mInput.mUp        = false;
+        mInput.mDown      = false;
+        mInput.mLeft      = false;
+        mInput.mRight     = false;
+        mInput.mJump      = false;
+        mInput.mCrouch    = false;
+        mInput.mSneak     = false;
+        mInput.mSprint    = false;
+        mInput.mPrimary   = false;
+        mInput.mSecondary = false;
+        mCrouching        = false;
+        mGliding          = false;
+        // mWaitingForSpawn  = false;
+        mCanSpawn = false;
+        mAlive    = false;
+    }
 };
 
 } // namespace Spades

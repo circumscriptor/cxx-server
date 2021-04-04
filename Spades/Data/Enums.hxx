@@ -12,7 +12,7 @@ namespace Spades {
  * @brief Player state
  *
  */
-enum class State { Disconnected, StartingMap, LoadingChunks, Joining, Respawning, Spawning, Waiting, Ready };
+enum class State { Disconnected, Connecting, Connected };
 
 /**
  * @brief Weapon types
@@ -30,7 +30,14 @@ enum class Version { v0_75 = 3, v0_76 = 4 };
  * @brief Disconnect reason
  *
  */
-enum class Reason { Banned = 1, IpLimitExceeded = 2, WrongProtocolVersion = 3, ServerFull = 4, Kicked = 10 };
+enum class Reason {
+    Unknown              = 0,
+    Banned               = 1,
+    IpLimitExceeded      = 2,
+    WrongProtocolVersion = 3,
+    ServerFull           = 4,
+    Kicked               = 10
+};
 
 /**
  * @brief Packet type

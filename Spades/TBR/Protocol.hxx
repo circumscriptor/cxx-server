@@ -74,9 +74,9 @@ class Protocol
 
     void NotifyChatMessage(const Player& player, const ChatEvent& event);
 
-    void TryConnect(ENetPeer* peer);
+    void OnConnect(ENetPeer* peer);
 
-    void TryDisconnect(ENetPeer* peer);
+    void OnDisconnect(ENetPeer* peer);
 
     void ProcessInput(Player& player, DataStream& stream);
 

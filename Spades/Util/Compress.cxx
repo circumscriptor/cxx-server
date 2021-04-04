@@ -6,6 +6,8 @@
 
 #include "Compress.hxx"
 
+#include "Data/Enums.hxx"
+
 #include <iostream>
 #include <zlib.h>
 
@@ -44,14 +46,15 @@ Spades::DataChunk* Spades::Compressor::Compress(void* data, uint32 length, uint3
 
     do {
         if (first == NULL) {
-            first = new DataChunk(chunkSize);
+            first = new DataChunk(chunkSize + 1);
             chunk = first;
         } else {
-            chunk = chunk->Push(chunkSize);
+            chunk = chunk->Push(chunkSize + 1);
         }
 
         stream->avail_out = chunkSize;
-        stream->next_out  = chunk->mChunk;
+        stream->next_out  = chunk->mChunk + 1;
+        chunk->mChunk[0]  = static_cast<uint8>(PacketType::MapChunk);
         if (deflate(stream, Z_FINISH) < 0) {
             std::cerr << "failed to compress chunk\n";
             while (first) {
@@ -59,7 +62,7 @@ Spades::DataChunk* Spades::Compressor::Compress(void* data, uint32 length, uint3
             }
             return nullptr;
         }
-        chunk->mLength = chunkSize - stream->avail_out;
+        chunk->mLength = chunkSize + 1 - stream->avail_out;
     } while (stream->avail_out == 0);
 
     return first;

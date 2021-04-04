@@ -8,8 +8,6 @@
 
 #include "Protocol.hxx"
 
-typedef struct _ENetHost ENetHost;
-
 namespace Spades {
 
 /**

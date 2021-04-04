@@ -79,7 +79,7 @@ class DataStream
     }
 
     template<typename T>
-    T Read()
+    T ReadType()
     {
         return static_cast<T>(ReadByte());
     }
@@ -161,6 +161,16 @@ class DataStream
     {
         assert(mPosition + length <= mLength);
         std::memcpy(mData + mPosition, buffer, length);
+    }
+
+    void* Data() const noexcept
+    {
+        return reinterpret_cast<void*>(mData);
+    }
+
+    uint32 Length() const noexcept
+    {
+        return mLength;
     }
 
   private:

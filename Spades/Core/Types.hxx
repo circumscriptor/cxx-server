@@ -6,6 +6,10 @@
 
 #pragma once
 
+typedef struct _ENetHost   ENetHost;
+typedef struct _ENetPeer   ENetPeer;
+typedef struct _ENetPacket ENetPacket;
+
 namespace Spades {
 
 typedef unsigned char  uint8;

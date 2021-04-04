@@ -12,14 +12,17 @@ target_sources(server
         Core/Vector.hxx
         Util/Compress.cxx
         Util/Compress.hxx
+        Util/Peer.cxx
+        Util/Peer.hxx
         Data/Enums.hxx
         Data/Player.hxx
         Data/Team.hxx
+        Connection.hxx
+        Main.cxx
         Protocol.cxx
         Protocol.hxx
         Server.cxx
         Server.hxx
-        Main.cxx
 )
 
 target_include_directories(server

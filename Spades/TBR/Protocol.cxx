@@ -67,7 +67,7 @@ void Spades::Protocol::LoadMap(const char* path)
     delete[] buffer;
 }
 
-void Spades::Protocol::TryConnect(ENetPeer* peer)
+void Spades::Protocol::OnConnect(ENetPeer* peer)
 {
     if (!peer) {
         return;
@@ -188,7 +188,7 @@ void Spades::Protocol::NotifyChatMessage(const Player& player, const ChatEvent& 
     }
 }
 
-void Spades::Protocol::TryDisconnect(ENetPeer* peer)
+void Spades::Protocol::OnDisconnect(ENetPeer* peer)
 {
     if (!peer || !peer->data) {
         return;

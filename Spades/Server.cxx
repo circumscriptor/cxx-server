@@ -51,10 +51,10 @@ int Spades::Server::Run(Protocol& protocol, uint32 timeout)
                 case ENET_EVENT_TYPE_NONE:
                     break;
                 case ENET_EVENT_TYPE_CONNECT:
-                    protocol.TryConnect(event.peer);
+                    protocol.OnConnect(event.peer);
                     break;
                 case ENET_EVENT_TYPE_DISCONNECT:
-                    protocol.TryDisconnect(event.peer);
+                    protocol.OnDisconnect(event.peer);
                     break;
                 case ENET_EVENT_TYPE_RECEIVE:
                     protocol.Receive(event.peer, event.packet);
