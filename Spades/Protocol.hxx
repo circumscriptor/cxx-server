@@ -12,6 +12,7 @@
 #include "Data/Enums.hxx"
 #include "Data/Team.hxx"
 #include "Util/Compress.hxx"
+#include "Util/Map.hxx"
 
 #include <array>
 #include <vector>
@@ -42,6 +43,11 @@ class Protocol
      */
     ~Protocol();
 
+    Map& GetMap()
+    {
+        return mMap;
+    }
+
     /**
      * @brief Broadcast packet
      *
@@ -62,6 +68,7 @@ class Protocol
   private:
     void UpdateConnection(Connection& connection);
 
+    Map                     mMap;                        //!< Map
     Compressor              mCompressor;                 //!< Compressor
     std::vector<Connection> mConnections;                //!< Connections
     std::array<Team, 2>     mTeams;                      //!< Teams

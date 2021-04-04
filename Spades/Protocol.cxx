@@ -9,7 +9,7 @@
 #include <enet/enet.h>
 #include <iostream>
 
-Spades::Protocol::Protocol(uint8 maxPlayers) : mCompressor(5)
+Spades::Protocol::Protocol(uint8 maxPlayers) : mMaxPlayers(maxPlayers), mCompressor(5)
 {
     for (uint8 i = 0; i < 32; ++i) {
         mConnections.emplace_back(i);
@@ -34,7 +34,8 @@ void Spades::Protocol::Broadcast(const Connection& sender, DataStream& data, boo
 
 void Spades::Protocol::OnConnect(ENetPeer* peer)
 {
-    if (!peer || !peer->data) {
+    std::cout << "trying to connect...\n";
+    if (!peer) {
         return;
     }
     if (peer->eventData != static_cast<uint32>(Version::v0_75)) {
@@ -46,11 +47,12 @@ void Spades::Protocol::OnConnect(ENetPeer* peer)
         return;
     }
     for (auto& connection : mConnections) {
-        if (!connection) {
+        if (!bool(connection)) {
+            std::cout << "assigning connection\n";
             connection.Connect(peer);
             peer->data = &connection;
             mNumPlayers++;
-            break;
+            return;
         }
     }
 }
@@ -117,9 +119,13 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
 {
     if (connection.mState == State::Connecting) {
         if (connection.mMapStart) {
-            uint8* mapData       = nullptr; // here load map
-            uint32 dataLength    = 0;
-            auto*  chunk         = mCompressor.Compress(mapData, dataLength, 8192);
+            std::cout << "starting map send\n";
+            std::vector<uint8> mapData;
+            mMap.Save(mapData);
+
+            std::cout << "map raw length: " << mapData.size() << '\n';
+
+            auto* chunk          = mCompressor.Compress(mapData.data(), mapData.size(), 8192);
             connection.mMapChunk = chunk;
 
             // get map size
@@ -137,6 +143,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
             connection.mMapStart = false;
         } else {
             if (connection.mMapChunk == nullptr) {
+                std::cout << "sending map state\n";
                 //
                 // Add existing players
                 //
@@ -204,6 +211,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                     connection.mState = State::Connected;
                 }
             } else {
+                std::cout << "sending map chunk\n";
                 DataStream packet(connection.mMapChunk->mChunk, connection.mMapChunk->mLength);
                 if (connection.Send(packet)) {
                     connection.mMapChunk = connection.mMapChunk->Pop();

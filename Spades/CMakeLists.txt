@@ -13,6 +13,8 @@ target_sources(server
         Core/Vector.hxx
         Util/Compress.cxx
         Util/Compress.hxx
+        Util/Map.cxx
+        Util/Map.hxx
         Util/Peer.cxx
         Util/Peer.hxx
         Util/ReadFile.cxx

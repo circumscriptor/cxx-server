@@ -35,17 +35,18 @@ Spades::Compressor::~Compressor()
 Spades::DataChunk* Spades::Compressor::Compress(void* data, uint32 length, uint32 chunkSize)
 {
     if (!mIsValid) {
+        std::cerr << "compressor is not valid\n";
         return nullptr;
     }
 
-    DataChunk* first;
-    DataChunk* chunk;
+    DataChunk* first = nullptr;
+    DataChunk* chunk = nullptr;
 
     stream->next_in  = (uint8*) data;
     stream->avail_in = length;
 
     do {
-        if (first == NULL) {
+        if (first == nullptr) {
             first = new DataChunk(chunkSize + 1);
             chunk = first;
         } else {
@@ -63,6 +64,8 @@ Spades::DataChunk* Spades::Compressor::Compress(void* data, uint32 length, uint3
             return nullptr;
         }
         chunk->mLength = chunkSize + 1 - stream->avail_out;
+
+        std::cout << "chunk length: " << chunk->mLength << '\n';
     } while (stream->avail_out == 0);
 
     return first;

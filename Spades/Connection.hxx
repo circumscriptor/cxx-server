@@ -53,6 +53,7 @@ class Connection : public Player, public Peer
     {
         Peer::operator=(peer);
         mState        = State::Connecting;
+        mMapStart     = true;
     }
 
     /**
