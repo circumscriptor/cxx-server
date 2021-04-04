@@ -6,6 +6,10 @@
 
 #include "Protocol.hxx"
 
+#include "Core/Vector.hxx"
+#include "Data/Enums.hxx"
+
+#include <cstring>
 #include <enet/enet.h>
 #include <iostream>
 
@@ -18,6 +22,11 @@ Spades::Protocol::Protocol(uint8 maxPlayers) : mMaxPlayers(maxPlayers), mCompres
 
 Spades::Protocol::~Protocol()
 {
+}
+
+Spades::Vector3f Spades::Protocol::GetSpawnLocation()
+{
+    return Vector3f();
 }
 
 void Spades::Protocol::Broadcast(const Connection& sender, DataStream& data, bool includeSender, uint8 channel)
@@ -189,7 +198,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                 packet.WriteArray(mTeams[1].mName, 10);
                 packet.WriteType(Mode::CTF);
                 // CTF
-                packet.WriteByte(mTeams[0].mScore);
+                packet.WriteByte(mTeams[0].mScore + 9);
                 packet.WriteByte(mTeams[1].mScore);
                 packet.WriteByte(mScoreLimit);
                 packet.WriteByte(IntelFlags());

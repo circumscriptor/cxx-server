@@ -4,6 +4,7 @@
  *
  */
 
+#include "Data/Enums.hxx"
 #include "Protocol.hxx"
 #include "Server.hxx"
 #include "Util/ReadFile.hxx"
@@ -32,6 +33,14 @@ int main(int argc, char** argv)
     std::cout << "converting map data...\n";
     map.Load(data, size);
     delete[] data;
+
+    protocol.SetTeamName(0, "Team A");
+    protocol.SetTeamName(1, "Team B");
+
+    protocol.GetTeam(0).mColor = {0xff, 0x00, 0x00};
+    protocol.GetTeam(1).mColor = {0x00, 0xff, 0x00};
+    protocol.GetTeam(0).mBase  = {256.f, 256.f, 40.f};
+    protocol.GetTeam(1).mBase  = {256.f, 256.f, 40.f};
 
     std::cout << "starting server\n";
     return Spades::Server().Run(protocol, 1);

@@ -108,6 +108,7 @@ class DataStream
     {
         assert(mPosition + length <= mLength);
         std::memcpy(buffer, mData + mPosition, length);
+        mPosition += length;
     }
 
     void WriteByte(uint8 value)
@@ -161,6 +162,7 @@ class DataStream
     {
         assert(mPosition + length <= mLength);
         std::memcpy(mData + mPosition, buffer, length);
+        mPosition += length;
     }
 
     void* Data() const noexcept

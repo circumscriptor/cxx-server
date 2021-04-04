@@ -48,6 +48,22 @@ class Protocol
         return mMap;
     }
 
+    void SetTeamName(uint8 team, const char* name)
+    {
+        uint8 i;
+        for (i = 0; i < 10 && name[i]; ++i) {
+            mTeams[team].mName[i] = name[i];
+        }
+        mTeams[team].mName[i] = 0;
+    }
+
+    Team& GetTeam(uint8 i)
+    {
+        return mTeams[i];
+    }
+
+    Vector3f GetSpawnLocation();
+
     /**
      * @brief Broadcast packet
      *
