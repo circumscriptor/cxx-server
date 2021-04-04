@@ -7,6 +7,7 @@
 
 target_sources(server
     PRIVATE
+        Core/DataChunk.hxx
         Core/DataStream.hxx
         Core/Types.hxx
         Core/Vector.hxx
@@ -14,6 +15,8 @@ target_sources(server
         Util/Compress.hxx
         Util/Peer.cxx
         Util/Peer.hxx
+        Util/ReadFile.cxx
+        Util/ReadFile.hxx
         Data/Enums.hxx
         Data/Player.hxx
         Data/Team.hxx
