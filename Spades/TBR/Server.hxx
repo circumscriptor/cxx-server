@@ -6,7 +6,10 @@
 
 #pragma once
 
+#include "Enums.hxx"
 #include "Protocol.hxx"
+#include "Types.hxx"
+#include "Vector.hxx"
 
 typedef struct _ENetHost ENetHost;
 
@@ -23,7 +26,7 @@ class Server
      * @brief Construct a new Server object
      *
      */
-    Server() : Server(32887)
+    Server() : Server(32887, 32, 0, 0)
     {
     }
 
@@ -31,26 +34,7 @@ class Server
      * @brief Construct a new Server object
      *
      * @param port Server port
-     */
-    Server(uint16 port) : Server(port, 32)
-    {
-    }
-
-    /**
-     * @brief Construct a new Server object
-     *
-     * @param port Server port
-     * @param connections Maximal number of connections
-     */
-    Server(uint16 port, uint8 connections) : Server(port, connections, 0, 0)
-    {
-    }
-
-    /**
-     * @brief Construct a new Server object
-     *
-     * @param port Server port
-     * @param connections Maximal number of connections
+     * @param connections Maximal number of connections (<= 32)
      * @param inBandwidth Input bandwidth (0 = no limit)
      * @param outBandwidth Output bandwidth (0 = no limit)
      */
@@ -68,10 +52,11 @@ class Server
      * @param timeout ...
      * @return 0 on sucess
      */
-    int Run(Protocol& protocol, uint32 timeout);
+    int Run(uint32 timeout);
 
   private:
-    ENetHost* mHost; //!< Host
+    Protocol  mProtocol;
+    ENetHost* mHost;
 };
 
 } // namespace Spades

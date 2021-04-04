@@ -7,22 +7,22 @@
 
 target_sources(server
     PRIVATE
-        Compress.cxx
-        Compress.hxx
-        DataStream.cxx
-        DataStream.hxx
-        Enums.hxx
-        Main.cxx
-        Packet.cxx
-        Packet.hxx
-        Peer.cxx
-        Peer.hxx
-        Player.hxx
+        Core/DataStream.hxx
+        Core/Types.hxx
+        Core/Vector.hxx
+        Util/Compress.cxx
+        Util/Compress.hxx
+        Data/Enums.hxx
+        Data/Player.hxx
+        Data/Team.hxx
         Protocol.cxx
         Protocol.hxx
         Server.cxx
         Server.hxx
-        Team.hxx
-        Types.hxx
-        Vector.hxx
+        Main.cxx
+)
+
+target_include_directories(server
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/Spades
 )

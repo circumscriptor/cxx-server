@@ -11,28 +11,44 @@
 #include "Enums.hxx"
 #include "Packet.hxx"
 #include "Peer.hxx"
-#include "Protocol.hxx"
+#include "Team.hxx"
+#include "Vector.hxx"
 
 typedef struct _ENetPeer ENetPeer;
 
 namespace Spades {
 
-class Player
+struct StateData
+{
+    Vector3b mFogColor{0xff, 0xff, 0xff};
+    Team     mTeams[2];
+    uint8    mScoreLimit{10};
+
+    StateData() = default;
+
+    uint8 IntelFlags() const noexcept
+    {
+        uint8 flags = 0;
+        flags |= (mTeams[0].mIntelTaken) ? 1 : 0;
+        flags |= (mTeams[1].mIntelTaken) ? 2 : 0;
+        return flags;
+    }
+};
+
+struct WorldUpdate
+{
+    struct
+    {
+        Vector3f mPosition;
+        Vector3f mOrientation;
+    } mData[32];
+};
+
+struct Player
 {
     friend class Protocol;
 
   public:
-    /**
-     * @brief Construct a new Player object
-     *
-     */
-    Player(uint8 id, Protocol* protocol) : mID{id}, mProtocol{protocol}
-    {
-    }
-
-    // Delete copy constructor
-    Player(const Player&) = delete;
-
     /**
      * @brief Check whether is connected
      *
@@ -70,14 +86,6 @@ class Player
     bool OnConnect(ENetPeer* peer)
     {
         mPeer.Set(peer);
-        if (mPeer.EventData() != static_cast<uint32>(Version::v0_75)) {
-            mPeer.Disconnect(Reason::WrongProtocolVersion);
-            return false;
-        }
-        if (mProtocol->Available() == 0) {
-            mPeer.Disconnect(Reason::ServerFull);
-            return false;
-        }
         // check max connections per ip
         mState = State::StartingMap;
         return true;
@@ -305,13 +313,13 @@ class Player
         mPeer.Send(packet);
     }
 
-    void SendWorldUpdate()
+    void SendWorldUpdate(const WorldUpdate& update)
     {
         Packet packet(1 + 32 * 24, true);
         packet.Write(PacketType::WorldUpdate);
         for (uint8 i = 0; i < 32; ++i) {
-            packet.WriteVector3f(mProtocol->mPlayers[i].mPosition);
-            packet.WriteVector3f(mProtocol->mPlayers[i].mOrientation);
+            packet.WriteVector3f(update.mData[i].mPosition);
+            packet.WriteVector3f(update.mData[i].mOrientation);
         }
         mPeer.Send(packet);
     }
@@ -383,48 +391,48 @@ class Player
      * @brief Send state data (+ CTF state)
      *
      */
-    bool SendStateData()
+    bool SendStateData(const StateData& state)
     {
         Packet packet(1 + 31 + 52);
 
         packet.Write(PacketType::StateData);
         // 1
         packet.WriteByte(mID);
-        packet.WriteVector3b(mProtocol->mFogColor);
-        packet.WriteVector3b(mProtocol->mTeams[0].color);
-        packet.WriteVector3b(mProtocol->mTeams[1].color);
+        packet.WriteVector3b(state.mFogColor);
+        packet.WriteVector3b(state.mTeams[0].mColor);
+        packet.WriteVector3b(state.mTeams[1].mColor);
         // 10
-        packet.WriteArray(mProtocol->mTeams[0].name, 10);
-        packet.WriteArray(mProtocol->mTeams[1].name, 10);
+        packet.WriteArray(state.mTeams[0].mName, 10);
+        packet.WriteArray(state.mTeams[1].mName, 10);
         // 20
-        packet.Write(mProtocol->mGameMode);
+        packet.Write(Mode::CTF);
         // 1
 
         // CTF
-        packet.WriteByte(mProtocol->mTeams[0].score);
-        packet.WriteByte(mProtocol->mTeams[1].score);
-        packet.WriteByte(mProtocol->mScoreLimit);
-        packet.WriteByte(mProtocol->IntelFlags());
+        packet.WriteByte(state.mTeams[0].mScore);
+        packet.WriteByte(state.mTeams[1].mScore);
+        packet.WriteByte(state.mScoreLimit);
+        packet.WriteByte(state.IntelFlags());
         // 4
 
-        if (!mProtocol->mTeams[0].taken) {
-            packet.WriteVector3f(mProtocol->mTeams[0].intel);
+        if (!state.mTeams[0].mIntelTaken) {
+            packet.WriteVector3f(state.mTeams[0].mIntel);
         } else {
-            packet.WriteByte(mProtocol->mTeams[0].holder);
+            packet.WriteByte(state.mTeams[0].mIntelHolder);
             packet.Skip(11);
         }
         // 12
 
-        if (!mProtocol->mTeams[1].taken) {
-            packet.WriteVector3f(mProtocol->mTeams[1].intel);
+        if (!state.mTeams[1].mIntelTaken) {
+            packet.WriteVector3f(state.mTeams[1].mIntel);
         } else {
-            packet.WriteByte(mProtocol->mTeams[1].holder);
+            packet.WriteByte(state.mTeams[1].mIntelHolder);
             packet.Skip(11);
         }
         // 12
 
-        packet.WriteVector3f(mProtocol->mTeams[0].base);
-        packet.WriteVector3f(mProtocol->mTeams[1].base);
+        packet.WriteVector3f(state.mTeams[0].mBase);
+        packet.WriteVector3f(state.mTeams[1].mBase);
         // 24
 
         if (mPeer.Send(packet)) {
@@ -465,7 +473,6 @@ class Player
     Vector3b   mColor;                      //!< Block color
     uint8      mInput{0};                   //!< Input keys
     uint8      mWeaponInput{0};             //!< Weapon input (primary, secondary)
-    Protocol*  mProtocol;                   //!< Common protocol
     DataChunk* mMapChunk{nullptr};          //!< Pointer to the next chunk to be sent
     uint8      mRespawnTime{0};             //!< Time to respawn
     uint8      mClipAmmo{0};

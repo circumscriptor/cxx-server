@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "Types.hxx"
+#include "Core/Types.hxx"
 
 typedef struct z_stream_s z_stream;
 

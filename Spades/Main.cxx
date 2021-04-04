@@ -4,14 +4,13 @@
  *
  */
 
+#include "Protocol.hxx"
 #include "Server.hxx"
 
 #include <iostream>
 
-// TODO: Use events, like HitEvent, ChatEvent, ...
-
 int main()
 {
-    std::cout << "Spades Server\n";
-    return Spades::Server().Run(10);
+    Spades::Protocol protocol(32);
+    return Spades::Server().Run(protocol, 1);
 }
