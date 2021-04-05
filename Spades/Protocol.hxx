@@ -11,12 +11,14 @@
 #include "Core/Types.hxx"
 #include "Core/Vector.hxx"
 #include "Data/Enums.hxx"
+#include "Data/Player.hxx"
 #include "Data/Team.hxx"
 #include "Util/Compress.hxx"
 #include "Util/Map.hxx"
 #include "Util/Spawn.hxx"
 
 #include <array>
+#include <chrono>
 #include <vector>
 
 namespace Spades {
@@ -109,6 +111,12 @@ class Protocol
 
     void Receive(ENetPeer* peer, ENetPacket* packet);
 
+    void Block(Connection& connection, uint32 x, uint32 y, uint32 z, BlockActionType action);
+
+    void Kill(Connection& killer, Connection& victim, KillType type, uint8 respawnTime);
+
+    void Create(Connection& connection);
+
     void Start();
 
     void Update();
@@ -125,6 +133,10 @@ class Protocol
     uint8                   mScoreLimit{10};             //!< Scorel limit per team
     Random                  mRandom;
     Spawn                   mSpawns[3];
+    uint8                   mRespawnTime{0};
+
+    std::chrono::time_point<std::chrono::steady_clock> mRespawnTimer;
+    std::chrono::time_point<std::chrono::steady_clock> mWorldUpdateTimer;
 
     uint8 IntelFlags() const noexcept
     {
@@ -149,7 +161,9 @@ class Protocol
         uint8 mChatMessage[259];
         uint8 mStateData[104];
         uint8 mCreatePlayer[32];
+        uint8 mKillAction[5];
         uint8 mExistingPlayer[28];
+        uint8 mBlockAction[15];
     } mCache;
 };
 

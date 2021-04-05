@@ -94,7 +94,7 @@ class DataStream
     {
         result.b = ReadByte();
         result.g = ReadByte();
-        result.b = ReadByte();
+        result.r = ReadByte();
     }
 
     void ReadVector3f(Vector3f& result)

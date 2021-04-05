@@ -6,6 +6,8 @@
 
 #include "Map.hxx"
 
+#include "Core/Types.hxx"
+
 #include <cstring>
 #include <iostream>
 
@@ -16,6 +18,11 @@ bool Spades::Map::Load(uint8* data, uint32 length)
     }
 
     std::memset(mBlocks, 0xFF, ((((1 << 9) << 9) << 6) >> 5) << 2);
+
+    uint32 clr = ColorToU32({0x80, 0x40, 0x20});
+    for (uint32 i = 0; i < 512 * 512 * 64; ++i) {
+        mColors[i] = clr;
+    }
 
     uint8   spanSize, startTop, endTop, lengthTop, startAir, endBottom, startBottom, lengthBottom;
     uint32* color;

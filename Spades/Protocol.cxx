@@ -6,6 +6,7 @@
 
 #include "Protocol.hxx"
 
+#include "Core/DataStream.hxx"
 #include "Core/Vector.hxx"
 #include "Data/Enums.hxx"
 
@@ -93,6 +94,27 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
         case PacketType::OrientationData:
             stream.ReadVector3f(connection.mOrientation);
             break;
+        case PacketType::SetColor:
+        {
+            auto id = stream.ReadByte();
+            if (connection.mID != id) {
+                // something wrong
+                std::cout << "set color, invalid id received: " << static_cast<int>(id) << '\n';
+                // weird bug - changes colors of other players
+            }
+
+            stream.ReadColor3b(connection.mColor);
+            Broadcast(connection, stream);
+        } break;
+        case PacketType::SetTool:
+            if (connection.mID != stream.ReadByte()) {
+                // something wrong
+                std::cout << "set tool, invalid id received\n";
+            }
+
+            connection.mTool = stream.ReadType<Tool>();
+            Broadcast(connection, stream);
+            break;
         case PacketType::ExistingPlayer:
         {
             if (connection.mID != stream.ReadByte()) {
@@ -112,6 +134,55 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
 
             connection.mCanSpawn = true;
             // connection.mWaitingForSpawn = true;
+        } break;
+        case PacketType::BlockAction:
+        {
+            if (connection.mID != stream.ReadByte()) {
+                // something wrong
+                std::cout << "change team, invalid id received\n";
+            }
+            // TODO: Add ability to refuse block action
+            auto type = stream.ReadType<BlockActionType>();
+            auto x    = stream.ReadInt();
+            auto y    = stream.ReadInt();
+            auto z    = stream.ReadInt();
+
+            if (type == BlockActionType::BulletOrSpade) {
+                mMap.SetBlock(x, y, z, false);
+            } else if (type == BlockActionType::Build) {
+                mMap.SetBlock(x, y, z, true);
+                mMap.SetColor(x, y, z, ColorToU32(connection.mColor));
+            }
+
+            Block(connection, x, y, z, type);
+        } break;
+        case PacketType::ChangeTeam:
+        {
+            if (connection.mID != stream.ReadByte()) {
+                // something wrong
+                std::cout << "change team, invalid id received\n";
+            }
+            // TODO: Add ability to refuse team change
+            connection.mTeam = stream.ReadType<TeamType>();
+
+            if (connection.mAlive) {
+                connection.mRespawnTime = mRespawnTime;
+                Kill(connection, connection, KillType::TeamChange, mRespawnTime);
+            }
+        } break;
+        case PacketType::ChangeWeapon:
+        {
+            if (connection.mID != stream.ReadByte()) {
+                // something wrong
+                std::cout << "change weapon, invalid id received\n";
+            }
+            // TODO: Add ability to refuse weapon change
+            connection.mWeapon = stream.ReadType<Weapon>();
+
+            if (connection.mAlive) {
+                connection.mRespawnTime = mRespawnTime;
+                Kill(connection, connection, KillType::WeaponChange, mRespawnTime);
+            }
         } break;
         default:
             std::cout << "unhandled code: " << static_cast<int>(type) << '\n';
@@ -147,12 +218,12 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
             connection.mMapStart = false;
         } else {
             if (connection.mMapChunk == nullptr) {
-                std::cout << "sending map state\n";
                 //
                 // Add existing players
                 //
                 for (auto& other : mConnections) {
-                    if (connection != other && other) {
+                    if (connection != other && other.mState == State::Connected) { // send only connected players
+                        std::cout << "sending existing player: " << static_cast<int>(other.mID) << '\n';
                         DataStream packet(mCache.mExistingPlayer, sizeof(mCache.mExistingPlayer));
                         packet.WriteType(PacketType::ExistingPlayer);
                         packet.WriteByte(other.mID);
@@ -165,21 +236,19 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                         connection.Send(packet);
                     }
                 }
-                //
-                // Create players
-                //
                 for (auto& other : mConnections) {
-                    if (connection != other && other && other.mAlive) {
-                        DataStream packet(mCache.mCreatePlayer, sizeof(mCache.mCreatePlayer));
-                        packet.WriteType(PacketType::ExistingPlayer);
+                    if (connection != other && other.mState == State::Connected && !other.mAlive) {
+                        std::cout << "sending kill packet: " << static_cast<int>(other.mID) << '\n';
+                        DataStream packet(mCache.mKillAction, sizeof(mCache.mExistingPlayer));
+                        packet.WriteType(PacketType::KillAction);
                         packet.WriteByte(other.mID);
-                        packet.WriteType(other.mWeapon);
-                        packet.WriteType(other.mTeam);
-                        packet.WriteVector3f(other.mPosition);
-                        packet.WriteArray(other.mName, 16);
+                        packet.WriteByte(other.mLastKill.mKiller);
+                        packet.WriteType(other.mLastKill.mType);
+                        packet.WriteByte(other.mRespawnTime);
                         connection.Send(packet);
                     }
                 }
+                std::cout << "sending map state\n";
                 //
                 // Send state data
                 //
@@ -214,6 +283,22 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                 if (connection.Send(packet)) {
                     connection.mState = State::Connected;
                 }
+                //
+                // Create players
+                //
+                // for (auto& other : mConnections) {
+                //     if (connection != other && other.mAlive) {
+                //         std::cout << "sending create player: " << static_cast<int>(other.mID) << '\n';
+                //         DataStream packet(mCache.mCreatePlayer, sizeof(mCache.mCreatePlayer));
+                //         packet.WriteType(PacketType::CreatePlayer);
+                //         packet.WriteByte(other.mID);
+                //         packet.WriteType(other.mWeapon);
+                //         packet.WriteType(other.mTeam);
+                //         packet.WriteVector3f(other.mPosition);
+                //         packet.WriteArray(other.mName, 16);
+                //         connection.Send(packet);
+                //     }
+                // }
             } else {
                 // std::cout << "sending map chunk\n";
                 DataStream packet(connection.mMapChunk->mChunk, connection.mMapChunk->mLength);
@@ -223,22 +308,54 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
             }
         }
     } else if (connection.mState == State::Connected) {
-        if (connection.mCanSpawn && !connection.mAlive) {
+        if (connection.mCanSpawn && !connection.mAlive && connection.mRespawnTime == 0) {
             connection.mAlive = true;
             // if (connection.mCanSpawn && connection.mWaitingForSpawn && connection.mRespawnTime == 0) {
 
             GetSpawnLocation(connection.mTeam, connection.mPosition);
-
-            DataStream packet(mCache.mCreatePlayer, sizeof(mCache.mCreatePlayer));
-            packet.WriteType(PacketType::CreatePlayer);
-            packet.WriteByte(connection.mID);
-            packet.WriteType(connection.mWeapon);
-            packet.WriteType(connection.mTeam);
-            packet.WriteVector3f(connection.mPosition);
-            packet.WriteArray(connection.mName, 16);
-            Broadcast(connection, packet, true);
+            Create(connection);
         }
     }
+}
+
+void Spades::Protocol::Kill(Connection& killer, Connection& victim, KillType type, uint8 respawnTime)
+{
+    victim.mAlive            = false;
+    victim.mLastKill.mKiller = killer.mID;
+    victim.mLastKill.mType   = type;
+    victim.mRespawnTime      = respawnTime;
+
+    DataStream packet(mCache.mKillAction, sizeof(mCache.mKillAction));
+    packet.WriteType(PacketType::KillAction);
+    packet.WriteByte(victim.mID);
+    packet.WriteByte(victim.mLastKill.mKiller);
+    packet.WriteType(victim.mLastKill.mType);
+    packet.WriteByte(victim.mRespawnTime);
+    Broadcast(killer, packet, true);
+}
+
+void Spades::Protocol::Create(Connection& connection)
+{
+    DataStream packet(mCache.mCreatePlayer, sizeof(mCache.mCreatePlayer));
+    packet.WriteType(PacketType::CreatePlayer);
+    packet.WriteByte(connection.mID);
+    packet.WriteType(connection.mWeapon);
+    packet.WriteType(connection.mTeam);
+    packet.WriteVector3f(connection.mPosition);
+    packet.WriteArray(connection.mName, 16);
+    Broadcast(connection, packet, true);
+}
+
+void Spades::Protocol::Block(Connection& connection, uint32 x, uint32 y, uint32 z, BlockActionType action)
+{
+    DataStream packet(mCache.mBlockAction, sizeof(mCache.mBlockAction));
+    packet.WriteType(PacketType::BlockAction);
+    packet.WriteByte(connection.mID);
+    packet.WriteType(action);
+    packet.WriteInt(x);
+    packet.WriteInt(y);
+    packet.WriteInt(z);
+    Broadcast(connection, packet, true);
 }
 
 void Spades::Protocol::Start()
@@ -247,6 +364,7 @@ void Spades::Protocol::Start()
     GetSpawnLocation(TeamType::B, mTeams[1].mBase);
     GetSpawnLocation(TeamType::A, mTeams[0].mIntel);
     GetSpawnLocation(TeamType::B, mTeams[1].mIntel);
+    mRespawnTime = 15; // TODO: Move
 }
 
 void Spades::Protocol::Update()
@@ -255,5 +373,26 @@ void Spades::Protocol::Update()
         if (connection) {
             UpdateConnection(connection);
         }
+    }
+
+    auto now = std::chrono::steady_clock::now();
+    if (std::chrono::duration<double>(now - mRespawnTimer).count() >= 1) {
+        mRespawnTimer = now;
+        for (auto& connection : mConnections) {
+            if (connection.mRespawnTime != 0) {
+                connection.mRespawnTime--;
+            }
+        }
+    }
+
+    if (std::chrono::duration<double>(now - mWorldUpdateTimer).count() >= 0.1) {
+        mWorldUpdateTimer = now;
+        DataStream stream(mCache.mWorldUpdate, sizeof(mCache.mWorldUpdate));
+        stream.WriteType(PacketType::WorldUpdate);
+        for (auto& connection : mConnections) {
+            stream.WriteVector3f(connection.mPosition);
+            stream.WriteVector3f(connection.mOrientation);
+        }
+        Broadcast(mConnections[0], stream, true); // [0] because functions needs any connection
     }
 }

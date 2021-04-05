@@ -18,16 +18,22 @@ namespace Spades {
  */
 struct Player
 {
-    uint8    mID;             //!< Player ID
-    char     mName[17];       //!< Player name
-    Vector3f mPosition;       //!< Position
-    Vector3f mOrientation;    //!< Orientation
-    Weapon   mWeapon;         //!< Weapon
-    TeamType mTeam;           //!< Team
-    Tool     mTool;           //!< Currently held tool
-    Color3b  mColor;          //!< Block color
-    uint32   mKills{0};       //!< Player kills
-    uint8    mRespawnTime{0}; //!< Current respawn time
+    uint8    mID;              //!< Player ID
+    char     mName[17];        //!< Player name
+    Vector3f mPosition;        //!< Position
+    Vector3f mOrientation;     //!< Orientation
+    Weapon   mWeapon;          //!< Weapon
+    TeamType mTeam;            //!< Team
+    Tool     mTool{Tool::Gun}; //!< Currently held tool
+    Color3b  mColor;           //!< Block color
+    uint32   mKills{0};        //!< Player kills
+    uint8    mRespawnTime{0};  //!< Current respawn time
+
+    struct LastKill
+    {
+        uint8    mKiller;
+        KillType mType;
+    } mLastKill;
 
     struct Input
     {
@@ -63,6 +69,7 @@ struct Player
         mPosition         = {0.f, 0.f, 0.f};
         mOrientation      = {0.f, 0.f, 0.f};
         mState            = State::Disconnected;
+        mTool             = Tool::Gun;
         mInput.mUp        = false;
         mInput.mDown      = false;
         mInput.mLeft      = false;

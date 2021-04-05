@@ -95,7 +95,7 @@ enum class Tool { Spade = 0, Block = 1, Gun = 2, Grenade = 3 };
  * @brief Kill type (used by kill action)
  *
  */
-enum class KillType { Weapon = 0, Headshot = 1, Melee = 2, Grenade = 3, Fall = 4, TeamChange = 5, ClassChange = 6 };
+enum class KillType { Weapon = 0, Headshot = 1, Melee = 2, Grenade = 3, Fall = 4, TeamChange = 5, WeaponChange = 6 };
 
 /**
  * @brief Hit type (used by hit event)
@@ -104,6 +104,8 @@ enum class KillType { Weapon = 0, Headshot = 1, Melee = 2, Grenade = 3, Fall = 4
 enum class HitType { Torso = 0, Head = 1, Arms = 2, Legs = 3, Melee = 4 };
 
 enum class ChatType { All = 0, Team = 1, System = 2 };
+
+enum class BlockActionType { Build = 0, BulletOrSpade = 1, SpadeSecondary = 2, Grenade = 3 };
 
 /**
  * @brief Team enum

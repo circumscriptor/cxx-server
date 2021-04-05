@@ -46,5 +46,4 @@ int main(int argc, char** argv)
 
     std::cout << "starting server\n";
     return Spades::Server().Run(protocol, 1);
-    return 0;
 }
