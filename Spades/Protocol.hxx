@@ -9,10 +9,12 @@
 #include "Connection.hxx"
 #include "Core/DataStream.hxx"
 #include "Core/Types.hxx"
+#include "Core/Vector.hxx"
 #include "Data/Enums.hxx"
 #include "Data/Team.hxx"
 #include "Util/Compress.hxx"
 #include "Util/Map.hxx"
+#include "Util/Spawn.hxx"
 
 #include <array>
 #include <vector>
@@ -62,7 +64,35 @@ class Protocol
         return mTeams[i];
     }
 
-    Vector3f GetSpawnLocation();
+    void SetSpawn(TeamType team, const Spawn& spawn)
+    {
+        switch (team) {
+            case TeamType::A:
+                mSpawns[0] = spawn;
+                break;
+            case TeamType::B:
+                mSpawns[1] = spawn;
+                break;
+            case TeamType::SPECTATOR:
+                mSpawns[2] = spawn;
+                break;
+        }
+    }
+
+    void GetSpawnLocation(TeamType team, Vector3f& out)
+    {
+        switch (team) {
+            case TeamType::A:
+                mSpawns[0].GetLocation(mRandom, mMap, out);
+                break;
+            case TeamType::B:
+                mSpawns[1].GetLocation(mRandom, mMap, out);
+                break;
+            case TeamType::SPECTATOR:
+                mSpawns[2].GetLocation(mRandom, mMap, out);
+                break;
+        }
+    }
 
     /**
      * @brief Broadcast packet
@@ -79,19 +109,22 @@ class Protocol
 
     void Receive(ENetPeer* peer, ENetPacket* packet);
 
+    void Start();
+
     void Update();
 
   private:
     void UpdateConnection(Connection& connection);
 
     Map                     mMap;                        //!< Map
-    Compressor              mCompressor;                 //!< Compressor
     std::vector<Connection> mConnections;                //!< Connections
     std::array<Team, 2>     mTeams;                      //!< Teams
     uint8                   mMaxPlayers{0};              //!< Maximal number of players
     uint8                   mNumPlayers{0};              //!< Current number of players
     Color3b                 mFogColor{0xff, 0xff, 0xff}; //!< Fog color
     uint8                   mScoreLimit{10};             //!< Scorel limit per team
+    Random                  mRandom;
+    Spawn                   mSpawns[3];
 
     uint8 IntelFlags() const noexcept
     {
@@ -101,6 +134,10 @@ class Protocol
         return flags;
     }
 
+    /**
+     * @brief Cached packets
+     *
+     */
     struct Cache
     {
         uint8 mMapStart[5];

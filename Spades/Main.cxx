@@ -39,8 +39,10 @@ int main(int argc, char** argv)
 
     protocol.GetTeam(0).mColor = {0xff, 0x00, 0x00};
     protocol.GetTeam(1).mColor = {0x00, 0xff, 0x00};
-    protocol.GetTeam(0).mBase  = {256.f, 256.f, 40.f};
-    protocol.GetTeam(1).mBase  = {256.f, 256.f, 40.f};
+
+    protocol.SetSpawn(Spades::TeamType::A, {{64.f, 224.f}, 64.f});
+    protocol.SetSpawn(Spades::TeamType::B, {{384.f, 224.f}, 64.f});
+    protocol.SetSpawn(Spades::TeamType::SPECTATOR, {{256.f, 256.f}, 0.f});
 
     std::cout << "starting server\n";
     return Spades::Server().Run(protocol, 1);

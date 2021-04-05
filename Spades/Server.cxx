@@ -44,6 +44,7 @@ Spades::Server::~Server()
 int Spades::Server::Run(Protocol& protocol, uint32 timeout)
 {
     std::cout << "running server\n";
+    protocol.Start();
     ENetEvent event;
     while (true) {
         while (enet_host_service(mHost, &event, timeout)) {

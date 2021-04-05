@@ -13,7 +13,7 @@
 #include <enet/enet.h>
 #include <iostream>
 
-Spades::Protocol::Protocol(uint8 maxPlayers) : mMaxPlayers(maxPlayers), mCompressor(5)
+Spades::Protocol::Protocol(uint8 maxPlayers) : mMaxPlayers(maxPlayers)
 {
     for (uint8 i = 0; i < 32; ++i) {
         mConnections.emplace_back(i);
@@ -22,11 +22,6 @@ Spades::Protocol::Protocol(uint8 maxPlayers) : mMaxPlayers(maxPlayers), mCompres
 
 Spades::Protocol::~Protocol()
 {
-}
-
-Spades::Vector3f Spades::Protocol::GetSpawnLocation()
-{
-    return Vector3f();
 }
 
 void Spades::Protocol::Broadcast(const Connection& sender, DataStream& data, bool includeSender, uint8 channel)
@@ -134,7 +129,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
 
             std::cout << "map raw length: " << mapData.size() << '\n';
 
-            auto* chunk          = mCompressor.Compress(mapData.data(), mapData.size(), 8192);
+            auto* chunk          = Compressor::Compress(5, mapData.data(), mapData.size(), 8192);
             connection.mMapChunk = chunk;
 
             // get map size
@@ -231,7 +226,8 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
         if (connection.mCanSpawn && !connection.mAlive) {
             connection.mAlive = true;
             // if (connection.mCanSpawn && connection.mWaitingForSpawn && connection.mRespawnTime == 0) {
-            connection.mPosition = Vector3f(); // GetRespawnPosition(team);
+
+            GetSpawnLocation(connection.mTeam, connection.mPosition);
 
             DataStream packet(mCache.mCreatePlayer, sizeof(mCache.mCreatePlayer));
             packet.WriteType(PacketType::CreatePlayer);
@@ -243,6 +239,14 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
             Broadcast(connection, packet, true);
         }
     }
+}
+
+void Spades::Protocol::Start()
+{
+    GetSpawnLocation(TeamType::A, mTeams[0].mBase);
+    GetSpawnLocation(TeamType::B, mTeams[1].mBase);
+    GetSpawnLocation(TeamType::A, mTeams[0].mIntel);
+    GetSpawnLocation(TeamType::B, mTeams[1].mIntel);
 }
 
 void Spades::Protocol::Update()

@@ -104,6 +104,24 @@ class Map
         return false;
     }
 
+    uint8 GetHeight(uint32 x, uint32 y)
+    {
+        // uint32 offset = (((x << 9) + y) << 6) >> 5;
+        uint32 offset = (((x << 9) + y) << 1);
+        uint32 check  = mBlocks[offset];
+        uint8  z      = 0;
+        if (check == 0) {
+            z += 32;
+            check = mBlocks[offset + 1];
+            if (check == 0) {
+                return z + 32;
+            }
+        }
+        for (; (check >>= 1) != 0; ++z) {
+        }
+        return z;
+    }
+
     bool Load(uint8* data, uint32 length);
 
     void Save(std::vector<uint8>& output);
