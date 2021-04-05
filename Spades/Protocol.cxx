@@ -94,6 +94,43 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
         case PacketType::OrientationData:
             stream.ReadVector3f(connection.mOrientation);
             break;
+        case PacketType::InputData:
+        {
+            if (connection.mID != stream.ReadByte()) {
+                // something wrong
+                std::cout << "input data, invalid id received\n";
+            }
+            uint8 input               = stream.ReadByte();
+            connection.mInput.mUp     = input & 0x01;
+            connection.mInput.mDown   = input & 0x02;
+            connection.mInput.mLeft   = input & 0x04;
+            connection.mInput.mRight  = input & 0x08;
+            connection.mInput.mJump   = input & 0x10;
+            connection.mInput.mCrouch = input & 0x20;
+            connection.mInput.mSneak  = input & 0x40;
+            connection.mInput.mSprint = input & 0x80;
+            Broadcast(connection, stream, false);
+        } break;
+        case PacketType::WeaponInput:
+        {
+            if (connection.mID != stream.ReadByte()) {
+                // something wrong
+                std::cout << "weapon input, invalid id received\n";
+            }
+            uint8 input                  = stream.ReadByte();
+            connection.mInput.mPrimary   = input & 0x1;
+            connection.mInput.mSecondary = input & 0x02;
+            Broadcast(connection, stream, false);
+        } break;
+        case PacketType::SetTool:
+            if (connection.mID != stream.ReadByte()) {
+                // something wrong
+                std::cout << "set tool, invalid id received\n";
+            }
+
+            connection.mTool = stream.ReadType<Tool>();
+            Broadcast(connection, stream);
+            break;
         case PacketType::SetColor:
         {
             auto id = stream.ReadByte();
@@ -106,17 +143,9 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
             stream.ReadColor3b(connection.mColor);
             Broadcast(connection, stream);
         } break;
-        case PacketType::SetTool:
-            if (connection.mID != stream.ReadByte()) {
-                // something wrong
-                std::cout << "set tool, invalid id received\n";
-            }
-
-            connection.mTool = stream.ReadType<Tool>();
-            Broadcast(connection, stream);
-            break;
         case PacketType::ExistingPlayer:
         {
+            std::cout << "existing player from: " << static_cast<int>(connection.mID) << '\n';
             if (connection.mID != stream.ReadByte()) {
                 // something wrong
                 std::cout << "existing player, invalid id received\n";
@@ -185,7 +214,7 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
             }
         } break;
         default:
-            std::cout << "unhandled code: " << static_cast<int>(type) << '\n';
+            std::cout << "from " << static_cast<int>(connection.mID) << " code: " << static_cast<int>(type) << '\n';
             break;
     }
 }
