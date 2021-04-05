@@ -129,7 +129,7 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
             }
 
             connection.mTool = stream.ReadType<Tool>();
-            Broadcast(connection, stream);
+            Broadcast(connection, stream, false);
             break;
         case PacketType::SetColor:
         {
@@ -141,7 +141,7 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
             }
 
             stream.ReadColor3b(connection.mColor);
-            Broadcast(connection, stream);
+            Broadcast(connection, stream, false);
         } break;
         case PacketType::ExistingPlayer:
         {
@@ -160,6 +160,11 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
             length      = (length > 16) ? 16 : length;
             stream.ReadArray(connection.mName, length);
             connection.mName[length] = 0;
+
+            if (connection.mAlive) {
+                std::cout << "WARNING: this is not suppossed to happen\n";
+                connection.mAlive = false;
+            }
 
             connection.mCanSpawn = true;
             // connection.mWaitingForSpawn = true;
@@ -393,7 +398,7 @@ void Spades::Protocol::Start()
     GetSpawnLocation(TeamType::B, mTeams[1].mBase);
     GetSpawnLocation(TeamType::A, mTeams[0].mIntel);
     GetSpawnLocation(TeamType::B, mTeams[1].mIntel);
-    mRespawnTime = 15; // TODO: Move
+    mRespawnTime = 2; // TODO: Move
 }
 
 void Spades::Protocol::Update()
