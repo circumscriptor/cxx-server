@@ -13,6 +13,13 @@
 
 namespace Spades {
 
+/**
+ * @brief Read entire file into the buffer
+ *
+ * @param path The file path
+ * @param size Ouput size
+ * @return A buffer filled with data or nullptr on failure
+ */
 void* ReadFile(const char* path, uint32& size);
 
 } // namespace Spades

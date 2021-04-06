@@ -30,7 +30,7 @@ class Random
      * @param to Second position
      * @return Random value in range
      */
-    float Get(float from, float to)
+    float Get(float from, float to) const
     {
         // return std::min(std::abs(from), std::abs(to)) + std::abs(std::abs(to) - std::abs(from)) *
         // mDistribution(mGenerator);
@@ -45,7 +45,7 @@ class Random
      * @param to Second position
      * @param out Output vector
      */
-    void Get(const Vector2f& from, const Vector2f& to, Vector3f& out)
+    void Get(const Vector2f& from, const Vector2f& to, Vector3f& out) const
     {
         out.x = Get(from.x, to.x);
         out.y = Get(from.y, to.y);

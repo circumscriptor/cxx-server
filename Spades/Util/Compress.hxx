@@ -8,10 +8,12 @@
 
 #include "Core/DataChunk.hxx"
 
-typedef struct z_stream_s z_stream;
-
 namespace Spades {
 
+/**
+ * @brief Compressor, used by protocol to compress map data
+ *
+ */
 class Compressor
 {
   public:

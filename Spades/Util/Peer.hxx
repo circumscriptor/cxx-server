@@ -14,6 +14,10 @@ typedef struct _ENetPeer ENetPeer;
 
 namespace Spades {
 
+/**
+ * @brief Peer - manages ENetPeer pointer
+ *
+ */
 class Peer
 {
   public:
