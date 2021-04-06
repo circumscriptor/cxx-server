@@ -66,7 +66,7 @@ class Server
      * @param timeout ...
      * @return 0 on sucess
      */
-    int Run(Protocol& protocol, uint32 timeout);
+    auto Run(Protocol& protocol, uint32 timeout) -> int;
 
   private:
     ENetHost* mHost; //!< Host

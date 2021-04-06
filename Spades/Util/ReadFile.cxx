@@ -6,7 +6,7 @@
 
 #include "ReadFile.hxx"
 
-void* Spades::ReadFile(const char* path, uint32& size)
+auto Spades::ReadFile(const char* path, uint32& size) -> void*
 {
     std::fstream file(path, std::ios::in | std::ios::binary);
     if (!file.is_open()) {

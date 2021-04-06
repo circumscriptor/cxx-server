@@ -20,6 +20,6 @@ namespace Spades {
  * @param size Ouput size
  * @return A buffer filled with data or nullptr on failure
  */
-void* ReadFile(const char* path, uint32& size);
+auto ReadFile(const char* path, uint32& size) -> void*;
 
 } // namespace Spades

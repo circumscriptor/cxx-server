@@ -10,8 +10,6 @@
 #include "Core/Types.hxx"
 #include "Data/Enums.hxx"
 
-typedef struct _ENetPeer ENetPeer;
-
 namespace Spades {
 
 /**
@@ -53,7 +51,7 @@ class Peer
      * @param peer ENetPeer pointer
      * @return Reference to this
      */
-    Peer& operator=(ENetPeer* peer) noexcept
+    auto operator=(ENetPeer* peer) noexcept -> Peer&
     {
         mPeer = peer;
         return *this;
@@ -64,7 +62,7 @@ class Peer
      *
      * @return true If peer is valid
      */
-    bool IsValid() const noexcept
+    auto IsValid() const noexcept -> bool
     {
         return mPeer != nullptr;
     }
@@ -93,7 +91,7 @@ class Peer
      * @param unsequenced If true, send unsequenced packet
      * @return true Success
      */
-    bool Send(DataStream& data, uint8 channel = 0, bool unsequenced = false);
+    auto Send(DataStream& data, uint8 channel = 0, bool unsequenced = false) -> bool;
 
   private:
     ENetPeer* mPeer{nullptr}; //!< ENetPeer pointer

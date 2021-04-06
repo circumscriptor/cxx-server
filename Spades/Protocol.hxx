@@ -47,7 +47,7 @@ class Protocol
      */
     ~Protocol();
 
-    Map& GetMap()
+    auto GetMap() noexcept -> Map&
     {
         return mMap;
     }
@@ -55,13 +55,13 @@ class Protocol
     void SetTeamName(uint8 team, const char* name)
     {
         uint8 i;
-        for (i = 0; i < 10 && name[i]; ++i) {
+        for (i = 0; i < 10 && (name[i] != 0); ++i) {
             mTeams[team].mName[i] = name[i];
         }
         mTeams[team].mName[i] = 0;
     }
 
-    Team& GetTeam(uint8 i)
+    auto GetTeam(uint8 i) -> Team&
     {
         return mTeams[i];
     }
@@ -138,7 +138,7 @@ class Protocol
     std::chrono::time_point<std::chrono::steady_clock> mRespawnTimer;
     std::chrono::time_point<std::chrono::steady_clock> mWorldUpdateTimer;
 
-    uint8 IntelFlags() const noexcept
+    auto IntelFlags() const noexcept -> uint8
     {
         uint8 flags = 0;
         flags |= (mTeams[0].mIntelTaken) ? 1 : 0;

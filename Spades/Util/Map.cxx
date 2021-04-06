@@ -11,9 +11,9 @@
 #include <cstring>
 #include <iostream>
 
-bool Spades::Map::Load(uint8* data, uint32 length)
+auto Spades::Map::Load(uint8* data, uint32 /*length*/) -> bool
 {
-    if (!data) {
+    if (data == nullptr) {
         return false;
     }
 
@@ -24,7 +24,14 @@ bool Spades::Map::Load(uint8* data, uint32 length)
         mColors[i] = clr;
     }
 
-    uint8   spanSize, startTop, endTop, lengthTop, startAir, endBottom, startBottom, lengthBottom;
+    uint8   spanSize;
+    uint8   startTop;
+    uint8   endTop;
+    uint8   lengthTop;
+    uint8   startAir;
+    uint8   endBottom;
+    uint8   startBottom;
+    uint8   lengthBottom;
     uint32* color;
 
     for (uint32 y = 0; y < 512; ++y) {
@@ -67,11 +74,20 @@ bool Spades::Map::Load(uint8* data, uint32 length)
     return true;
 }
 
-void Spades::Map::Save(std::vector<uint8>& output)
+void Spades::Map::Save(std::vector<uint8>& output) const
 {
     output.clear();
     output.reserve(512 * 512 * 8);
-    uint8 airStart, startTop, endTop, startBottom, endBottom, lengthTop, lengthBottom, lengthColors;
+
+    uint8 airStart;
+    uint8 startTop;
+    uint8 endTop;
+    uint8 startBottom;
+    uint8 endBottom;
+    uint8 lengthTop;
+    uint8 lengthBottom;
+    uint8 lengthColors;
+
     for (uint32 y = 0; y < 512; ++y) {
         for (uint32 x = 0; x < 512; ++x) {
             uint8 r = 0;

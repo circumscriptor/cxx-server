@@ -74,19 +74,31 @@ class Connection : public Player, public Peer
     void Reset()
     {
         mMapStart = false;
-        while (mMapChunk) {
+        while (mMapChunk != nullptr) {
             mMapChunk = mMapChunk->Pop();
         }
         Player::Reset();
         Peer::Reset();
     }
 
-    bool operator==(const Connection& other) const noexcept
+    /**
+     * @brief Compare ID with another connection
+     *
+     * @param other Other connection
+     * @return true If IDs are same
+     */
+    auto operator==(const Connection& other) const noexcept -> bool
     {
         return mID == other.mID;
     }
 
-    bool operator!=(const Connection& other) const noexcept
+    /**
+     * @brief Compare ID with another connection
+     *
+     * @param other Other connection
+     * @return true If IDs are not same
+     */
+    auto operator!=(const Connection& other) const noexcept -> bool
     {
         return mID != other.mID;
     }

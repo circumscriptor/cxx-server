@@ -16,7 +16,7 @@ void Spades::Peer::Disconnect(Reason reason)
     }
 }
 
-bool Spades::Peer::Send(DataStream& data, uint8 channel, bool unsequenced)
+auto Spades::Peer::Send(DataStream& data, uint8 channel, bool unsequenced) -> bool
 {
     if (mPeer != nullptr) {
         uint32      flag   = (unsequenced) ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE;

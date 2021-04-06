@@ -6,9 +6,9 @@
 
 #pragma once
 
-typedef struct _ENetHost   ENetHost;
-typedef struct _ENetPeer   ENetPeer;
-typedef struct _ENetPacket ENetPacket;
+using ENetHost   = struct _ENetHost;
+using ENetPeer   = struct _ENetPeer;
+using ENetPacket = struct _ENetPacket;
 
 namespace Spades {
 

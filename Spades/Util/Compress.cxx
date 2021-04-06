@@ -11,7 +11,7 @@
 #include <iostream>
 #include <zlib.h>
 
-Spades::DataChunk* Spades::Compressor::Compress(int level, void* data, uint32 length, uint32 chunkSize)
+auto Spades::Compressor::Compress(int level, void* data, uint32 length, uint32 chunkSize) -> Spades::DataChunk*
 {
     z_stream stream;
     stream.zalloc = Z_NULL;
@@ -42,7 +42,7 @@ Spades::DataChunk* Spades::Compressor::Compress(int level, void* data, uint32 le
         chunk->mChunk[0] = static_cast<uint8>(PacketType::MapChunk);
         if (deflate(&stream, Z_FINISH) < 0) {
             std::cerr << "failed to compress chunk\n";
-            while (first) {
+            while (first != nullptr) {
                 first = first->Pop();
             }
             return nullptr;

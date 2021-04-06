@@ -47,7 +47,7 @@ class Map
      * @param z The z-coordinate of the block
      * @return The offset of the block
      */
-    static constexpr uint32 GetOffset(uint32 x, uint32 y, uint32 z) noexcept
+    static constexpr auto GetOffset(uint32 x, uint32 y, uint32 z) noexcept -> uint32
     {
         return (((x << 9) + y) << 6) + z;
     }
@@ -60,7 +60,7 @@ class Map
      * @param z The z-coordinate of the block
      * @return The offset of the block (32 blocks per offset)
      */
-    static constexpr uint32 GetOffset32(uint32 x, uint32 y, uint32 z) noexcept
+    static constexpr auto GetOffset32(uint32 x, uint32 y, uint32 z) noexcept -> uint32
     {
         return (((x << 9) + y) << 1) + (z >> 5);
     }
@@ -72,7 +72,7 @@ class Map
      * @return true If the block is solid
      * @return false If the block is not solid, i.e. is air
      */
-    bool IsBlock(uint32 offset) const
+    auto IsBlock(uint32 offset) const -> bool
     {
         return (mBlocks[offset >> 5] & (1 << (offset & 0x1F))) != 0;
     }
@@ -86,7 +86,7 @@ class Map
      * @return true If the block is solid
      * @return false If the block is not solid, i.e. is air
      */
-    bool IsBlock(uint32 x, uint32 y, uint32 z) const
+    auto IsBlock(uint32 x, uint32 y, uint32 z) const -> bool
     {
         return (mBlocks[GetOffset32(x, y, z)] & (1 << (z & 0x1F))) != 0;
     }
@@ -129,7 +129,7 @@ class Map
      * @param offset The offset
      * @return Block color in ARGB format
      */
-    uint32 GetColor(uint32 offset) const
+    auto GetColor(uint32 offset) const -> uint32
     {
         return mColors[offset];
     }
@@ -142,7 +142,7 @@ class Map
      * @param z The z-coordinate of the block
      * @return Block color in ARGB format
      */
-    uint32 GetColor(uint32 x, uint32 y, uint32 z) const
+    auto GetColor(uint32 x, uint32 y, uint32 z) const -> uint32
     {
         return mColors[GetOffset(x, y, z)];
     }
@@ -180,7 +180,7 @@ class Map
      * @return true If the block is a surface block
      * @return false If the block is not solid or if is not a surface block
      */
-    bool IsSurface(uint32 x, uint32 y, uint32 z) const
+    auto IsSurface(uint32 x, uint32 y, uint32 z) const -> bool
     {
         if (!IsBlock(x, y, z)) {
             return false;
@@ -213,7 +213,7 @@ class Map
      * @param y The y-coordinate of the block
      * @return The z-coordinate of the block
      */
-    uint8 GetHeight(uint32 x, uint32 y) const
+    auto GetHeight(uint32 x, uint32 y) const -> uint8
     {
         // uint32 offset = (((x << 9) + y) << 6) >> 5;
         uint32 offset = (((x << 9) + y) << 1);
@@ -239,14 +239,14 @@ class Map
      * @return true On success
      * @return false On failure
      */
-    bool Load(uint8* data, uint32 length);
+    auto Load(uint8* data, uint32 length) -> bool;
 
     /**
      * @brief Store map in the output buffer (VXL format)
      *
      * @param output The ouput buffer (VXL format)
      */
-    void Save(std::vector<uint8>& output);
+    void Save(std::vector<uint8>& output) const;
 
   private:
     uint32* mBlocks; //!< Array/bitset of block states (32 blocks each)

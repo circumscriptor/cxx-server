@@ -69,8 +69,8 @@ struct Player
      */
     void Reset()
     {
-        mPosition    = {0.f, 0.f, 0.f};
-        mOrientation = {0.f, 0.f, 0.f};
+        mPosition    = {0.F, 0.F, 0.F};
+        mOrientation = {0.F, 0.F, 0.F};
         mState       = State::Disconnected;
         mTool        = Tool::Gun;
         mUp          = false;

@@ -24,7 +24,7 @@ Spades::Server::Server(uint16 port, uint8 connections, uint32 inBandwidth, uint3
     address.port = port;
 
     mHost = enet_host_create(&address, connections, 2, inBandwidth, outBandwidth);
-    if (mHost == NULL) {
+    if (mHost == nullptr) {
         std::cerr << "failed to create server\n";
         std::exit(EXIT_FAILURE);
     }
@@ -41,13 +41,13 @@ Spades::Server::~Server()
     enet_host_destroy(mHost);
 }
 
-int Spades::Server::Run(Protocol& protocol, uint32 timeout)
+auto Spades::Server::Run(Protocol& protocol, uint32 timeout) -> int
 {
     std::cout << "running server\n";
     protocol.Start();
     ENetEvent event;
     while (true) {
-        while (enet_host_service(mHost, &event, timeout)) {
+        while (enet_host_service(mHost, &event, timeout) > 0) {
             switch (event.type) {
                 case ENET_EVENT_TYPE_NONE:
                     break;

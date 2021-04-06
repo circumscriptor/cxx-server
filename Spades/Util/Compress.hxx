@@ -26,7 +26,7 @@ class Compressor
      * @param chunkSize Chunk size
      * @return Chunks or nullptr
      */
-    static DataChunk* Compress(int level, void* data, uint32 length, uint32 chunkSize);
+    static auto Compress(int level, void* data, uint32 length, uint32 chunkSize) -> DataChunk*;
 };
 
 } // namespace Spades
