@@ -11,9 +11,9 @@
 #include <cstring>
 #include <iostream>
 
-auto Spades::Map::Load(uint8* data, uint32 /*length*/) -> bool
+auto Spades::Map::Load(const std::vector<uint8>& input) -> bool
 {
-    if (data == nullptr) {
+    if (input.empty()) {
         return false;
     }
 
@@ -24,15 +24,18 @@ auto Spades::Map::Load(uint8* data, uint32 /*length*/) -> bool
         mColors[i] = clr;
     }
 
-    uint8   spanSize;
-    uint8   startTop;
-    uint8   endTop;
-    uint8   lengthTop;
-    uint8   startAir;
-    uint8   endBottom;
-    uint8   startBottom;
-    uint8   lengthBottom;
-    uint32* color;
+    uint8 spanSize;
+    uint8 startTop;
+    uint8 endTop;
+    uint8 lengthTop;
+    uint8 startAir;
+    uint8 endBottom;
+    uint8 startBottom;
+    uint8 lengthBottom;
+
+    const uint32* color;
+
+    auto data = input.begin();
 
     for (uint32 y = 0; y < 512; ++y) {
         for (uint32 x = 0; x < 512; ++x) {
@@ -46,7 +49,7 @@ auto Spades::Map::Load(uint8* data, uint32 /*length*/) -> bool
                     SetBlock(x, y, z, false);
                 }
 
-                color = (uint32*) (data + 4);
+                color = reinterpret_cast<const uint32*>(&data[4]);
                 for (z = startTop; z <= endTop; ++z, ++color) {
                     SetColor(x, y, z, *color);
                 }

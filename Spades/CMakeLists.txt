@@ -21,8 +21,7 @@ target_sources(server
         Util/Map.hxx
         Util/Peer.cxx
         Util/Peer.hxx
-        Util/ReadFile.cxx
-        Util/ReadFile.hxx
+        Util/File.hxx
         Util/Spawn.hxx
         Data/Enums.hxx
         Data/Player.hxx

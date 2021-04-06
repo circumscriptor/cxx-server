@@ -14,15 +14,6 @@
 #include <enet/enet.h>
 #include <iostream>
 
-Spades::Protocol::Protocol(uint8 maxPlayers) : mMaxPlayers(maxPlayers)
-{
-    for (uint8 i = 0; i < 32; ++i) {
-        mConnections.emplace_back(i);
-    }
-}
-
-Spades::Protocol::~Protocol() = default;
-
 void Spades::Protocol::Broadcast(const Connection& sender, DataStream& data, bool includeSender, uint8 channel)
 {
     for (auto& connection : mConnections) {
@@ -180,10 +171,10 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
             auto z    = stream.ReadInt();
 
             if (type == BlockActionType::BulletOrSpade) {
-                mMap.SetBlock(x, y, z, false);
+                SetBlock(x, y, z, false);
             } else if (type == BlockActionType::Build) {
-                mMap.SetBlock(x, y, z, true);
-                mMap.SetColor(x, y, z, ColorToU32(connection.mColor));
+                SetBlock(x, y, z, true);
+                SetColor(x, y, z, ColorToU32(connection.mColor));
             }
 
             Block(connection, x, y, z, type);
@@ -228,7 +219,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
         if (connection.mMapStart) {
             std::cout << "starting map send\n";
             std::vector<uint8> mapData;
-            mMap.Save(mapData);
+            Save(mapData);
 
             std::cout << "map raw length: " << mapData.size() << '\n';
 
@@ -290,8 +281,8 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                 packet.WriteColor3(mFogColor);
                 packet.WriteColor3(mTeams[0].mColor);
                 packet.WriteColor3(mTeams[1].mColor);
-                packet.WriteArray(mTeams[0].mName, 10);
-                packet.WriteArray(mTeams[1].mName, 10);
+                packet.WriteArray(mTeams[0].mName.data(), 10);
+                packet.WriteArray(mTeams[1].mName.data(), 10);
                 packet.WriteType(Mode::CTF);
                 // CTF
                 packet.WriteByte(mTeams[0].mScore + 9);
@@ -344,7 +335,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
             connection.mAlive = true;
             // if (connection.mCanSpawn && connection.mWaitingForSpawn && connection.mRespawnTime == 0) {
 
-            GetSpawnLocation(connection.mTeam, connection.mPosition);
+            SpawnLocation(connection.mTeam, connection.mPosition);
             Create(connection);
         }
     }
@@ -392,11 +383,7 @@ void Spades::Protocol::Block(Connection& connection, uint32 x, uint32 y, uint32 
 
 void Spades::Protocol::Start()
 {
-    GetSpawnLocation(TeamType::A, mTeams[0].mBase);
-    GetSpawnLocation(TeamType::B, mTeams[1].mBase);
-    GetSpawnLocation(TeamType::A, mTeams[0].mIntel);
-    GetSpawnLocation(TeamType::B, mTeams[1].mIntel);
-    mRespawnTime = 2; // TODO: Move
+    SetupWorld();
 }
 
 void Spades::Protocol::Update()

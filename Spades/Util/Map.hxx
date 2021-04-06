@@ -6,9 +6,7 @@
 
 #pragma once
 
-#include "Core/Types.hxx"
-
-#include <vector>
+#include "Util/File.hxx"
 
 namespace Spades {
 
@@ -232,6 +230,19 @@ class Map
     }
 
     /**
+     * @brief Load map from file (VXL format)
+     *
+     * @param filepath Path to the file (VXL format file)
+     * @param length The length of the data
+     * @return true On success
+     * @return false On failure
+     */
+    auto LoadFromFile(const std::string& filepath) -> bool
+    {
+        return Load(File::Read(filepath));
+    }
+
+    /**
      * @brief Load map from data (VXL format)
      *
      * @param data Data (VXL format)
@@ -239,7 +250,7 @@ class Map
      * @return true On success
      * @return false On failure
      */
-    auto Load(uint8* data, uint32 length) -> bool;
+    auto Load(const std::vector<uint8>& input) -> bool;
 
     /**
      * @brief Store map in the output buffer (VXL format)

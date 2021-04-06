@@ -16,6 +16,7 @@
 #include "Util/Compress.hxx"
 #include "Util/Map.hxx"
 #include "Util/Spawn.hxx"
+#include "World.hxx"
 
 #include <array>
 #include <chrono>
@@ -23,7 +24,7 @@
 
 namespace Spades {
 
-class Protocol
+class Protocol : public World
 {
   public:
     /**
@@ -39,62 +40,18 @@ class Protocol
      *
      * @param maxPlayers Max number of players
      */
-    Protocol(uint8 maxPlayers);
+    Protocol(uint8 maxPlayers) : mMaxPlayers(maxPlayers)
+    {
+        for (uint8 i = 0; i < 32; ++i) {
+            mConnections.emplace_back(i);
+        }
+    }
 
     /**
      * @brief Destroy the Protocol object
      *
      */
-    ~Protocol();
-
-    auto GetMap() noexcept -> Map&
-    {
-        return mMap;
-    }
-
-    void SetTeamName(uint8 team, const char* name)
-    {
-        uint8 i;
-        for (i = 0; i < 10 && (name[i] != 0); ++i) {
-            mTeams[team].mName[i] = name[i];
-        }
-        mTeams[team].mName[i] = 0;
-    }
-
-    auto GetTeam(uint8 i) -> Team&
-    {
-        return mTeams[i];
-    }
-
-    void SetSpawn(TeamType team, const Spawn& spawn)
-    {
-        switch (team) {
-            case TeamType::A:
-                mSpawns[0] = spawn;
-                break;
-            case TeamType::B:
-                mSpawns[1] = spawn;
-                break;
-            case TeamType::SPECTATOR:
-                mSpawns[2] = spawn;
-                break;
-        }
-    }
-
-    void GetSpawnLocation(TeamType team, Vector3& out)
-    {
-        switch (team) {
-            case TeamType::A:
-                mSpawns[0].GetLocation3(mRandom, mMap, out);
-                break;
-            case TeamType::B:
-                mSpawns[1].GetLocation3(mRandom, mMap, out);
-                break;
-            case TeamType::SPECTATOR:
-                mSpawns[2].GetLocation3(mRandom, mMap, out);
-                break;
-        }
-    }
+    ~Protocol() = default;
 
     /**
      * @brief Broadcast packet
@@ -124,27 +81,12 @@ class Protocol
   private:
     void UpdateConnection(Connection& connection);
 
-    Map                     mMap;                        //!< Map
-    std::vector<Connection> mConnections;                //!< Connections
-    std::array<Team, 2>     mTeams;                      //!< Teams
-    uint8                   mMaxPlayers{0};              //!< Maximal number of players
-    uint8                   mNumPlayers{0};              //!< Current number of players
-    Color3                  mFogColor{0xff, 0xff, 0xff}; //!< Fog color
-    uint8                   mScoreLimit{10};             //!< Scorel limit per team
-    Random                  mRandom;
-    Spawn                   mSpawns[3];
-    uint8                   mRespawnTime{0};
+    std::vector<Connection> mConnections;   //!< Connections
+    uint8                   mMaxPlayers{0}; //!< Maximal number of players
+    uint8                   mNumPlayers{0}; //!< Current number of players
 
     std::chrono::time_point<std::chrono::steady_clock> mRespawnTimer;
     std::chrono::time_point<std::chrono::steady_clock> mWorldUpdateTimer;
-
-    auto IntelFlags() const noexcept -> uint8
-    {
-        uint8 flags = 0;
-        flags |= (mTeams[0].mIntelTaken) ? 1 : 0;
-        flags |= (mTeams[1].mIntelTaken) ? 2 : 0;
-        return flags;
-    }
 
     /**
      * @brief Cached packets

@@ -120,7 +120,7 @@ enum class BlockActionType { Build = 0, BulletOrSpade = 1, SpadeSecondary = 2, G
  *
  */
 enum class TeamType {
-    SPECTATOR = 0xFF,
+    Spectator = 0xFF,
     A         = 0,
     B         = 1,
 };
