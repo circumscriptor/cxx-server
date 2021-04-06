@@ -85,13 +85,13 @@ class Protocol
     {
         switch (team) {
             case TeamType::A:
-                mSpawns[0].GetLocation(mRandom, mMap, out);
+                mSpawns[0].GetLocation3(mRandom, mMap, out);
                 break;
             case TeamType::B:
-                mSpawns[1].GetLocation(mRandom, mMap, out);
+                mSpawns[1].GetLocation3(mRandom, mMap, out);
                 break;
             case TeamType::SPECTATOR:
-                mSpawns[2].GetLocation(mRandom, mMap, out);
+                mSpawns[2].GetLocation3(mRandom, mMap, out);
                 break;
         }
     }

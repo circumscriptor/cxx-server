@@ -21,9 +21,7 @@ Spades::Protocol::Protocol(uint8 maxPlayers) : mMaxPlayers(maxPlayers)
     }
 }
 
-Spades::Protocol::~Protocol()
-{
-}
+Spades::Protocol::~Protocol() = default;
 
 void Spades::Protocol::Broadcast(const Connection& sender, DataStream& data, bool includeSender, uint8 channel)
 {
@@ -40,7 +38,7 @@ void Spades::Protocol::Broadcast(const Connection& sender, DataStream& data, boo
 void Spades::Protocol::OnConnect(ENetPeer* peer)
 {
     std::cout << "trying to connect...\n";
-    if (!peer) {
+    if (peer == nullptr) {
         return;
     }
     if (peer->eventData != static_cast<uint32>(Version::v0_75)) {
@@ -64,11 +62,11 @@ void Spades::Protocol::OnConnect(ENetPeer* peer)
 
 void Spades::Protocol::OnDisconnect(ENetPeer* peer)
 {
-    if (!peer || !peer->data) {
+    if ((peer == nullptr) || (peer->data == nullptr)) {
         return;
     }
-    Connection* connection = reinterpret_cast<Connection*>(peer->data);
-    peer->data             = nullptr;
+    auto* connection = reinterpret_cast<Connection*>(peer->data);
+    peer->data       = nullptr;
 
     // create packet
     DataStream packet(mCache.mPlayerLeft, sizeof(mCache.mPlayerLeft), 0);
@@ -85,7 +83,7 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
 {
     Connection& connection = *reinterpret_cast<Connection*>(peer->data);
     DataStream  stream(packet->data, packet->dataLength, 0);
-    PacketType  type = stream.ReadType<PacketType>();
+    auto        type = stream.ReadType<PacketType>();
 
     switch (type) {
         case PacketType::PositionData:
@@ -101,14 +99,14 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
                 std::cout << "input data, invalid id received\n";
             }
             uint8 input        = stream.ReadByte();
-            connection.mUp     = input & 0x01;
-            connection.mDown   = input & 0x02;
-            connection.mLeft   = input & 0x04;
-            connection.mRight  = input & 0x08;
-            connection.mJump   = input & 0x10;
-            connection.mCrouch = input & 0x20;
-            connection.mSneak  = input & 0x40;
-            connection.mSprint = input & 0x80;
+            connection.mUp     = ((input & 0x01) != 0);
+            connection.mDown   = ((input & 0x02) != 0);
+            connection.mLeft   = ((input & 0x04) != 0);
+            connection.mRight  = ((input & 0x08) != 0);
+            connection.mJump   = ((input & 0x10) != 0);
+            connection.mCrouch = ((input & 0x20) != 0);
+            connection.mSneak  = ((input & 0x40) != 0);
+            connection.mSprint = ((input & 0x80) != 0);
             Broadcast(connection, stream, false);
         } break;
         case PacketType::WeaponInput:
@@ -118,8 +116,8 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
                 std::cout << "weapon input, invalid id received\n";
             }
             uint8 input           = stream.ReadByte();
-            connection.mPrimary   = input & 0x1;
-            connection.mSecondary = input & 0x02;
+            connection.mPrimary   = ((input & 0x1) != 0);
+            connection.mSecondary = ((input & 0x2) != 0);
             Broadcast(connection, stream, false);
         } break;
         case PacketType::SetTool:
@@ -240,7 +238,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
             // get map size
 
             uint32 mapSize = 0;
-            while (chunk) {
+            while (chunk != nullptr) {
                 mapSize += chunk->mLength;
                 chunk = chunk->mNext;
             }

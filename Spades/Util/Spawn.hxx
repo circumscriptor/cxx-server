@@ -44,27 +44,11 @@ class Spawn
     {
     }
 
-    /**
-     * @brief Construct a new Spawn object
-     *
-     * @param other Other Spawn object to be copied
-     */
-    constexpr Spawn(const Spawn& other) : mFrom{other.mFrom}, mTo{other.mTo}
-    {
-    }
+    // Default copy constructor
+    constexpr Spawn(const Spawn& other) = default;
 
-    /**
-     * @brief Assign the contens of another Spawn object
-     *
-     * @param other Other Spawn object
-     * @return Referece to this
-     */
-    constexpr Spawn& operator=(const Spawn& other)
-    {
-        mFrom = other.mFrom;
-        mTo   = other.mTo;
-        return *this;
-    }
+    // Default assign operator
+    constexpr auto operator=(const Spawn& other) -> Spawn& = default;
 
     /**
      * @brief Set spawn area
@@ -79,16 +63,28 @@ class Spawn
     }
 
     /**
-     * @brief Get the Location object
+     * @brief Get spawn location (2D-vector)
      *
      * @param random Random number generator
      * @param map Map object
      * @param out Output vector
      */
-    void GetLocation(const Random& random, const Map& map, Vector3& out)
+    void GetLocation2(Random& random, Vector3& out)
     {
         random.Get(mFrom, mTo, out);
-        out.z = map.GetHeight((uint32) out.x, (uint32) out.y) - 1;
+    }
+
+    /**
+     * @brief Get spawn location (3D-vector)
+     *
+     * @param random Random number generator
+     * @param map Map object
+     * @param out Output vector
+     */
+    void GetLocation3(Random& random, const Map& map, Vector3& out)
+    {
+        random.Get(mFrom, mTo, out);
+        out.z = static_cast<float>(map.GetHeight((uint32) out.x, (uint32) out.y) - 1);
     }
 
   private:
