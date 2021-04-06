@@ -100,15 +100,15 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
                 // something wrong
                 std::cout << "input data, invalid id received\n";
             }
-            uint8 input               = stream.ReadByte();
-            connection.mInput.mUp     = input & 0x01;
-            connection.mInput.mDown   = input & 0x02;
-            connection.mInput.mLeft   = input & 0x04;
-            connection.mInput.mRight  = input & 0x08;
-            connection.mInput.mJump   = input & 0x10;
-            connection.mInput.mCrouch = input & 0x20;
-            connection.mInput.mSneak  = input & 0x40;
-            connection.mInput.mSprint = input & 0x80;
+            uint8 input        = stream.ReadByte();
+            connection.mUp     = input & 0x01;
+            connection.mDown   = input & 0x02;
+            connection.mLeft   = input & 0x04;
+            connection.mRight  = input & 0x08;
+            connection.mJump   = input & 0x10;
+            connection.mCrouch = input & 0x20;
+            connection.mSneak  = input & 0x40;
+            connection.mSprint = input & 0x80;
             Broadcast(connection, stream, false);
         } break;
         case PacketType::WeaponInput:
@@ -117,9 +117,9 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
                 // something wrong
                 std::cout << "weapon input, invalid id received\n";
             }
-            uint8 input                  = stream.ReadByte();
-            connection.mInput.mPrimary   = input & 0x1;
-            connection.mInput.mSecondary = input & 0x02;
+            uint8 input           = stream.ReadByte();
+            connection.mPrimary   = input & 0x1;
+            connection.mSecondary = input & 0x02;
             Broadcast(connection, stream, false);
         } break;
         case PacketType::SetTool:
@@ -276,8 +276,8 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                         DataStream packet(mCache.mKillAction, sizeof(mCache.mExistingPlayer));
                         packet.WriteType(PacketType::KillAction);
                         packet.WriteByte(other.mID);
-                        packet.WriteByte(other.mLastKill.mKiller);
-                        packet.WriteType(other.mLastKill.mType);
+                        packet.WriteByte(other.mLastKillKiller);
+                        packet.WriteType(other.mLastKillType);
                         packet.WriteByte(other.mRespawnTime);
                         connection.Send(packet);
                     }
@@ -354,16 +354,16 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
 
 void Spades::Protocol::Kill(Connection& killer, Connection& victim, KillType type, uint8 respawnTime)
 {
-    victim.mAlive            = false;
-    victim.mLastKill.mKiller = killer.mID;
-    victim.mLastKill.mType   = type;
-    victim.mRespawnTime      = respawnTime;
+    victim.mAlive          = false;
+    victim.mLastKillKiller = killer.mID;
+    victim.mLastKillType   = type;
+    victim.mRespawnTime    = respawnTime;
 
     DataStream packet(mCache.mKillAction, sizeof(mCache.mKillAction));
     packet.WriteType(PacketType::KillAction);
     packet.WriteByte(victim.mID);
-    packet.WriteByte(victim.mLastKill.mKiller);
-    packet.WriteType(victim.mLastKill.mType);
+    packet.WriteByte(victim.mLastKillKiller);
+    packet.WriteType(victim.mLastKillType);
     packet.WriteByte(victim.mRespawnTime);
     Broadcast(killer, packet, true);
 }
