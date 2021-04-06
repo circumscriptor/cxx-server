@@ -30,7 +30,7 @@ class Spawn
      * @param pos Starting position (top-left corner, closer to word origin)
      * @param side The size of the edge of the square spawn area
      */
-    constexpr Spawn(const Vector2f& pos, float side) : mFrom{pos}, mTo{pos.x + side, pos.y + side}
+    constexpr Spawn(const Vector2& pos, float side) : mFrom{pos}, mTo{pos.x + side, pos.y + side}
     {
     }
 
@@ -40,7 +40,7 @@ class Spawn
      * @param from Starting position
      * @param to End position
      */
-    constexpr Spawn(const Vector2f& from, const Vector2f& to) : mFrom{from}, mTo{to}
+    constexpr Spawn(const Vector2& from, const Vector2& to) : mFrom{from}, mTo{to}
     {
     }
 
@@ -72,7 +72,7 @@ class Spawn
      * @param from Starting position
      * @param to End position
      */
-    constexpr void Set(const Vector2f& from, const Vector2f& to) noexcept
+    constexpr void Set(const Vector2& from, const Vector2& to) noexcept
     {
         mFrom = from;
         mTo   = to;
@@ -85,15 +85,15 @@ class Spawn
      * @param map Map object
      * @param out Output vector
      */
-    void GetLocation(const Random& random, const Map& map, Vector3f& out)
+    void GetLocation(const Random& random, const Map& map, Vector3& out)
     {
         random.Get(mFrom, mTo, out);
         out.z = map.GetHeight((uint32) out.x, (uint32) out.y) - 1;
     }
 
   private:
-    Vector2f mFrom; //!< Starting position
-    Vector2f mTo;   //!< End position
+    Vector2 mFrom; //!< Starting position
+    Vector2 mTo;   //!< End position
 };
 
 } // namespace Spades

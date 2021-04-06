@@ -20,12 +20,12 @@ struct Player
 {
     uint8    mID;              //!< Player ID
     char     mName[17];        //!< Player name
-    Vector3f mPosition;        //!< Position
-    Vector3f mOrientation;     //!< Orientation
+    Vector3  mPosition;        //!< Position
+    Vector3  mOrientation;     //!< Orientation
     Weapon   mWeapon;          //!< Weapon
     TeamType mTeam;            //!< Team
     Tool     mTool{Tool::Gun}; //!< Currently held tool
-    Color3b  mColor;           //!< Block color
+    Color3   mColor;           //!< Block color
     uint32   mKills{0};        //!< Player kills
     uint8    mRespawnTime{0};  //!< Current respawn time
     uint8    mClipAmmo{0};     //!< Clip ammo

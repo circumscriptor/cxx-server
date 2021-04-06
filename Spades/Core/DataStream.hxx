@@ -14,9 +14,20 @@
 
 namespace Spades {
 
+/**
+ * @brief Helper class for filling and reading packets
+ *
+ */
 class DataStream
 {
   public:
+    /**
+     * @brief Construct a new DataStream object
+     *
+     * @param pointer Pointer to the memory block
+     * @param length Length of the memory block
+     * @param start Starting position
+     */
     DataStream(void* pointer, uint32 length, uint32 start = 0) noexcept :
         mData{reinterpret_cast<uint8*>(pointer)},
         mLength{length},
@@ -24,41 +35,63 @@ class DataStream
     {
     }
 
-    DataStream(const DataStream& other) : mData{other.mData}, mLength{other.mLength}, mPosition{other.mPosition}
-    {
-    }
+    /**
+     * @brief Construct a new DataStream object
+     *
+     * @param other Other DataStream object to be copied
+     */
+    DataStream(const DataStream& other) noexcept = default;
 
-    DataStream& operator=(const DataStream& other)
-    {
-        mData     = other.mData;
-        mLength   = other.mLength;
-        mPosition = other.mPosition;
-        return *this;
-    }
+    // Default copy assignment
+    auto operator=(const DataStream& other) -> DataStream& = default;
 
-    void Reset()
+    /**
+     * @brief Reset position
+     *
+     */
+    void Reset() noexcept
     {
         mPosition = 0;
     }
 
-    uint32 Left() const
+    /**
+     * @brief Get number of bytes left (length - position)
+     *
+     * @return uint32
+     */
+    [[nodiscard]] auto Left() const -> uint32
     {
         return (mPosition > mLength) ? 0 : mLength - mPosition;
     }
 
+    /**
+     * @brief Skip n-bytes
+     *
+     * @param skip Number of bytes to skip
+     */
     void Skip(uint32 skip)
     {
         assert(mPosition + skip <= mLength);
         mPosition = (mPosition + skip > mLength) ? mLength : mPosition + skip;
     }
 
-    uint8 ReadByte()
+    /**
+     * @brief Read 8-bit word
+     *
+     * @return 8-bit word
+     */
+    auto ReadByte() -> uint8
     {
         assert(mPosition + 1 <= mLength);
         return mData[mPosition++];
     }
 
-    uint16 ReadShort()
+    /**
+     * @brief Read 16-bit word
+     *
+     * @return 16-bit word
+     */
+    auto ReadShort() -> uint16
     {
         assert(mPosition + 2 <= mLength);
         uint16 value = 0;
@@ -67,7 +100,12 @@ class DataStream
         return value;
     }
 
-    uint32 ReadInt()
+    /**
+     * @brief Read 32-bit word
+     *
+     * @return 32-bit word
+     */
+    auto ReadInt() -> uint32
     {
         assert(mPosition + 4 <= mLength);
         uint32 value = 0;
@@ -78,32 +116,59 @@ class DataStream
         return value;
     }
 
+    /**
+     * @brief Read 8-bit word (convert to type)
+     *
+     * @tparam T The type to convert to
+     * @return Type
+     */
     template<typename T>
-    T ReadType()
+    auto ReadType() -> T
     {
         return static_cast<T>(ReadByte());
     }
 
-    float ReadFloat()
+    /**
+     * @brief Read 32-bit word (bitcast to float)
+     *
+     * @return Float number
+     */
+    auto ReadFloat() -> float
     {
         uint32 value = ReadInt();
         return *reinterpret_cast<float*>(&value);
     }
 
-    void ReadColor3b(Color3b& result)
+    /**
+     * @brief Read RGB color (BGR order)
+     *
+     * @param result Color3 object
+     */
+    void ReadColor3(Color3& result)
     {
         result.b = ReadByte();
         result.g = ReadByte();
         result.r = ReadByte();
     }
 
-    void ReadVector3f(Vector3f& result)
+    /**
+     * @brief Read 3D-vector
+     *
+     * @param result Vector3 object
+     */
+    void ReadVector3(Vector3& result)
     {
         result.x = ReadFloat();
         result.y = ReadFloat();
         result.z = ReadFloat();
     }
 
+    /**
+     * @brief Read n-bytes and store in the buffer
+     *
+     * @param buffer The buffer to be used
+     * @param length Amount of bytes to read
+     */
     void ReadArray(void* buffer, uint32 length)
     {
         assert(mPosition + length <= mLength);
@@ -111,12 +176,22 @@ class DataStream
         mPosition += length;
     }
 
+    /**
+     * @brief Write 8-bit word
+     *
+     * @param value 8-bit word
+     */
     void WriteByte(uint8 value)
     {
         assert(mPosition + 1 <= mLength);
         mData[mPosition++] = value;
     }
 
+    /**
+     * @brief Write 16-bit word
+     *
+     * @param value 16-bit word
+     */
     void WriteShort(uint16 value)
     {
         assert(mPosition + 2 <= mLength);
@@ -124,6 +199,11 @@ class DataStream
         mData[mPosition++] = static_cast<uint8>(value >> 8);
     }
 
+    /**
+     * @brief Write 32-bit word
+     *
+     * @param value 32-bit word
+     */
     void WriteInt(uint32 value)
     {
         assert(mPosition + 4 <= mLength);
@@ -133,31 +213,58 @@ class DataStream
         mData[mPosition++] = static_cast<uint8>(value >> 24);
     }
 
+    /**
+     * @brief Write type as 8-bit word
+     *
+     * @tparam T The type
+     * @param value Value
+     */
     template<typename T>
-    void WriteType(T type)
+    void WriteType(T value)
     {
-        WriteByte(static_cast<uint8>(type));
+        WriteByte(static_cast<uint8>(value));
     }
 
+    /**
+     * @brief Write float number (bitcast to 32-bit word)
+     *
+     * @param value Float number
+     */
     void WriteFloat(float value)
     {
         WriteInt(*reinterpret_cast<uint32*>(&value));
     }
 
-    void WriteColor3b(const Color3b& value)
+    /**
+     * @brief Write RGB color (BGR order)
+     *
+     * @param value Color3 object
+     */
+    void WriteColor3(const Color3& value)
     {
         WriteByte(value.b);
         WriteByte(value.g);
         WriteByte(value.r);
     }
 
-    void WriteVector3f(const Vector3f& value)
+    /**
+     * @brief Write 3D-vector
+     *
+     * @param value Vector3 object
+     */
+    void WriteVector3(const Vector3& value)
     {
         WriteFloat(value.x);
         WriteFloat(value.y);
         WriteFloat(value.z);
     }
 
+    /**
+     * @brief Write n-bytes
+     *
+     * @param buffer The buffer to be used
+     * @param length Amount of bytes to write
+     */
     void WriteArray(const void* buffer, uint32 length)
     {
         assert(mPosition + length <= mLength);
@@ -165,12 +272,22 @@ class DataStream
         mPosition += length;
     }
 
-    void* Data() const noexcept
+    /**
+     * @brief Get stored pointer
+     *
+     * @return Pointer
+     */
+    [[nodiscard]] auto Data() const noexcept -> void*
     {
         return reinterpret_cast<void*>(mData);
     }
 
-    uint32 Length() const noexcept
+    /**
+     * @brief Get stored length
+     *
+     * @return Length
+     */
+    [[nodiscard]] auto Length() const noexcept -> uint32
     {
         return mLength;
     }

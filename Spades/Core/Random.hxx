@@ -14,13 +14,19 @@
 
 namespace Spades {
 
+/**
+ * @brief Random number generator
+ *
+ */
 class Random
 {
   public:
-    Random() : mDistribution(0.f, 1.f)
+    /**
+     * @brief Construct a new Random object
+     *
+     */
+    Random() : mGenerator(std::random_device()()), mDistribution(0.F, 1.F)
     {
-        std::random_device random;
-        mGenerator.seed(random());
     }
 
     /**
@@ -30,7 +36,7 @@ class Random
      * @param to Second position
      * @return Random value in range
      */
-    float Get(float from, float to) const
+    [[nodiscard]] auto Get(float from, float to) const -> float
     {
         // return std::min(std::abs(from), std::abs(to)) + std::abs(std::abs(to) - std::abs(from)) *
         // mDistribution(mGenerator);
@@ -45,11 +51,11 @@ class Random
      * @param to Second position
      * @param out Output vector
      */
-    void Get(const Vector2f& from, const Vector2f& to, Vector3f& out) const
+    void Get(const Vector2& from, const Vector2& to, Vector3& out) const
     {
         out.x = Get(from.x, to.x);
         out.y = Get(from.y, to.y);
-        out.z = 0.f;
+        out.z = 0.F;
     }
 
   private:

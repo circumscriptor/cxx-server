@@ -12,18 +12,28 @@ typedef struct _ENetPacket ENetPacket;
 
 namespace Spades {
 
-typedef unsigned char  uint8;
-typedef unsigned short uint16;
-typedef unsigned int   uint32;
+using uint8  = unsigned char;  //!< Unsigned 8-bit word
+using uint16 = unsigned short; //!< Unsigned 16-bit word
+using uint32 = unsigned int;   //!< Unsigned 32-bit word
 
-struct Color3b
+/**
+ * @brief RGB color
+ *
+ */
+struct Color3
 {
-    uint8 r;
-    uint8 g;
-    uint8 b;
+    uint8 r; //!< Red component
+    uint8 g; //!< Green component
+    uint8 b; //!< Blue component
 };
 
-constexpr uint32 ColorToU32(Color3b color) noexcept
+/**
+ * @brief Convert Color3 to ARGB 32bit format
+ *
+ * @param color Color3 object
+ * @return Color in ARGB format
+ */
+constexpr auto ColorToU32(const Color3& color) noexcept -> uint32
 {
     uint32 v = 0;
     // v |= 0x00 << 24;
@@ -33,7 +43,13 @@ constexpr uint32 ColorToU32(Color3b color) noexcept
     return v;
 }
 
-constexpr void U32ToColor(uint32 v, Color3b& color) noexcept
+/**
+ * @brief Convert color in ARGB format to Color3
+ *
+ * @param v Color in ARGB 32bit format
+ * @param color Color3 object
+ */
+constexpr void U32ToColor(uint32 v, Color3& color) noexcept
 {
     color.r = uint8(v >> 16);
     color.g = uint8(v >> 8);

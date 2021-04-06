@@ -81,7 +81,7 @@ class Protocol
         }
     }
 
-    void GetSpawnLocation(TeamType team, Vector3f& out)
+    void GetSpawnLocation(TeamType team, Vector3& out)
     {
         switch (team) {
             case TeamType::A:
@@ -129,7 +129,7 @@ class Protocol
     std::array<Team, 2>     mTeams;                      //!< Teams
     uint8                   mMaxPlayers{0};              //!< Maximal number of players
     uint8                   mNumPlayers{0};              //!< Current number of players
-    Color3b                 mFogColor{0xff, 0xff, 0xff}; //!< Fog color
+    Color3                  mFogColor{0xff, 0xff, 0xff}; //!< Fog color
     uint8                   mScoreLimit{10};             //!< Scorel limit per team
     Random                  mRandom;
     Spawn                   mSpawns[3];

@@ -89,10 +89,10 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
 
     switch (type) {
         case PacketType::PositionData:
-            stream.ReadVector3f(connection.mPosition);
+            stream.ReadVector3(connection.mPosition);
             break;
         case PacketType::OrientationData:
-            stream.ReadVector3f(connection.mOrientation);
+            stream.ReadVector3(connection.mOrientation);
             break;
         case PacketType::InputData:
         {
@@ -140,7 +140,7 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
                 // weird bug - changes colors of other players
             }
 
-            stream.ReadColor3b(connection.mColor);
+            stream.ReadColor3(connection.mColor);
             Broadcast(connection, stream, false);
         } break;
         case PacketType::ExistingPlayer:
@@ -154,7 +154,7 @@ void Spades::Protocol::Receive(ENetPeer* peer, ENetPacket* packet)
             connection.mWeapon = stream.ReadType<Weapon>();
             connection.mTool   = stream.ReadType<Tool>();
             connection.mKills  = stream.ReadInt();
-            stream.ReadColor3b(connection.mColor);
+            stream.ReadColor3(connection.mColor);
 
             auto length = stream.Left();
             length      = (length > 16) ? 16 : length;
@@ -265,7 +265,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                         packet.WriteType(other.mWeapon);
                         packet.WriteType(other.mTool);
                         packet.WriteInt(other.mKills);
-                        packet.WriteColor3b(other.mColor);
+                        packet.WriteColor3(other.mColor);
                         packet.WriteArray(other.mName, 16);
                         connection.Send(packet);
                     }
@@ -289,9 +289,9 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                 DataStream packet(mCache.mStateData, sizeof(mCache.mStateData));
                 packet.WriteType(PacketType::StateData);
                 packet.WriteByte(connection.mID);
-                packet.WriteColor3b(mFogColor);
-                packet.WriteColor3b(mTeams[0].mColor);
-                packet.WriteColor3b(mTeams[1].mColor);
+                packet.WriteColor3(mFogColor);
+                packet.WriteColor3(mTeams[0].mColor);
+                packet.WriteColor3(mTeams[1].mColor);
                 packet.WriteArray(mTeams[0].mName, 10);
                 packet.WriteArray(mTeams[1].mName, 10);
                 packet.WriteType(Mode::CTF);
@@ -301,19 +301,19 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                 packet.WriteByte(mScoreLimit);
                 packet.WriteByte(IntelFlags());
                 if (!mTeams[0].mIntelTaken) {
-                    packet.WriteVector3f(mTeams[0].mIntel);
+                    packet.WriteVector3(mTeams[0].mIntel);
                 } else {
                     packet.WriteByte(mTeams[0].mIntelHolder);
                     packet.Skip(11);
                 }
                 if (!mTeams[1].mIntelTaken) {
-                    packet.WriteVector3f(mTeams[1].mIntel);
+                    packet.WriteVector3(mTeams[1].mIntel);
                 } else {
                     packet.WriteByte(mTeams[1].mIntelHolder);
                     packet.Skip(11);
                 }
-                packet.WriteVector3f(mTeams[0].mBase);
-                packet.WriteVector3f(mTeams[1].mBase);
+                packet.WriteVector3(mTeams[0].mBase);
+                packet.WriteVector3(mTeams[1].mBase);
                 if (connection.Send(packet)) {
                     connection.mState = State::Connected;
                 }
@@ -328,7 +328,7 @@ void Spades::Protocol::UpdateConnection(Connection& connection)
                 //         packet.WriteByte(other.mID);
                 //         packet.WriteType(other.mWeapon);
                 //         packet.WriteType(other.mTeam);
-                //         packet.WriteVector3f(other.mPosition);
+                //         packet.WriteVector3(other.mPosition);
                 //         packet.WriteArray(other.mName, 16);
                 //         connection.Send(packet);
                 //     }
@@ -375,7 +375,7 @@ void Spades::Protocol::Create(Connection& connection)
     packet.WriteByte(connection.mID);
     packet.WriteType(connection.mWeapon);
     packet.WriteType(connection.mTeam);
-    packet.WriteVector3f(connection.mPosition);
+    packet.WriteVector3(connection.mPosition);
     packet.WriteArray(connection.mName, 16);
     Broadcast(connection, packet, true);
 }
@@ -424,8 +424,8 @@ void Spades::Protocol::Update()
         DataStream stream(mCache.mWorldUpdate, sizeof(mCache.mWorldUpdate));
         stream.WriteType(PacketType::WorldUpdate);
         for (auto& connection : mConnections) {
-            stream.WriteVector3f(connection.mPosition);
-            stream.WriteVector3f(connection.mOrientation);
+            stream.WriteVector3(connection.mPosition);
+            stream.WriteVector3(connection.mOrientation);
         }
         Broadcast(mConnections[0], stream, true); // [0] because functions needs any connection
     }

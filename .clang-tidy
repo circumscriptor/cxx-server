@@ -1,0 +1,6 @@
+---
+Checks:          '*,-readability-magic-numbers,-misc-non-private-member-variables-in-classes,-modernize-avoid-c-arrays,-cppcoreguidelines-*,-llvmlibc-*,-fuchsia-*,-google-*,-hicpp-*'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle:     file
+CheckOptions:
