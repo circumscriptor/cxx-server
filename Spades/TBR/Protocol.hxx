@@ -81,9 +81,10 @@ class Protocol : public World
   private:
     void UpdateConnection(Connection& connection);
 
-    std::vector<Connection> mConnections;   //!< Connections
-    uint8                   mMaxPlayers{0}; //!< Maximal number of players
-    uint8                   mNumPlayers{0}; //!< Current number of players
+    std::vector<Connection> mConnections; //!< Connections
+
+    uint8 mMaxPlayers{0}; //!< Maximal number of players
+    uint8 mNumPlayers{0}; //!< Current number of players
 
     std::chrono::time_point<std::chrono::steady_clock> mRespawnTimer;
     std::chrono::time_point<std::chrono::steady_clock> mWorldUpdateTimer;
