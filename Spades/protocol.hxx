@@ -6,17 +6,17 @@
 
 #pragma once
 
-#include "Util/datastream.hxx"
-#include "Util/enums.hxx"
 #include "connection.hxx"
 #include "map.hxx"
 #include "spawn.hxx"
 
 #include <array>
 #include <chrono>
+#include <enet/enet.h>
 #include <memory>
 #include <random>
 #include <stdexcept>
+#include <string>
 
 namespace spadesx {
 
@@ -29,6 +29,15 @@ struct team_data
     std::uint8_t m_intel_holder; // enemy team
     glm::vec3    m_intel;
     glm::vec3    m_base;
+
+    void set_name(const std::string& name)
+    {
+        if (name.length() > 10) {
+            m_name.assign(name.begin(), name.begin() + 16);
+        } else {
+            m_name = name;
+        }
+    }
 };
 
 class protocol
@@ -48,6 +57,22 @@ class protocol
         for (auto& connection : m_connections) {
             connection.m_id = i++;
         }
+    }
+
+    virtual void on_start()
+    {
+    }
+
+    virtual void on_connect(ENetPeer* peer)
+    {
+    }
+
+    virtual void on_disconnect(ENetPeer* peer)
+    {
+    }
+
+    virtual void on_receive(ENetPeer* peer, ENetPacket* packet)
+    {
     }
 
     /**
@@ -268,6 +293,23 @@ class protocol
             default:
                 return m_spawns[2];
         }
+    }
+
+    team_data& get_team(team_type team)
+    {
+        switch (team) {
+            case team_type::a:
+                return m_teams[0];
+            case team_type::b:
+                return m_teams[1];
+            default:
+                throw std::runtime_error("no team data for the given team");
+        }
+    }
+
+    map& get_map()
+    {
+        return *m_map;
     }
 
     void update()

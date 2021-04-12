@@ -6,19 +6,14 @@
 
 #pragma once
 
+#include "types.hxx"
+
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <enet/enet.h>
 #include <glm/vec3.hpp>
-
-struct color3b
-{
-    std::uint8_t r;
-    std::uint8_t g;
-    std::uint8_t b;
-};
 
 namespace spadesx {
 
