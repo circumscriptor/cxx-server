@@ -22,4 +22,4 @@ target_link_libraries(server
         enet
 )
 
-add_subdirectory(Spades)
+add_subdirectory(spadesx)

@@ -1,20 +1,23 @@
 
 #
 #
-# SpadesServer
+# SpadesX
 #
 #
 
 target_sources(server
     PRIVATE
+    	baseconnection.hxx
+	baseprotocol.hxx
         connection.hxx
+        ctf.hxx
         datastream.hxx
         enet.hxx
         enums.hxx
         main.cxx
         map.hxx
         peer.hxx
-        protocol.hxx
+	playerdata.hxx
         server.hxx
         spawn.hxx
         types.hxx
