@@ -25,6 +25,8 @@
 #include <stdexcept>
 #include <vector>
 
+namespace bio = boost::iostreams;
+
 namespace spadesx {
 
 /**
@@ -329,7 +331,7 @@ class map
                 }
 
                 if (span_size == 0) { // last span in column
-                    data += 4 * (top_length - 1);
+                    data += 4 * (top_length + 1);
                     break;
                 }
 
@@ -471,18 +473,23 @@ class map
         std::vector<std::uint8_t> data;
         write_to_memory(data);
 
+        std::cout << "uncompressed map size: " << data.size() << std::endl;
+
         result.clear();
 
         try {
-            boost::iostreams::stream<boost::iostreams::array_source>       in(reinterpret_cast<char*>(data.data()),
-                                                                        data.size());
-            boost::iostreams::filtering_streambuf<boost::iostreams::input> filter;
-            filter.push(boost::iostreams::zlib_compressor(5));
+            auto*                          data_in = reinterpret_cast<char*>(data.data());
+            bio::stream<bio::array_source> in(data_in, data.size());
+
+            bio::filtering_streambuf<bio::input> filter;
+            filter.push(boost::iostreams::zlib_compressor());
             filter.push(in);
-            boost::iostreams::back_insert_device<std::vector<char>>                           out_device(result);
-            boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char>>> out(out_device);
-            boost::iostreams::copy(in, out);
-        } catch (const boost::iostreams::zlib_error& ex) {
+
+            bio::back_insert_device<std::vector<char>>              out_device(result);
+            bio::stream<bio::back_insert_device<std::vector<char>>> out(out_device);
+
+            bio::copy(filter, out);
+        } catch (const bio::zlib_error& ex) {
             auto error = ex.error();
             std::cerr << "zlib error: " << error << std::endl;
         } catch (...) {

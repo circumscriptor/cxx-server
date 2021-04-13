@@ -61,15 +61,13 @@ class base_protocol
     /**
      * @brief Default on_receive action
      *
-     * @param peer Peer
-     * @param packet Packet
+     * @param connection Connection
+     * @param type Packet type
+     * @param strema Packet stream
      */
-    void on_receive_default(ENetPeer* peer, ENetPacket* packet)
+    void on_receive_default(connection& connection, packet_type type, data_stream& stream)
     {
-        auto&       connection = peer_to_type<spadesx::connection>(peer);
-        data_stream stream     = packet;
-
-        switch (stream.read_type<packet_type>()) {
+        switch (type) {
             case packet_type::existing_player:
             {
                 std::cout << "[  LOG  ]: existing player from: " << static_cast<int>(connection.get_id()) << std::endl;
@@ -95,7 +93,7 @@ class base_protocol
                 connection.m_can_spawn = true;
             } break;
             default:
-                std::cout << "[  LOG  ]: unhandled packet: " << std::hex << packet->data[0] << std::endl;
+                std::cout << "[  LOG  ]: unhandled packet: " << static_cast<std::uint32_t>(type) << std::endl;
                 break;
         }
     }
@@ -119,7 +117,7 @@ class base_protocol
             if (connection == source) {
                 continue;
             }
-            if (connection) {
+            if (!connection.is_disconnected()) {
                 connection.send_packet(data, length, unsequenced, channel);
             }
         }
@@ -136,7 +134,7 @@ class base_protocol
     void broadcast(void* data, std::size_t length, bool unsequenced = false, std::uint8_t channel = 0)
     {
         for (auto& connection : m_connections) {
-            if (connection) {
+            if (!connection.is_disconnected()) {
                 connection.send_packet(data, length, unsequenced, channel);
             }
         }
@@ -224,7 +222,7 @@ class base_protocol
      * @brief On connect event
      *
      */
-    virtual bool on_connect(ENetPeer* /*peer*/)
+    virtual bool on_connect(connection& /*connection*/)
     {
         // check banned?
         return true;
@@ -235,7 +233,7 @@ class base_protocol
      *
      * @param peer Peer
      */
-    virtual void on_disconnect(ENetPeer* peer)
+    virtual void on_disconnect(connection& connection)
     {
     }
 
@@ -245,9 +243,10 @@ class base_protocol
      * @param peer Peer
      * @param packet Packet
      */
-    virtual void on_receive(ENetPeer* peer, ENetPacket* packet)
+    virtual void on_receive(connection& connection, data_stream& stream)
     {
-        on_receive_default(peer, packet);
+        auto type = stream.read_type<packet_type>();
+        on_receive_default(connection, type, stream);
     }
 
     /**
@@ -355,19 +354,26 @@ class base_protocol
                 if (connection.send_map_start(m_compressed_map.size())) {
                     m_map_used      = true;
                     m_map_ownership = connection.get_id();
-                    m_map_position  = m_compressed_map.begin();
+                    m_map_position  = 0;
+                    std::cout << "[  LOG  ]: map start packet sent to "
+                              << static_cast<std::uint32_t>(connection.get_id()) << std::endl;
                 }
 
             } else if (m_map_used && m_map_ownership == connection.get_id()) {
 
-                auto diff = m_compressed_map.end() - m_map_position;
-                auto size = std::min(diff, static_cast<decltype(diff)>(8192));
+                auto diff = m_compressed_map.size() - m_map_position;
+                auto size = std::min(diff, std::size_t(8192));
 
                 if (size == 0) {
                     on_map_loading_done(connection);
                     m_map_used = false;
-                } else if (connection.send_map_chunk(m_map_position.base(), size)) {
+                    std::cout << "[  LOG  ]: map loading done, id: " << static_cast<std::uint32_t>(connection.get_id())
+                              << std::endl;
+                } else if (connection.send_map_chunk(m_compressed_map.data() + m_map_position, size)) {
                     m_map_position += size;
+                    // std::cout << "[  LOG  ]: map chunk sent to " << static_cast<std::uint32_t>(connection.get_id())
+                    //           << "(size " << size << "): " << m_map_position << " of " << m_compressed_map.size()
+                    //           << std::endl;
                 }
             }
         } else if (connection.is_connected()) {
@@ -383,6 +389,7 @@ class base_protocol
     {
         for (auto& connection : m_connections) {
             connection.reset_values();
+            // connection.set_state(state_type::disconnected); // or connecting on map change?
         }
 
         on_start();
@@ -395,7 +402,7 @@ class base_protocol
     void update()
     {
         for (auto& connection : m_connections) {
-            if (connection) {
+            if (!connection.is_disconnected()) {
                 update_connection(connection);
             }
         }
@@ -436,12 +443,17 @@ class base_protocol
         }
 
         connection& connection = next_connection();
-        if (!on_connect(peer)) {
-            // reset?
+        connection.set_peer(peer);
+        if (!on_connect(connection)) {
+            connection.set_peer(nullptr);
             return;
         }
         m_num_players++;
         peer->data = &connection;
+        connection.set_state(state_type::connecting);
+
+        std::cout << "[  LOG  ]: connection from " << std::hex << peer->address.host << ':' << std::dec
+                  << peer->address.port << " id: " << static_cast<std::uint32_t>(connection.get_id()) << std::endl;
     }
 
     /**
@@ -451,15 +463,19 @@ class base_protocol
      */
     void try_disconnect(ENetPeer* peer)
     {
-        auto& connection = peer_to_type<spadesx::connection>(peer);
+        auto& connection = peer_to_connection(peer);
 
-        on_disconnect(peer);
+        on_disconnect(connection);
 
         leave(connection);
         peer->data = nullptr;
         connection.reset_values();
         connection.set_state(state_type::disconnected);
+        connection.set_peer(nullptr);
         m_num_players--;
+
+        std::cout << "[  LOG  ]: disconnected: " << std::hex << peer->address.host << ':' << std::dec
+                  << peer->address.port << " id: " << static_cast<std::uint32_t>(connection.get_id()) << std::endl;
     }
 
     /**
@@ -484,6 +500,17 @@ class base_protocol
         }
     }
 
+    /**
+     * @brief Extract connection from peer
+     *
+     * @param peer Peer
+     * @return Reference to connection
+     */
+    static connection& peer_to_connection(ENetPeer* peer)
+    {
+        return *reinterpret_cast<connection*>(peer->data);
+    }
+
   protected:
     /**
      * @brief Check whether server is not full
@@ -504,24 +531,11 @@ class base_protocol
     connection& next_connection()
     {
         for (auto& connection : m_connections) {
-            if (!connection) {
+            if (connection.is_disconnected()) {
                 return connection;
             }
         }
         throw std::runtime_error("failed to get next free connection");
-    }
-
-    /**
-     * @brief Convert peer to type
-     *
-     * @tparam T Type
-     * @param peer Peer
-     * @return Reference
-     */
-    template<typename T>
-    T& peer_to_type(ENetPeer* peer) const
-    {
-        return *reinterpret_cast<T*>(peer->data);
     }
 
     /**
@@ -549,7 +563,7 @@ class base_protocol
     std::array<std::uint8_t, 104> m_cache_state_data;
     std::array<std::uint8_t, 2>   m_cache_player_left;
     std::vector<char>             m_compressed_map;
-    std::vector<char>::iterator   m_map_position;
+    std::size_t                   m_map_position;
     bool                          m_map_used{false};
     std::uint8_t                  m_map_ownership;
 

@@ -18,10 +18,10 @@ namespace spadesx {
  * @brief Base connection
  *
  */
-class base_connection : protected peer
+class base_connection : public peer
 {
   public:
-    static constexpr const std::uint8_t invalid_id = 0xFF;
+    static constexpr const std::uint8_t invalid_id = 0xFF; //!< Invalid ID
 
     /**
      * @brief Construct a new base_connection object
@@ -126,11 +126,6 @@ class base_connection : protected peer
     void set_state(state_type state)
     {
         m_state = state;
-    }
-
-    operator bool() const noexcept
-    {
-        return m_state != state_type::disconnected;
     }
 
     bool operator==(const base_connection& other) const noexcept

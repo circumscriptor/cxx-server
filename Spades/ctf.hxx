@@ -76,7 +76,7 @@ class ctf_protocol : public base_protocol
     //     kill(killer, victim, type, m_respawn_time);
     // }
 
-    bool send_state(connection& connection)
+    void on_send_state(connection& connection) override
     {
         data_stream packet(m_cache_state_data);
         packet.write_type(packet_type::state_data);
@@ -106,7 +106,7 @@ class ctf_protocol : public base_protocol
         }
         packet.write_vec3(m_teams[1].m_base);
         packet.write_vec3(m_teams[1].m_base);
-        return connection.send_packet(m_cache_state_data.data(), m_cache_state_data.size());
+        connection.send_packet(m_cache_state_data.data(), m_cache_state_data.size());
     }
 
     /**

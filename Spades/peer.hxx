@@ -46,9 +46,19 @@ class peer
      *
      * @param peer ENetPeer pointer
      */
-    void set(ENetPeer* peer) noexcept
+    void set_peer(ENetPeer* peer) noexcept
     {
         m_peer = peer;
+    }
+
+    /**
+     * @brief Get IP address
+     *
+     * @return Address
+     */
+    std::uint32_t get_address()
+    {
+        return m_peer->address.host;
     }
 
     /**

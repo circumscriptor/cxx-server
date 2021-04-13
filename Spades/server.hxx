@@ -46,10 +46,12 @@ class server
                         protocol.try_connect(event.peer);
                         break;
                     case ENET_EVENT_TYPE_DISCONNECT:
-                        protocol.on_disconnect(event.peer);
+                        protocol.try_disconnect(event.peer);
                         break;
                     case ENET_EVENT_TYPE_RECEIVE:
-                        protocol.on_receive(event.peer, event.packet);
+                        auto&       connection = base_protocol::peer_to_connection(event.peer);
+                        data_stream stream     = event.packet;
+                        protocol.on_receive(connection, stream);
                         enet_packet_destroy(event.packet);
                         break;
                 }
