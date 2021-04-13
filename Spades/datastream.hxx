@@ -46,6 +46,17 @@ class data_stream
     /**
      * @brief Construct a new data_stream object
      *
+     * @tparam N Length of the source in bytes
+     * @param source Source array
+     */
+    template<std::size_t N>
+    data_stream(std::array<std::uint8_t, N>& source) noexcept : m_data{source.begin()}, m_end{source.end()}
+    {
+    }
+
+    /**
+     * @brief Construct a new data_stream object
+     *
      * @param other Other data_stream object to be copied
      */
     data_stream(const data_stream& other) noexcept = default;

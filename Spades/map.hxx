@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "types.hxx"
+
 #include <array>
 #include <bitset>
 #include <boost/iostreams/copy.hpp>
@@ -51,6 +53,47 @@ class map
      *
      */
     ~map() = default;
+
+    /**
+     * @brief Returns true if map has been modified since last compression
+     *
+     * @return true If map has been modified since last compression
+     */
+    [[nodiscard]] bool has_changed() const noexcept
+    {
+        return m_changed;
+    }
+
+    /**
+     * @brief Modify single block
+     *
+     * @param x The x-coordinate of the block
+     * @param y The y-coordinate of the block
+     * @param z The z-coordinate of the block
+     * @param value The new state of the block
+     * @param color Block color in ARGB format
+     */
+    void modify_block(std::uint32_t x, std::uint32_t y, std::uint32_t z, bool value, std::uint32_t color)
+    {
+        auto offset = get_offset(x, y, z);
+        assert(offset < size_xyz);
+        set_block(offset, value);
+        set_color(offset, color);
+        m_changed = true;
+    }
+
+    /**
+     * @brief Destroy single block
+     *
+     * @param x The x-coordinate of the block
+     * @param y The y-coordinate of the block
+     * @param z The z-coordinate of the block
+     */
+    void destroy_block(std::uint32_t x, std::uint32_t y, std::uint32_t z)
+    {
+        set_block(x, y, z, false);
+        m_changed = true;
+    }
 
     /**
      * @brief Check whether the block at the given index is solid
@@ -317,9 +360,9 @@ class map
      *
      * @param filepath Path to the file (VXL format file)
      */
-    void read_from_file(const std::string& name)
+    void read_from_file(std::string_view name)
     {
-        boost::iostreams::mapped_file_source source(name);
+        boost::iostreams::mapped_file_source source(std::string{name});
         if (!source.is_open()) {
             throw std::runtime_error("failed to open map file");
         }
@@ -445,11 +488,14 @@ class map
         } catch (...) {
             std::cerr << "unknown zlib error" << std::endl;
         }
+
+        m_changed = false;
     }
 
   private:
-    std::bitset<size_xyz>               m_blocks; //!< Bitset of blocks (solid/not solid)
-    std::array<std::uint32_t, size_xyz> m_colors; //!< Array of colors
+    std::bitset<size_xyz>               m_blocks;        //!< Bitset of blocks (solid/not solid)
+    std::array<std::uint32_t, size_xyz> m_colors;        //!< Array of colors
+    bool                                m_changed{true}; //!< Has map changed since last compression?
 };
 
 } // namespace spadesx

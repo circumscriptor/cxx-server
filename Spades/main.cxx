@@ -4,20 +4,24 @@
  *
  */
 
-#include "protocol.hxx"
+#include "ctf.hxx"
 #include "server.hxx"
 
 auto main(int argc, char** argv) -> int
 {
     if (argc != 2) {
+        std::cerr << "no map specified" << std::endl;
         return 1;
     }
 
-    spadesx::protocol protocol(32);
+    spadesx::ctf_protocol protocol(32);
     try {
-        protocol.get_map().read_from_file(argv[1]);
+        protocol.load_map(argv[1]);
+    } catch (const std::exception& ex) {
+        std::cerr << "exception: " << ex.what() << std::endl;
+        return 1;
     } catch (...) {
-        std::cerr << "failed to read map" << std::endl;
+        std::cerr << "unknown exception" << std::endl;
         return 1;
     }
 

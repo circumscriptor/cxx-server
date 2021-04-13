@@ -9,6 +9,7 @@ target_sources(server
     PRIVATE
         connection.hxx
         datastream.hxx
+        enet.hxx
         enums.hxx
         main.cxx
         map.hxx
