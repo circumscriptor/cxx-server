@@ -423,7 +423,7 @@ class map
      * @param result Result buffer
      * @todo Rewrite write function to stream
      */
-    void write_and_compress(std::vector<std::uint8_t>& result)
+    void write_and_compress(std::vector<char>& result)
     {
         std::vector<std::uint8_t> data;
         write_to_memory(data);
@@ -431,12 +431,13 @@ class map
         result.clear();
 
         try {
-            boost::iostreams::stream<boost::iostreams::array_source>       in(data.data(), data.size());
+            boost::iostreams::stream<boost::iostreams::array_source>       in(reinterpret_cast<char*>(data.data()),
+                                                                        data.size());
             boost::iostreams::filtering_streambuf<boost::iostreams::input> filter;
             filter.push(boost::iostreams::zlib_compressor(5));
             filter.push(in);
-            boost::iostreams::back_insert_device<std::vector<std::uint8_t>> out_device(result);
-            boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<std::uint8_t>>> out(out_device);
+            boost::iostreams::back_insert_device<std::vector<char>>                           out_device(result);
+            boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char>>> out(out_device);
             boost::iostreams::copy(in, out);
         } catch (const boost::iostreams::zlib_error& ex) {
             auto error = ex.error();

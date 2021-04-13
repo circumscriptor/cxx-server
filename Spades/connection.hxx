@@ -41,9 +41,9 @@ class connection : public peer
         return send(packet, channel);
     }
 
-    bool send_packet(const void* data, std::size_t size, bool unsenquenced = false, std::uint8_t channel = 0)
+    bool send_packet(const void* data, std::size_t size, bool reliable = true, std::uint8_t channel = 0)
     {
-        std::uint32_t flags  = unsenquenced ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE;
+        std::uint32_t flags  = reliable ? ENET_PACKET_FLAG_RELIABLE : ENET_PACKET_FLAG_UNSEQUENCED;
         ENetPacket*   packet = enet_packet_create(data, size, flags);
         return send(packet, channel);
     }

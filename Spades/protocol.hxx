@@ -105,14 +105,14 @@ class protocol
      * @param data Data
      * @param length Length of data
      * @param include_source If true sends back to source
-     * @param unsenquenced If true sets unsenquenced flag
+     * @param reliable If true sets reliable flag
      * @param channel Channel
      */
     void broadcast(const connection& source,
                    void*             data,
                    std::size_t       length,
                    bool              include_source = true,
-                   bool              unsenquenced   = false,
+                   bool              reliable       = true,
                    std::uint8_t      channel        = 0)
     {
         for (auto& connection : m_connections) {
@@ -120,7 +120,7 @@ class protocol
                 continue;
             }
             if (connection) {
-                connection.send_packet(data, length, unsenquenced, channel);
+                connection.send_packet(data, length, reliable, channel);
             }
         }
     }
@@ -130,14 +130,14 @@ class protocol
      *
      * @param data Data
      * @param length Length of data
-     * @param unsenquenced If true sets unsenquenced flag
+     * @param reliable If true sets reliable flag
      * @param channel Channel
      */
-    void broadcast(void* data, std::size_t length, bool unsenquenced = false, std::uint8_t channel = 0)
+    void broadcast(void* data, std::size_t length, bool reliable = true, std::uint8_t channel = 0)
     {
         for (auto& connection : m_connections) {
             if (connection) {
-                connection.send_packet(data, length, unsenquenced, channel);
+                connection.send_packet(data, length, reliable, channel);
             }
         }
     }
@@ -375,15 +375,15 @@ class protocol
 
     struct cache
     {
-        std::array<std::uint8_t, 5>         m_kill_action;
-        std::array<std::uint8_t, 32>        m_create_player;
-        std::array<std::uint8_t, 769>       m_world_update;
-        std::array<std::uint8_t, 104>       m_state_data;
-        std::vector<std::uint8_t>           m_compressed_map;
-        std::vector<std::uint8_t>::iterator m_map_position;
-        bool                                m_map_changed{true};
-        bool                                m_map_used{false};
-        std::uint8_t                        m_map_ownership;
+        std::array<std::uint8_t, 5>   m_kill_action;
+        std::array<std::uint8_t, 32>  m_create_player;
+        std::array<std::uint8_t, 769> m_world_update;
+        std::array<std::uint8_t, 104> m_state_data;
+        std::vector<char>             m_compressed_map;
+        std::vector<char>::iterator   m_map_position;
+        bool                          m_map_changed{true};
+        bool                          m_map_used{false};
+        std::uint8_t                  m_map_ownership;
     } m_cache;
 
     std::mt19937                                       m_generator;

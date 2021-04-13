@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 3.17)
 
 #
 #
-# SpadesServer
+# SpadesX
 #
 #
 
-project(SpadesServer)
+project(SpadesX)
 
+find_package(Boost REQUIRED COMPONENTS iostreams)
 
 #
 # Add main target
@@ -17,8 +18,8 @@ add_executable(server "")
 
 target_link_libraries(server
     PRIVATE
+        Boost::iostreams
         enet
-        z
 )
 
 add_subdirectory(Spades)
