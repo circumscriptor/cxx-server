@@ -10,10 +10,15 @@
 #include "enums.hxx"
 
 #include <cstddef>
+#include <stdexcept>
 #include <string_view>
 
 namespace spadesx {
 
+/**
+ * @brief Packet cache
+ *
+ */
 struct packet_cache
 {
     std::array<std::uint8_t, 3>   m_cache_input_data;
@@ -56,6 +61,17 @@ class connection_manager : protected packet_cache
      *
      */
     ~connection_manager() = default;
+
+    /**
+     * @brief Check whether server is not full
+     *
+     * @return true If server is not full
+     * @return false If serever is full
+     */
+    [[nodiscard]] bool available() const
+    {
+        return m_num_players < m_max_players;
+    }
 
     /**
      * @brief Broadcast same data to multiple connections (except source)
@@ -343,7 +359,49 @@ class connection_manager : protected packet_cache
         return size + 3;
     }
 
+    /**
+     * @brief Assign connection to peer
+     *
+     * @param peer Peer to be assigned
+     * @param connection Connection
+     */
+    void assign_connection(ENetPeer* peer, connection& connection)
+    {
+        connection.set_peer(peer);
+        peer->data = &connection;
+        connection.set_state(state_type::connecting);
+        m_num_players++;
+    }
+
+    /**
+     * @brief Detach connection from peer (reset)
+     *
+     * @param connection Connection
+     */
+    void detach_connection(connection& connection)
+    {
+        connection.reset_values();
+        connection.set_state(state_type::disconnected);
+        connection.set_peer(nullptr);
+        m_num_players--;
+    }
+
   protected:
+    /**
+     * @brief Get next free connection
+     *
+     * @return Connection
+     */
+    connection& next_free_connection()
+    {
+        for (auto& connection : m_connections) {
+            if (connection.is_disconnected()) {
+                return connection;
+            }
+        }
+        throw std::runtime_error("failed to get next free connection");
+    }
+
     std::uint8_t            m_max_players;    //!< Maximal number of players
     std::uint8_t            m_num_players{0}; //!< Current number of players
     std::vector<connection> m_connections;    //!< Player connections

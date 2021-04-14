@@ -279,9 +279,11 @@ class base_protocol : public connection_manager
      * @brief On connect event
      *
      */
-    virtual bool on_connect(connection& /*connection*/)
+    virtual bool on_connect(ENetPeer* peer)
     {
         // check banned?
+        connection& connection = next_free_connection();
+        assign_connection(peer, connection);
         return true;
     }
 
@@ -583,18 +585,11 @@ class base_protocol : public connection_manager
             return;
         }
 
-        connection& connection = next_connection();
-        connection.set_peer(peer);
-        if (!on_connect(connection)) {
-            connection.set_peer(nullptr);
+        if (on_connect(peer)) {
+            std::cout << "[  LOG  ]: connection from " << std::hex << peer->address.host << ':' << std::dec
+                      << peer->address.port << std::endl;
             return;
         }
-        m_num_players++;
-        peer->data = &connection;
-        connection.set_state(state_type::connecting);
-
-        std::cout << "[  LOG  ]: connection from " << std::hex << peer->address.host << ':' << std::dec
-                  << peer->address.port << " id: " << static_cast<std::uint32_t>(connection.get_id()) << std::endl;
     }
 
     /**
@@ -604,19 +599,18 @@ class base_protocol : public connection_manager
      */
     void try_disconnect(ENetPeer* peer)
     {
-        auto& connection = peer_to_connection(peer);
+        if (peer->data != nullptr) {
+            auto& connection = peer_to_connection(peer);
 
-        on_disconnect(connection);
+            on_disconnect(connection);
+            broadcast_leave(connection);
 
-        broadcast_leave(connection);
-        peer->data = nullptr;
-        connection.reset_values();
-        connection.set_state(state_type::disconnected);
-        connection.set_peer(nullptr);
-        m_num_players--;
+            detach_connection(connection);
+            peer->data = nullptr;
+        }
 
         std::cout << "[  LOG  ]: disconnected: " << std::hex << peer->address.host << ':' << std::dec
-                  << peer->address.port << " id: " << static_cast<std::uint32_t>(connection.get_id()) << std::endl;
+                  << peer->address.port << std::endl;
     }
 
     /**
@@ -652,33 +646,6 @@ class base_protocol : public connection_manager
         return *reinterpret_cast<connection*>(peer->data);
     }
 
-  protected:
-    /**
-     * @brief Check whether server is not full
-     *
-     * @return true If server is not full
-     * @return false If serever is full
-     */
-    [[nodiscard]] bool available() const
-    {
-        return m_num_players < m_max_players;
-    }
-
-    /**
-     * @brief Get next free connection
-     *
-     * @return Connection
-     */
-    connection& next_connection()
-    {
-        for (auto& connection : m_connections) {
-            if (connection.is_disconnected()) {
-                return connection;
-            }
-        }
-        throw std::runtime_error("failed to get next free connection");
-    }
-
     /**
      * @brief Get random float number in range 0 to 1
      *
@@ -689,6 +656,7 @@ class base_protocol : public connection_manager
         return m_distribution(m_generator);
     }
 
+  protected:
     std::uint8_t m_respawn_time{0}; //!< Current respawn time
 
     std::unique_ptr<map> m_map;       //!< Map
