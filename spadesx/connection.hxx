@@ -164,13 +164,13 @@ class connection : public base_connection, public player_data
      * @brief Fill block action packet
      *
      * @param stream Packet stream
-     * @param action Block action
      * @param x The x-coordinate of the block (or grenade)
      * @param y The y-coordinate of the block (or grenade)
      * @param z The z-coordinate of the block (or grenade)
+     * @param action Block action
      */
     void
-    fill_block_action(data_stream& stream, block_action_type action, std::uint32_t x, std::uint32_t y, std::uint32_t z)
+    fill_block_action(data_stream& stream, std::uint32_t x, std::uint32_t y, std::uint32_t z, block_action_type action)
     {
         stream.write_type(packet_type::block_action);
         stream.write_byte(m_id);
@@ -191,6 +191,23 @@ class connection : public base_connection, public player_data
         stream.write_byte(m_id);
         stream.write_byte(m_clip_ammo);
         stream.write_byte(m_reserve_ammo);
+    }
+
+    /**
+     * @brief Fill chat message packet
+     *
+     * @param stream Packet stream
+     * @param type Chat type
+     * @param message Message
+     */
+    std::size_t fill_chat_message(data_stream& stream, chat_type type, std::string_view message)
+    {
+        auto size = std::min(message.size(), std::size_t(256));
+        stream.write_type(packet_type::chat_message);
+        stream.write_byte(m_id);
+        stream.write_type(type);
+        stream.write_array(message.data(), size);
+        return size;
     }
 };
 

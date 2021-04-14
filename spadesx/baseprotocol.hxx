@@ -9,6 +9,7 @@
 #include "connection.hxx"
 #include "datastream.hxx"
 #include "enums.hxx"
+#include "manager.hxx"
 #include "map.hxx"
 #include "types.hxx"
 #include "weapondata.hxx"
@@ -25,7 +26,7 @@
 
 namespace spadesx {
 
-class base_protocol
+class base_protocol : public connection_manager
 {
   public:
     /**
@@ -34,18 +35,13 @@ class base_protocol
      * @param max_players Max number of players
      */
     base_protocol(std::uint8_t max_players) :
-        m_max_players{max_players},
-        m_generator(std::random_device()()),
-        m_distribution(0.F, 1.F)
+        connection_manager{max_players},
+        m_generator{std::random_device()()},
+        m_distribution{0.F, 1.F}
     {
         m_map = std::make_unique<map>();
         if (!m_map) {
             throw std::runtime_error("failed to allocate map class");
-        }
-
-        m_connections.reserve(32);
-        for (std::uint8_t i = 0; i < 32; ++i) {
-            m_connections.emplace_back(i);
         }
     }
 
@@ -84,24 +80,20 @@ class base_protocol
                 if (connection.get_id() != stream.read_byte()) {
                     std::cout << "[WARNING]: input data - invalid id received" << std::endl;
                 }
+
                 connection.set_input(stream.read_byte());
 
-                // broadcast
-                data_stream output(m_cache_input_data);
-                connection.fill_input_data(output);
-                broadcast(connection, m_cache_input_data);
+                broadcast_input_data(connection);
             } break;
             case packet_type::weapon_input:
             {
                 if (connection.get_id() != stream.read_byte()) {
                     std::cout << "[WARNING]: weapon input - invalid id received" << std::endl;
                 }
+
                 connection.set_weapon_input(stream.read_byte());
 
-                // broadcast
-                data_stream output(m_cache_weapon_input);
-                connection.fill_weapon_input(output);
-                broadcast(connection, m_cache_weapon_input);
+                broadcast_weapon_input(connection);
             } break;
             case packet_type::hit_packet:
             {
@@ -197,7 +189,7 @@ class base_protocol
                 auto team = stream.read_type<team_type>();
                 // TODO: check team is valid
                 if (connection.m_alive) {
-                    kill(connection, connection, kill_type::team_change, m_respawn_time);
+                    kill_and_broadcast(connection, connection, kill_type::team_change, m_respawn_time);
                     connection.m_alive = false;
                 }
                 connection.m_team = team;
@@ -211,7 +203,7 @@ class base_protocol
                 auto weapon = stream.read_type<weapon_type>();
                 // TODO: check team is valid
                 if (connection.m_alive) {
-                    kill(connection, connection, kill_type::weapon_change, m_respawn_time);
+                    kill_and_broadcast(connection, connection, kill_type::weapon_change, m_respawn_time);
                     connection.m_alive = false;
                 }
                 connection.m_weapon = weapon;
@@ -247,144 +239,12 @@ class base_protocol
     }
 
     /**
-     * @brief Broadcast same data to multiple connections (except source)
-     *
-     * @param source Source connection
-     * @param data Data
-     * @param length Length of data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    void broadcast(const connection& source,
-                   const void*       data,
-                   std::size_t       length,
-                   bool              unsequenced = false,
-                   std::uint8_t      channel     = 0)
-    {
-        for (auto& connection : m_connections) {
-            if (connection == source) {
-                continue;
-            }
-            if (!connection.is_disconnected()) {
-                connection.send_packet(data, length, unsequenced, channel);
-            }
-        }
-    }
-
-    /**
-     * @brief Broadcast same data to multiple connections (except source) - cached array
-     *
-     * @param source Source connection
-     * @param data Data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    template<std::size_t N>
-    void broadcast(const connection&                  source,
-                   const std::array<std::uint8_t, N>& data,
-                   bool                               unsequenced = false,
-                   std::uint8_t                       channel     = 0)
-    {
-        broadcast(source, data.data(), data.size(), unsequenced, channel);
-    }
-
-    /**
-     * @brief Broadcast same data to multiple connections
-     *
-     * @param data Data
-     * @param length Length of data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    void broadcast(const void* data, std::size_t length, bool unsequenced = false, std::uint8_t channel = 0)
-    {
-        for (auto& connection : m_connections) {
-            if (!connection.is_disconnected()) {
-                connection.send_packet(data, length, unsequenced, channel);
-            }
-        }
-    }
-
-    /**
-     * @brief Broadcast same data to multiple connections - cached array
-     *
-     * @param data Data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    template<std::size_t N>
-    void broadcast(const std::array<std::uint8_t, N>& data, bool unsequenced = false, std::uint8_t channel = 0)
-    {
-        broadcast(data.data(), data.size(), unsequenced, channel);
-    }
-
-    /**
-     * @brief Broadcast kill action
-     *
-     * @param killer Killer
-     * @param victim Victim
-     * @param type Kill type
-     * @param respawn_time Respawn time
-     */
-    void kill(connection& killer, connection& victim, kill_type type, std::uint8_t respawn_time)
-    {
-        victim.m_last_kill_killer = killer.get_id();
-        victim.m_last_kill_type   = type;
-        victim.m_respawn_time     = respawn_time;
-        victim.reset_death();
-
-        data_stream stream(m_cache_kill_action);
-        victim.fill_kill_action(stream);
-        broadcast(m_cache_kill_action);
-    }
-
-    /**
-     * @brief Throw grenade
-     *
-     * @param source Source connection
-     * @param position Initial position
-     * @param velocity Initial velocity
-     * @param fuse Fuse
-     */
-    void throw_grenade(connection& source, const glm::vec3& position, const glm::vec3& velocity, float fuse)
-    {
-        data_stream stream(m_cache_grenade_packet);
-        source.fill_grenade_packet(stream, position, velocity, fuse);
-        broadcast(source, m_cache_grenade_packet);
-    }
-
-    /**
-     * @brief Broadcast create player
-     *
-     * @param connection Player to be created
-     */
-    void create(connection& connection)
-    {
-        data_stream stream(m_cache_create_player);
-        auto        size = connection.fill_create_player(stream);
-        broadcast(m_cache_create_player.data(), size);
-    }
-
-    /**
-     * @brief Broadcast player left
-     *
-     * @param connection Connection
-     */
-    void leave(connection& connection)
-    {
-        data_stream stream(m_cache_player_left);
-        stream.write_type(packet_type::player_left);
-        stream.write_byte(connection.get_id());
-        broadcast(connection, m_cache_player_left);
-    }
-
-    /**
      * @brief Broadcast world update
      *
      */
     void broadcast_world_update()
     {
-        data_stream stream(m_cache_world_update);
+        data_stream stream{m_cache_world_update};
         stream.write_type(packet_type::world_update);
         for (auto& connection : m_connections) {
             stream.write_vec3(connection.m_position);
@@ -392,7 +252,7 @@ class base_protocol
         }
         for (auto& connection : m_connections) {
             if (connection.is_connected()) {
-                connection.send_packet(m_cache_world_update.data(), m_cache_world_update.size(), true, 0);
+                connection.send_packet(m_cache_world_update.data(), m_cache_world_update.size(), true);
             }
         }
     }
@@ -454,7 +314,7 @@ class base_protocol
     virtual void on_create(connection& connection)
     {
         get_spawn_location(connection.m_team, entity_type::player, connection.m_position);
-        create(connection);
+        broadcast_create(connection);
     }
 
     /**
@@ -467,7 +327,7 @@ class base_protocol
     virtual void on_kill(connection& killer, connection& victim, kill_type type)
     {
         // check if it is possible
-        kill(killer, victim, type, m_respawn_time);
+        kill_and_broadcast(killer, victim, type, m_respawn_time);
     }
 
     /**
@@ -510,7 +370,7 @@ class base_protocol
                 } else {
                     t_kill = kill_type::weapon;
                 }
-                kill(source, target, t_kill, m_respawn_time);
+                kill_and_broadcast(source, target, t_kill, m_respawn_time);
             }
         }
     }
@@ -525,7 +385,7 @@ class base_protocol
      */
     virtual void on_grenade_throw(connection& source, const glm::vec3& position, const glm::vec3& velocity, float fuse)
     {
-        throw_grenade(source, position, velocity, fuse);
+        broadcast_grenade(source, position, velocity, fuse);
     }
 
     /**
@@ -546,9 +406,7 @@ class base_protocol
             std::cout << "grenade block action: " << x << ' ' << y << ' ' << z << std::endl;
         }
 
-        data_stream stream(m_cache_block_action);
-        source.fill_block_action(stream, action, x, y, z);
-        broadcast(m_cache_block_action);
+        broadcast_block_action(source, x, y, z, action);
     }
 
     /**
@@ -615,6 +473,8 @@ class base_protocol
         }
         // loading done
         connection.set_state(state_type::connected);
+
+        system_message(connection, "Welcome to experimental SpadesX server");
     }
 
     /**
@@ -748,7 +608,7 @@ class base_protocol
 
         on_disconnect(connection);
 
-        leave(connection);
+        broadcast_leave(connection);
         peer->data = nullptr;
         connection.reset_values();
         connection.set_state(state_type::disconnected);
@@ -829,8 +689,6 @@ class base_protocol
         return m_distribution(m_generator);
     }
 
-    std::uint8_t m_max_players;     //!< Maximal number of players
-    std::uint8_t m_num_players{0};  //!< Current number of players
     std::uint8_t m_respawn_time{0}; //!< Current respawn time
 
     std::unique_ptr<map> m_map;       //!< Map
@@ -838,24 +696,10 @@ class base_protocol
 
     double m_world_update_delta{0.1};
 
-    std::array<std::uint8_t, 3>   m_cache_input_data;
-    std::array<std::uint8_t, 3>   m_cache_weapon_input;
-    std::array<std::uint8_t, 5>   m_cache_kill_action;
-    std::array<std::uint8_t, 32>  m_cache_create_player;
-    std::array<std::uint8_t, 769> m_cache_world_update;
-    std::array<std::uint8_t, 90>  m_cache_state_data;
-    std::array<std::uint8_t, 2>   m_cache_player_left;
-    std::array<std::uint8_t, 30>  m_cache_grenade_packet;
-    std::array<std::uint8_t, 3>   m_cache_set_tool;
-    std::array<std::uint8_t, 5>   m_cache_set_color;
-    std::array<std::uint8_t, 15>  m_cache_block_action;
-    std::array<std::uint8_t, 4>   m_cache_weapon_reload;
-    std::vector<char>             m_compressed_map;
-    std::size_t                   m_map_position;
-    bool                          m_map_used{false};
-    std::uint8_t                  m_map_ownership;
-
-    std::vector<connection> m_connections; //!< Player connections
+    std::vector<char> m_compressed_map;
+    std::size_t       m_map_position;
+    bool              m_map_used{false};
+    std::uint8_t      m_map_ownership;
 
     std::mt19937                                       m_generator;          //!< Random number generator
     std::uniform_real_distribution<float>              m_distribution;       //!< Real number distribution

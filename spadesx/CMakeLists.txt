@@ -5,23 +5,33 @@
 #
 #
 
-target_sources(server
-    PRIVATE
-    	baseconnection.hxx
-	baseprotocol.hxx
+set(HEADERS_SERVER
+        baseconnection.hxx
+        baseprotocol.hxx
         connection.hxx
         ctf.hxx
         datastream.hxx
         enet.hxx
         enums.hxx
-        main.cxx
+        manager.hxx
         map.hxx
         peer.hxx
-	playerdata.hxx
+        playerdata.hxx
         server.hxx
         spawn.hxx
         types.hxx
         weapondata.hxx
+)
+
+target_sources(server
+    PRIVATE
+        ${HEADERS_SERVER}
+        main.cxx
+)
+
+target_precompile_headers(server
+    PRIVATE
+        ${HEADERS_SERVER}
 )
 
 target_include_directories(server

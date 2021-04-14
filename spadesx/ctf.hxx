@@ -75,7 +75,7 @@ class ctf_protocol : public base_protocol
     void on_create(connection& connection) override
     {
         get_spawn_location(connection.m_team, entity_type::player, connection.m_position);
-        create(connection);
+        broadcast_create(connection);
     }
 
     // void on_kill(connection& killer, connection& victim, kill_type type) override
