@@ -147,6 +147,20 @@ class base_protocol
                 output.write_type(connection.m_tool);
                 broadcast(connection, m_cache_set_tool);
             } break;
+            case packet_type::set_color:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: set color - invalid id received" << std::endl;
+                }
+
+                stream.read_color3b(connection.m_color);
+
+                data_stream output(m_cache_set_color);
+                output.write_type(packet_type::set_color);
+                output.write_byte(connection.get_id());
+                output.write_color3b(connection.m_color);
+                broadcast(connection, m_cache_set_color);
+            } break;
             case packet_type::existing_player:
             {
                 std::cout << "[  LOG  ]: existing player from: " << static_cast<int>(connection.get_id()) << std::endl;
@@ -756,6 +770,7 @@ class base_protocol
     std::array<std::uint8_t, 2>   m_cache_player_left;
     std::array<std::uint8_t, 30>  m_cache_grenade_packet;
     std::array<std::uint8_t, 3>   m_cache_set_tool;
+    std::array<std::uint8_t, 5>   m_cache_set_color;
     std::vector<char>             m_compressed_map;
     std::size_t                   m_map_position;
     bool                          m_map_used{false};
