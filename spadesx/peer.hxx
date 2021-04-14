@@ -36,7 +36,7 @@ class peer
      *
      * @return true If peer is valid
      */
-    [[nodiscard]] bool is_valid() const noexcept
+    [[nodiscard]] bool is_valid_peer() const noexcept
     {
         return m_peer != nullptr;
     }
@@ -67,7 +67,7 @@ class peer
      */
     void reset() noexcept
     {
-        if (is_valid()) {
+        if (is_valid_peer()) {
             enet_peer_reset(m_peer);
             m_peer = nullptr;
         }
@@ -80,7 +80,7 @@ class peer
      */
     void disconnect(std::uint32_t reason)
     {
-        if (is_valid()) {
+        if (is_valid_peer()) {
             enet_peer_disconnect(m_peer, reason);
             m_peer = nullptr;
         }
@@ -95,7 +95,7 @@ class peer
      */
     bool send(ENetPacket* packet, std::uint8_t channel = 0)
     {
-        if (is_valid()) {
+        if (is_valid_peer()) {
             if (packet != nullptr) {
                 return enet_peer_send(m_peer, channel, packet) == 0;
             }

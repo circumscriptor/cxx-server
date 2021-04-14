@@ -26,6 +26,14 @@ class base_connection : public peer
     /**
      * @brief Construct a new base_connection object
      *
+     */
+    base_connection() : m_id{invalid_id}
+    {
+    }
+
+    /**
+     * @brief Construct a new base_connection object
+     *
      * @param id Connection ID (produced by protocol)
      */
     base_connection(std::uint8_t id) : m_id{id}
@@ -37,6 +45,16 @@ class base_connection : public peer
      *
      */
     ~base_connection() = default;
+
+    /**
+     * @brief Check whether this connection has valid ID
+     *
+     * @return true If ID is valid
+     */
+    [[nodiscard]] bool is_valid() const noexcept
+    {
+        return m_id != invalid_id;
+    }
 
     /**
      * @brief Get connection id

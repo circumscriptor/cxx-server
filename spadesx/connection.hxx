@@ -7,13 +7,14 @@
 #pragma once
 
 #include "baseconnection.hxx"
-#include "enums.hxx"
 #include "playerdata.hxx"
-
-#include <cstring>
 
 namespace spadesx {
 
+/**
+ * @brief Connection - player data
+ *
+ */
 class connection : public base_connection, public player_data
 {
     friend class base_protocol;
