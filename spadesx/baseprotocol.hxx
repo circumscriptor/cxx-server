@@ -216,35 +216,6 @@ class base_protocol : public world_manager
     }
 
     /**
-     * @brief Broadcast world update
-     *
-     */
-    void broadcast_world_update()
-    {
-        data_stream stream{m_cache_world_update};
-        stream.write_type(packet_type::world_update);
-        for (auto& connection : m_connections) {
-            stream.write_vec3(connection.m_position);
-            stream.write_vec3(connection.m_orientation);
-        }
-        for (auto& connection : m_connections) {
-            if (connection.is_connected()) {
-                connection.send_packet(m_cache_world_update.data(), m_cache_world_update.size(), true);
-            }
-        }
-    }
-
-    /**
-     * @brief Get players limit
-     *
-     * @return Limit
-     */
-    [[nodiscard]] std::uint8_t get_max_players() const
-    {
-        return m_max_players;
-    }
-
-    /**
      * @brief Get spawn location
      *
      */
