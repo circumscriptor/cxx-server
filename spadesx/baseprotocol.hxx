@@ -175,6 +175,34 @@ class base_protocol
 
                 on_block_action(connection, action, x, y, z);
             } break;
+            case packet_type::change_team:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: change team - invalid id received" << std::endl;
+                }
+
+                auto team = stream.read_type<team_type>();
+                // TODO: check team is valid
+                if (connection.m_alive) {
+                    kill(connection, connection, kill_type::team_change, m_respawn_time);
+                    connection.m_alive = false;
+                }
+                connection.m_team = team;
+            } break;
+            case packet_type::change_weapon:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: change team - invalid id received" << std::endl;
+                }
+
+                auto weapon = stream.read_type<weapon_type>();
+                // TODO: check team is valid
+                if (connection.m_alive) {
+                    kill(connection, connection, kill_type::weapon_change, m_respawn_time);
+                    connection.m_alive = false;
+                }
+                connection.m_weapon = weapon;
+            } break;
             case packet_type::existing_player:
             {
                 std::cout << "[  LOG  ]: existing player from: " << static_cast<int>(connection.get_id()) << std::endl;
