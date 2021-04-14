@@ -150,6 +150,21 @@ struct player_data
         set_input(0);
         set_weapon_input(0);
     }
+
+    /**
+     * @brief Reset values after death
+     *
+     */
+    void reset_death()
+    {
+        m_health    = 100;
+        m_tool      = tool_type::gun;
+        m_crouching = false;
+        m_gliding   = false;
+        m_alive     = false;
+        set_input(0);
+        set_weapon_input(0);
+    }
 };
 
 } // namespace spadesx

@@ -68,6 +68,26 @@ class connection : public base_connection, public player_data
     }
 
     /**
+     * @brief Send set hp packet
+     *
+     * @param source Source (enemy or block?)
+     * @param weapon
+     * @return true
+     * @return false
+     */
+    bool send_set_hp(const glm::vec3& source, bool weapon, std::uint8_t channel = 0)
+    {
+        ENetPacket* packet = enet_packet_create(nullptr, 15, ENET_PACKET_FLAG_RELIABLE);
+        data_stream stream = packet;
+
+        stream.write_type(packet_type::set_hp);
+        stream.write_byte(m_health);
+        stream.write_byte(weapon ? 1 : 0);
+        stream.write_vec3(source);
+        return send(packet, channel);
+    }
+
+    /**
      * @brief Fill create player packet
      *
      * @param stream Packet stream

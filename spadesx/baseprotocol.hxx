@@ -10,10 +10,12 @@
 #include "datastream.hxx"
 #include "enums.hxx"
 #include "map.hxx"
+#include "weapondata.hxx"
 
 #include <array>
 #include <chrono>
 #include <enet/enet.h>
+#include <glm/glm.hpp>
 #include <memory>
 #include <random>
 #include <stdexcept>
@@ -99,6 +101,21 @@ class base_protocol
                 data_stream output(m_cache_weapon_input);
                 connection.fill_weapon_input(output);
                 broadcast(connection, m_cache_weapon_input);
+            } break;
+            case packet_type::hit_packet:
+            {
+                auto target = stream.read_byte();
+                auto type   = stream.read_type<hit_type>();
+                if (target < m_num_players) {
+                    auto& victim = m_connections[target];
+                    if (victim.is_connected()) {
+                        on_player_hit(connection, victim, type);
+                    } else {
+                        std::cout << "[WARNING]: player hit is not connected" << std::endl;
+                    }
+                } else {
+                    std::cout << "[WARNING]: hit packet - invalid hit id received" << std::endl;
+                }
             } break;
             case packet_type::existing_player:
             {
@@ -212,10 +229,10 @@ class base_protocol
      */
     void kill(connection& killer, connection& victim, kill_type type, std::uint8_t respawn_time)
     {
-        victim.m_alive            = false;
         victim.m_last_kill_killer = killer.get_id();
         victim.m_last_kill_type   = type;
         victim.m_respawn_time     = respawn_time;
+        victim.reset_death();
 
         data_stream stream(m_cache_kill_action);
         victim.fill_kill_action(stream);
@@ -337,6 +354,51 @@ class base_protocol
     {
         // check if it is possible
         kill(killer, victim, type, m_respawn_time);
+    }
+
+    /**
+     * @brief On player hit event (weapon)
+     *
+     * @param source Source player
+     * @param target Target player
+     * @param type Hit type
+     */
+    virtual void on_player_hit(connection& source, connection& target, hit_type type)
+    {
+        if (!source.m_can_kill) {
+            return;
+        }
+
+        if (source.m_team == target.m_team) {
+            return;
+        }
+
+        std::uint8_t damage = 0;
+        if (type == hit_type::melee) {
+            if (glm::distance(source.m_position, target.m_position) > 5.0) {
+                return;
+            }
+            damage = 50;
+        } else {
+            damage = get_weapon_damage(source.m_weapon, type);
+        }
+
+        if (damage > 0) {
+            if (target.m_health > damage) {
+                target.m_health -= damage;
+                target.send_set_hp(source.m_position, true);
+            } else {
+                kill_type t_kill;
+                if (type == hit_type::head) {
+                    t_kill = kill_type::headshot;
+                } else if (type == hit_type::melee) {
+                    t_kill = kill_type::melee;
+                } else {
+                    t_kill = kill_type::weapon;
+                }
+                kill(source, target, t_kill, m_respawn_time);
+            }
+        }
     }
 
     /**

@@ -21,6 +21,7 @@ target_sources(server
         server.hxx
         spawn.hxx
         types.hxx
+        weapondata.hxx
 )
 
 target_include_directories(server
