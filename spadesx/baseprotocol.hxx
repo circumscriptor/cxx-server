@@ -175,6 +175,19 @@ class base_protocol
 
                 on_block_action(connection, action, x, y, z);
             } break;
+            case packet_type::weapon_reload:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: weapon reload - invalid id received" << std::endl;
+                }
+
+                connection.m_clip_ammo    = stream.read_byte();
+                connection.m_reserve_ammo = stream.read_byte();
+
+                data_stream output(m_cache_weapon_reload);
+                connection.fill_weapon_reload(output);
+                broadcast(connection, m_cache_weapon_reload);
+            } break;
             case packet_type::change_team:
             {
                 if (connection.get_id() != stream.read_byte()) {
@@ -192,7 +205,7 @@ class base_protocol
             case packet_type::change_weapon:
             {
                 if (connection.get_id() != stream.read_byte()) {
-                    std::cout << "[WARNING]: change team - invalid id received" << std::endl;
+                    std::cout << "[WARNING]: change weapon - invalid id received" << std::endl;
                 }
 
                 auto weapon = stream.read_type<weapon_type>();
@@ -836,6 +849,7 @@ class base_protocol
     std::array<std::uint8_t, 3>   m_cache_set_tool;
     std::array<std::uint8_t, 5>   m_cache_set_color;
     std::array<std::uint8_t, 15>  m_cache_block_action;
+    std::array<std::uint8_t, 4>   m_cache_weapon_reload;
     std::vector<char>             m_compressed_map;
     std::size_t                   m_map_position;
     bool                          m_map_used{false};

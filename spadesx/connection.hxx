@@ -179,6 +179,19 @@ class connection : public base_connection, public player_data
         stream.write_int(y);
         stream.write_int(z);
     }
+
+    /**
+     * @brief Fill weapon reload packet
+     *
+     * @param stream Packet stream
+     */
+    void fill_weapon_reload(data_stream& stream)
+    {
+        stream.write_type(packet_type::weapon_reload);
+        stream.write_byte(m_id);
+        stream.write_byte(m_clip_ammo);
+        stream.write_byte(m_reserve_ammo);
+    }
 };
 
 } // namespace spadesx
