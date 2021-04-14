@@ -6,11 +6,9 @@
 
 #pragma once
 
+#include "data/enums.hxx"
 #include "datastream.hxx"
-#include "enums.hxx"
 #include "peer.hxx"
-
-#include <enet/enet.h>
 
 namespace spadesx {
 

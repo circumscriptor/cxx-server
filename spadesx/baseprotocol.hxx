@@ -7,12 +7,8 @@
 #pragma once
 
 #include "connection.hxx"
-#include "datastream.hxx"
-#include "enums.hxx"
 #include "manager.hxx"
 #include "map.hxx"
-#include "types.hxx"
-#include "weapondata.hxx"
 
 #include <array>
 #include <chrono>

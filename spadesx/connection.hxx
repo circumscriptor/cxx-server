@@ -7,7 +7,7 @@
 #pragma once
 
 #include "baseconnection.hxx"
-#include "playerdata.hxx"
+#include "data/playerdata.hxx"
 
 namespace spadesx {
 

@@ -6,21 +6,23 @@
 #
 
 set(HEADERS_SERVER
+        data/enums.hxx
+        data/inputdata.hxx
+        data/playerdata.hxx
+        data/playerstate.hxx
+        data/types.hxx
+        data/weapondata.hxx
         baseconnection.hxx
         baseprotocol.hxx
         connection.hxx
         ctf.hxx
         datastream.hxx
         enet.hxx
-        enums.hxx
         manager.hxx
         map.hxx
         peer.hxx
-        playerdata.hxx
         server.hxx
         spawn.hxx
-        types.hxx
-        weapondata.hxx
 )
 
 target_sources(server

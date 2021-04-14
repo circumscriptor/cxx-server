@@ -7,11 +7,10 @@
 #pragma once
 
 #include "connection.hxx"
-#include "enums.hxx"
 
-#include <cstddef>
 #include <stdexcept>
 #include <string_view>
+#include <vector>
 
 namespace spadesx {
 

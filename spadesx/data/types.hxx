@@ -14,8 +14,9 @@ namespace spadesx {
  * @brief RGB color
  *
  */
-struct color3b
+class color3b
 {
+  public:
     std::uint8_t r;
     std::uint8_t g;
     std::uint8_t b;

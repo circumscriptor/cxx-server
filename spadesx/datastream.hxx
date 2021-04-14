@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "types.hxx"
+#include "data/types.hxx"
 
 #include <array>
 #include <cassert>
