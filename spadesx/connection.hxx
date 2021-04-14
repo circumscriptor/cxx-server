@@ -159,6 +159,26 @@ class connection : public base_connection, public player_data
         stream.write_vec3(position);
         stream.write_vec3(velocity);
     }
+
+    /**
+     * @brief Fill block action packet
+     *
+     * @param stream Packet stream
+     * @param action Block action
+     * @param x The x-coordinate of the block (or grenade)
+     * @param y The y-coordinate of the block (or grenade)
+     * @param z The z-coordinate of the block (or grenade)
+     */
+    void
+    fill_block_action(data_stream& stream, block_action_type action, std::uint32_t x, std::uint32_t y, std::uint32_t z)
+    {
+        stream.write_type(packet_type::block_action);
+        stream.write_byte(m_id);
+        stream.write_type(action);
+        stream.write_int(x);
+        stream.write_int(y);
+        stream.write_int(z);
+    }
 };
 
 } // namespace spadesx

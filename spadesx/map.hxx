@@ -77,6 +77,9 @@ class map
      */
     void modify_block(std::uint32_t x, std::uint32_t y, std::uint32_t z, bool value, std::uint32_t color)
     {
+        if (z > 61) {
+            return; // bottom blocks cannot be modified
+        }
         auto offset = get_offset(x, y, z);
         assert(offset < size_xyz);
         set_block(offset, value);
@@ -93,7 +96,33 @@ class map
      */
     void destroy_block(std::uint32_t x, std::uint32_t y, std::uint32_t z)
     {
+        if (z > 61) {
+            return; // bottom blocks cannot be broken
+        }
         set_block(x, y, z, false);
+        m_changed = true;
+    }
+
+    /**
+     * @brief Destroy 3 block
+     *
+     * @param x The x-coordinate of the middle block
+     * @param y The y-coordinate of the middle block
+     * @param z The z-coordinate of the middle block
+     */
+    void destroy_block_secondary(std::uint32_t x, std::uint32_t y, std::uint32_t z)
+    {
+        if (z > 61) {
+            return; // bottom blocks cannot be broken
+        }
+        auto offset = get_offset(x, y, z);
+        if (z > 0) {
+            set_block(offset - 1, false);
+        }
+        if (z < 61) {
+            set_block(offset + 1, false);
+        }
+        set_block(offset, false);
         m_changed = true;
     }
 

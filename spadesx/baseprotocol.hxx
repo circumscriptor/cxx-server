@@ -10,6 +10,7 @@
 #include "datastream.hxx"
 #include "enums.hxx"
 #include "map.hxx"
+#include "types.hxx"
 #include "weapondata.hxx"
 
 #include <array>
@@ -160,6 +161,19 @@ class base_protocol
                 output.write_byte(connection.get_id());
                 output.write_color3b(connection.m_color);
                 broadcast(connection, m_cache_set_color);
+            } break;
+            case packet_type::block_action:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: block action - invalid id received" << std::endl;
+                }
+
+                auto action = stream.read_type<block_action_type>();
+                auto x      = stream.read_int();
+                auto y      = stream.read_int();
+                auto z      = stream.read_int();
+
+                on_block_action(connection, action, x, y, z);
             } break;
             case packet_type::existing_player:
             {
@@ -463,15 +477,37 @@ class base_protocol
     /**
      * @brief Grenade throw action
      *
-     * @param connection Connection
+     * @param source Connection
      * @param position Position
      * @param velocity Velocity
      * @param fuse Fuse time
      */
-    virtual void
-    on_grenade_throw(connection& connection, const glm::vec3& position, const glm::vec3& velocity, float fuse)
+    virtual void on_grenade_throw(connection& source, const glm::vec3& position, const glm::vec3& velocity, float fuse)
     {
-        throw_grenade(connection, position, velocity, fuse);
+        throw_grenade(source, position, velocity, fuse);
+    }
+
+    /**
+     * @brief Block action
+     *
+     * @param source Connection
+     */
+    virtual void
+    on_block_action(connection& source, block_action_type action, std::uint32_t x, std::uint32_t y, std::uint32_t z)
+    {
+        if (action == block_action_type::build) {
+            m_map->modify_block(x, y, z, true, color3b_to_uint32(source.m_color));
+        } else if (action == block_action_type::bullet_or_spade) {
+            m_map->destroy_block(x, y, z);
+        } else if (action == block_action_type::spade_secondary) {
+            m_map->destroy_block_secondary(x, y, z);
+        } else if (action == block_action_type::grenade) {
+            std::cout << "grenade block action: " << x << ' ' << y << ' ' << z << std::endl;
+        }
+
+        data_stream stream(m_cache_block_action);
+        source.fill_block_action(stream, action, x, y, z);
+        broadcast(m_cache_block_action);
     }
 
     /**
@@ -771,6 +807,7 @@ class base_protocol
     std::array<std::uint8_t, 30>  m_cache_grenade_packet;
     std::array<std::uint8_t, 3>   m_cache_set_tool;
     std::array<std::uint8_t, 5>   m_cache_set_color;
+    std::array<std::uint8_t, 15>  m_cache_block_action;
     std::vector<char>             m_compressed_map;
     std::size_t                   m_map_position;
     bool                          m_map_used{false};
