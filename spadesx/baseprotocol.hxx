@@ -133,6 +133,20 @@ class base_protocol
 
                 on_grenade_throw(connection, position, velocity, fuse);
             } break;
+            case packet_type::set_tool:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: set tool - invalid id received" << std::endl;
+                }
+
+                connection.m_tool = stream.read_type<tool_type>();
+
+                data_stream output(m_cache_set_tool);
+                output.write_type(packet_type::set_tool);
+                output.write_byte(connection.get_id());
+                output.write_type(connection.m_tool);
+                broadcast(connection, m_cache_set_tool);
+            } break;
             case packet_type::existing_player:
             {
                 std::cout << "[  LOG  ]: existing player from: " << static_cast<int>(connection.get_id()) << std::endl;
@@ -741,6 +755,7 @@ class base_protocol
     std::array<std::uint8_t, 90>  m_cache_state_data;
     std::array<std::uint8_t, 2>   m_cache_player_left;
     std::array<std::uint8_t, 30>  m_cache_grenade_packet;
+    std::array<std::uint8_t, 3>   m_cache_set_tool;
     std::vector<char>             m_compressed_map;
     std::size_t                   m_map_position;
     bool                          m_map_used{false};
