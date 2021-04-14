@@ -61,6 +61,13 @@ class data_stream
      */
     data_stream(const data_stream& other) noexcept = default;
 
+    /**
+     * @brief Construct a new data_stream object
+     *
+     * @param other Other data_stream object to be moved
+     */
+    data_stream(data_stream&& other) noexcept = default;
+
     // Default copy assignment
     auto operator=(const data_stream& other) -> data_stream& = default;
 

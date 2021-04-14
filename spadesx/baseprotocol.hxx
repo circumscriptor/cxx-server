@@ -68,6 +68,26 @@ class base_protocol
     void on_receive_default(connection& connection, packet_type type, data_stream& stream)
     {
         switch (type) {
+            case packet_type::position_data:
+            {
+                stream.read_vec3(connection.m_position);
+            } break;
+            case packet_type::orientation_data:
+            {
+                stream.read_vec3(connection.m_orientation);
+            } break;
+            case packet_type::input_data:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: input data - invalid id received" << std::endl;
+                }
+                connection.set_input(stream.read_byte());
+
+                // broadcast
+                data_stream stream(m_cache_input_data);
+                connection.fill_input_data(stream);
+                broadcast(connection, m_cache_input_data);
+            } break;
             case packet_type::existing_player:
             {
                 std::cout << "[  LOG  ]: existing player from: " << static_cast<int>(connection.get_id()) << std::endl;
@@ -108,7 +128,7 @@ class base_protocol
      * @param channel Channel
      */
     void broadcast(const connection& source,
-                   void*             data,
+                   const void*       data,
                    std::size_t       length,
                    bool              unsequenced = false,
                    std::uint8_t      channel     = 0)
@@ -124,6 +144,23 @@ class base_protocol
     }
 
     /**
+     * @brief Broadcast same data to multiple connections (except source) - cached array
+     *
+     * @param source Source connection
+     * @param data Data
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    template<std::size_t N>
+    void broadcast(const connection&                  source,
+                   const std::array<std::uint8_t, N>& data,
+                   bool                               unsequenced = false,
+                   std::uint8_t                       channel     = 0)
+    {
+        broadcast(source, data.data(), data.size(), unsequenced, channel);
+    }
+
+    /**
      * @brief Broadcast same data to multiple connections
      *
      * @param data Data
@@ -131,13 +168,26 @@ class base_protocol
      * @param unsequenced If true sets unsequenced flag
      * @param channel Channel
      */
-    void broadcast(void* data, std::size_t length, bool unsequenced = false, std::uint8_t channel = 0)
+    void broadcast(const void* data, std::size_t length, bool unsequenced = false, std::uint8_t channel = 0)
     {
         for (auto& connection : m_connections) {
             if (!connection.is_disconnected()) {
                 connection.send_packet(data, length, unsequenced, channel);
             }
         }
+    }
+
+    /**
+     * @brief Broadcast same data to multiple connections - cached array
+     *
+     * @param data Data
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    template<std::size_t N>
+    void broadcast(const std::array<std::uint8_t, N>& data, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        broadcast(data.data(), data.size(), unsequenced, channel);
     }
 
     /**
@@ -157,7 +207,7 @@ class base_protocol
 
         data_stream stream(m_cache_kill_action);
         victim.fill_kill_action(stream);
-        broadcast(m_cache_kill_action.data(), m_cache_kill_action.size());
+        broadcast(m_cache_kill_action);
     }
 
     /**
@@ -182,7 +232,7 @@ class base_protocol
         data_stream stream(m_cache_player_left);
         stream.write_type(packet_type::player_left);
         stream.write_byte(connection.get_id());
-        broadcast(connection, m_cache_player_left.data(), m_cache_player_left.size());
+        broadcast(connection, m_cache_player_left);
     }
 
     /**
@@ -197,7 +247,11 @@ class base_protocol
             stream.write_vec3(connection.m_position);
             stream.write_vec3(connection.m_orientation);
         }
-        broadcast(m_cache_world_update.data(), m_cache_world_update.size(), true);
+        for (auto& connection : m_connections) {
+            if (connection.is_connected()) {
+                connection.send_packet(m_cache_world_update.data(), m_cache_world_update.size(), true, 0);
+            }
+        }
     }
 
     /**
@@ -299,8 +353,9 @@ class base_protocol
      *
      * @param connection Connection
      */
-    virtual void on_send_state(connection& connection)
+    virtual bool on_send_state(connection& /*connection*/)
     {
+        return false;
     }
 
     /**
@@ -331,7 +386,9 @@ class base_protocol
     {
         send_existing_players(connection);
         // send state
-        on_send_state(connection);
+        if (!on_send_state(connection)) {
+            std::cout << "[WARNING]: failed to send state data" << std::endl;
+        }
         // loading done
         connection.set_state(state_type::connected);
     }
@@ -557,10 +614,11 @@ class base_protocol
 
     double m_world_update_delta{0.1};
 
+    std::array<std::uint8_t, 2>   m_cache_input_data;
     std::array<std::uint8_t, 5>   m_cache_kill_action;
     std::array<std::uint8_t, 32>  m_cache_create_player;
     std::array<std::uint8_t, 769> m_cache_world_update;
-    std::array<std::uint8_t, 104> m_cache_state_data;
+    std::array<std::uint8_t, 90>  m_cache_state_data;
     std::array<std::uint8_t, 2>   m_cache_player_left;
     std::vector<char>             m_compressed_map;
     std::size_t                   m_map_position;

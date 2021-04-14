@@ -86,6 +86,25 @@ struct player_data
     }
 
     /**
+     * @brief Get input
+     *
+     * @return Input
+     */
+    [[nodiscard]] std::uint8_t get_input() const
+    {
+        std::uint8_t input = 0;
+        input |= m_up ? 0x01 : 0x00;
+        input |= m_down ? 0x02 : 0x00;
+        input |= m_left ? 0x04 : 0x00;
+        input |= m_right ? 0x08 : 0x00;
+        input |= m_jump ? 0x10 : 0x00;
+        input |= m_crouch ? 0x20 : 0x00;
+        input |= m_sneak ? 0x40 : 0x00;
+        input |= m_sprint ? 0x80 : 0x00;
+        return input;
+    }
+
+    /**
      * @brief Set weapon input
      *
      * @param input Weapon input

@@ -195,7 +195,7 @@ class map
      */
     static std::uint32_t get_offset(std::uint32_t x, std::uint32_t y, std::uint32_t z)
     {
-        return (((x << 9) + y) << 6) + z;
+        return (((y << 9) + x) << 6) + z;
     }
 
     /**
@@ -282,78 +282,87 @@ class map
     }
 
     /**
+     * @brief Get the height at which the highest-placed block is located
+     *
+     * @param x The x-coordinate of the block
+     * @param y The y-coordinate of the block
+     * @return The z-coordinate of the block
+     */
+    [[nodiscard]] float get_height(float x, float y) const
+    {
+        return static_cast<float>(get_height(static_cast<std::uint32_t>(x), static_cast<std::uint32_t>(y)));
+    }
+
+    /**
+     * @brief Read single column from memory to offset
+     *
+     * @param data Data
+     * @param offset Offset
+     * @return Next memory location
+     */
+    const std::uint8_t* read_column_from_memory(const std::uint8_t* data, std::uint32_t& offset)
+    {
+        for (std::uint32_t z = 0;;) {
+
+            std::uint8_t span_size = data[0]; // N
+            std::uint8_t top_start = data[1]; // S
+            std::uint8_t top_end   = data[2]; // E
+            std::uint8_t air_start = data[3]; // A
+
+            // air
+            for (; z < top_start; ++z) {
+                m_blocks.set(offset + z, false);
+            }
+
+            // number of top blocks
+            std::uint8_t top_length = top_end - top_start + 1; // K = S - E + 1
+
+            // top
+            const auto* colors = reinterpret_cast<const std::uint32_t*>(data + 4);
+            for (; z <= top_end; ++z, ++colors) {
+                // m_blocks.set(offset + z, true);
+                m_colors.at(offset + z) = *colors;
+            }
+
+            if (span_size == 0) { // last span in column
+                data += 4 * (top_length + 1);
+                break;
+            }
+
+            // number of bottom blocks
+            std::uint8_t bottom_length = (span_size - 1) - top_length; // Z = (N - 1) - K
+            // move to the next span
+            data += span_size * 4;
+            // bottom ends where air begins
+
+            std::uint8_t bottom_end   = data[3];                    // (M - 1) - block end, M - next span air
+            std::uint8_t bottom_start = bottom_end - bottom_length; // M -  Z
+
+            // bottom
+            for (z = bottom_start; z < bottom_end; ++z, ++colors) {
+                // m_blocks.set(offset + z, true);
+                m_colors.at(offset + z) = *colors;
+            }
+        }
+        offset += 64;
+        return data;
+    }
+
+    /**
      * @brief Load map from memory (VXL format)
      *
      * @param data Beginning of the memory region
      * @param data_end End of memory region (used for debugging)
      */
-    void read_from_memory(const std::uint8_t* data, const std::uint8_t* data_end)
+    void read_from_memory(const std::uint8_t* data)
     {
-        std::uint8_t span_size;
-        std::uint8_t air_start;
-        std::uint8_t top_start;
-        std::uint8_t top_end;
-        std::uint8_t top_length;
-        std::uint8_t bottom_start;
-        std::uint8_t bottom_end;
-        std::uint8_t bottom_length;
-
-        std::uint32_t z;
         std::uint32_t offset = 0;
 
         m_blocks.set();
         m_colors.fill(default_color);
 
         while (offset < size_xyz) {
-            for (z = 0;;) {
-                assert(data + 4 < data_end);
-
-                span_size = data[0]; // N
-                top_start = data[1]; // S
-                top_end   = data[2]; // E
-                air_start = data[3]; // A
-
-                // air
-                for (; z < top_start; ++z) {
-                    m_blocks.set(offset + z, false);
-                }
-
-                // number of top blocks
-                top_length = top_end - top_start + 1; // K = S - E + 1
-
-                // top
-                assert(data + 4 + top_length < data_end);
-
-                const auto* colors = reinterpret_cast<const std::uint32_t*>(data + 4);
-                for (; z <= top_end; ++z, ++colors) {
-                    // m_blocks.set(offset + z, true);
-                    m_colors.at(offset + z) = *colors;
-                }
-
-                if (span_size == 0) { // last span in column
-                    data += 4 * (top_length + 1);
-                    break;
-                }
-
-                // number of bottom blocks
-                bottom_length = (span_size - 1) - top_length; // Z = (N - 1) - K
-                // move to the next span
-                data += span_size * 4;
-                // bottom ends where air begins
-                assert(data + 4 < data_end);
-
-                bottom_end   = data[3];                    // (M - 1) - block end, M - next span air
-                bottom_start = bottom_end - bottom_length; // M -  Z
-
-                // bottom
-                assert(data + 4 + bottom_length < data_end);
-
-                for (z = bottom_start; z < bottom_end; ++z, ++colors) {
-                    // m_blocks.set(offset + z, true);
-                    m_colors.at(offset + z) = *colors;
-                }
-            }
-            offset += 64; // move to next offset
+            data = read_column_from_memory(data, offset);
         }
     }
 
@@ -369,9 +378,80 @@ class map
             throw std::runtime_error("failed to open map file");
         }
 
-        const auto* data    = reinterpret_cast<const std::uint8_t*>(source.data());
-        const auto* map_end = reinterpret_cast<const std::uint8_t*>(source.data() + source.size());
-        read_from_memory(data, map_end);
+        const auto* data = reinterpret_cast<const std::uint8_t*>(source.data());
+        read_from_memory(data);
+    }
+
+    /**
+     * @brief Write single column from offset to memory
+     *
+     * @param result Result
+     * @param offset Offset
+     */
+    void write_column_to_memory(std::vector<std::uint8_t>& result, std::uint32_t& offset)
+    {
+        for (std::uint32_t z = 0; z < size_z;) {
+            // air
+            std::uint8_t air_start = z;
+            for (; z < size_z && !is_block(offset + z); ++z) {
+            }
+
+            // top
+            std::uint8_t top_start = z;
+            for (; z < size_z && is_surface(offset + z); ++z) {
+            }
+            std::uint8_t top_end = z;
+
+            // not visible blocks
+            for (; z < size_z && is_block(offset + z) && !is_surface(offset + z); ++z) {
+            }
+
+            // bottom
+            auto         t            = z;
+            std::uint8_t bottom_start = z;
+
+            for (; t < size_z && is_surface(offset + t); ++t) {
+            }
+
+            if (t != size_z) {
+                for (; is_surface(offset + z); ++z) {
+                }
+            }
+
+            std::uint8_t bottom_end = z;
+
+            // result
+            std::uint8_t top_length    = top_end - top_start;
+            std::uint8_t bottom_length = bottom_end - bottom_start;
+            std::uint8_t colors_length = top_length + bottom_length;
+
+            if (z == size_z) {
+                result.push_back(0);
+            } else {
+                result.push_back(colors_length + 1);
+            }
+
+            result.push_back(top_start);
+            result.push_back(top_end - 1);
+            result.push_back(air_start);
+
+            for (std::uint32_t i = top_start; i < top_end; ++i) {
+                auto color = m_colors[offset + i];
+                result.push_back(color & 0xFF);
+                result.push_back((color >> 8) & 0xFF);
+                result.push_back((color >> 16) & 0xFF);
+                result.push_back((color >> 24) & 0xFF);
+            }
+
+            for (std::uint32_t i = bottom_start; i < bottom_end; ++i) {
+                auto color = m_colors[offset + i];
+                result.push_back(color & 0xFF);
+                result.push_back((color >> 8) & 0xFF);
+                result.push_back((color >> 16) & 0xFF);
+                result.push_back((color >> 24) & 0xFF);
+            }
+        }
+        offset += 64;
     }
 
     /**
@@ -381,84 +461,13 @@ class map
      */
     void write_to_memory(std::vector<std::uint8_t>& result)
     {
-        std::uint8_t air_start;
-        std::uint8_t top_start;
-        std::uint8_t top_end;
-        std::uint8_t top_length;
-        std::uint8_t bottom_start;
-        std::uint8_t bottom_end;
-        std::uint8_t bottom_length;
-        std::uint8_t colors_length; // span_size - 1
-
-        std::uint32_t z;
         std::uint32_t offset = 0;
 
         result.clear();
         result.reserve(512 * 512 * 8); // reserve at least 8 bytes per column (header + one color)
 
         while (offset < size_xyz) {
-            for (z = 0; z < size_z;) {
-                // air
-                air_start = z;
-                for (; z < size_z && !is_block(offset + z); ++z) {
-                }
-
-                // top
-                top_start = z;
-                for (; z < size_z && is_surface(offset + z); ++z) {
-                }
-                top_end = z;
-
-                // not visible blocks
-                for (; z < size_z && is_block(offset + z) && !is_surface(offset + z); ++z) {
-                }
-
-                // bottom
-                auto t       = z;
-                bottom_start = z;
-
-                for (; t < size_z && is_surface(offset + t); ++t) {
-                }
-
-                if (t != size_z) {
-                    for (; is_surface(offset + z); ++z) {
-                    }
-                }
-
-                bottom_end = z;
-
-                // result
-                top_length    = top_end - top_start;
-                bottom_length = bottom_end - bottom_start;
-                colors_length = top_length + bottom_length;
-
-                if (z == size_z) {
-                    result.push_back(0);
-                } else {
-                    result.push_back(colors_length + 1);
-                }
-
-                result.push_back(top_start);
-                result.push_back(top_end - 1);
-                result.push_back(air_start);
-
-                for (std::uint32_t i = top_start; i < top_end; ++i) {
-                    auto color = m_colors[offset + i];
-                    result.push_back(color & 0xFF);
-                    result.push_back((color >> 8) & 0xFF);
-                    result.push_back((color >> 16) & 0xFF);
-                    result.push_back((color >> 24) & 0xFF);
-                }
-
-                for (std::uint32_t i = bottom_start; i < bottom_end; ++i) {
-                    auto color = m_colors[offset + i];
-                    result.push_back(color & 0xFF);
-                    result.push_back((color >> 8) & 0xFF);
-                    result.push_back((color >> 16) & 0xFF);
-                    result.push_back((color >> 24) & 0xFF);
-                }
-            }
-            offset += 64;
+            write_column_to_memory(result, offset);
         }
     }
 
@@ -473,9 +482,8 @@ class map
         std::vector<std::uint8_t> data;
         write_to_memory(data);
 
-        std::cout << "uncompressed map size: " << data.size() << std::endl;
-
         result.clear();
+        result.reserve(512 * 512);
 
         try {
             auto*                          data_in = reinterpret_cast<char*>(data.data());

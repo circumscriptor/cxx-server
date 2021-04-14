@@ -73,13 +73,8 @@ class enet
         if (enet_initialize() != 0) {
             throw std::runtime_error("failed to initialize ENet");
         }
-        std::cout << "initialize ENet" << std::endl;
-    }
-
-    ~enet()
-    {
-        enet_deinitialize();
-        std::cout << "deinitialize ENet" << std::endl;
+        std::atexit(enet_deinitialize);
+        std::cout << "[  LOG  ]: ENet initialized" << std::endl;
     }
 };
 

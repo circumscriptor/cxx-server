@@ -13,23 +13,30 @@ namespace spadesx {
 
 struct team_data
 {
-    color3b      m_color;
-    std::string  m_name;
-    std::uint8_t m_score;
-    bool         m_intel_taken;
-    std::uint8_t m_intel_holder; // enemy team
-    glm::vec3    m_intel;
-    glm::vec3    m_base;
+    color3b              m_color;
+    std::array<char, 10> m_name;
+    std::uint8_t         m_score{0};
+    bool                 m_intel_taken{false};
+    std::uint8_t         m_intel_holder; // enemy team
+    glm::vec3            m_intel;
+    glm::vec3            m_base;
 
     void set_name(const std::string& name)
     {
-        if (name.length() > 10) {
-            m_name.assign(name.begin(), name.begin() + 16);
+        if (name.length() >= 10) {
+            std::copy(name.begin(), name.begin() + 10, m_name.begin());
         } else {
-            m_name = name;
+            std::copy(name.begin(), name.end(), m_name.begin());
+            m_name[name.length()] = '\0';
         }
     }
-};
+
+    void reset_values()
+    {
+        m_score       = 0;
+        m_intel_taken = false;
+    }
+} __attribute__((aligned(64))) __attribute__((packed));
 
 class ctf_protocol : public base_protocol
 {
@@ -76,37 +83,42 @@ class ctf_protocol : public base_protocol
     //     kill(killer, victim, type, m_respawn_time);
     // }
 
-    void on_send_state(connection& connection) override
+    /**
+     * @brief Send state data
+     *
+     * @param connection Connection
+     */
+    bool on_send_state(connection& connection) override
     {
-        data_stream packet(m_cache_state_data);
-        packet.write_type(packet_type::state_data);
-        packet.write_byte(connection.get_id());
-        packet.write_color3b(m_fog_color);
-        packet.write_color3b(m_teams[0].m_color);
-        packet.write_color3b(m_teams[1].m_color);
-        packet.write_array(m_teams[0].m_name.c_str(), 10);
-        packet.write_array(m_teams[1].m_name.c_str(), 10);
-        packet.write_type(mode_type::ctf);
+        data_stream stream(m_cache_state_data);
+        stream.write_type(packet_type::state_data);
+        stream.write_byte(connection.get_id());
+        stream.write_color3b(m_fog_color);
+        stream.write_color3b(m_teams[0].m_color);
+        stream.write_color3b(m_teams[1].m_color);
+        stream.write_array(m_teams[0].m_name.data(), 10);
+        stream.write_array(m_teams[1].m_name.data(), 10);
+        stream.write_type(mode_type::ctf);
         // CTF
-        packet.write_byte(m_teams[0].m_score + 9);
-        packet.write_byte(m_teams[1].m_score);
-        packet.write_byte(m_score_limit);
-        packet.write_byte(intel_flags());
+        stream.write_byte(m_teams[0].m_score + 9);
+        stream.write_byte(m_teams[1].m_score);
+        stream.write_byte(m_score_limit);
+        stream.write_byte(intel_flags());
         if (!m_teams[0].m_intel_taken) {
-            packet.write_vec3(m_teams[0].m_intel);
+            stream.write_vec3(m_teams[0].m_intel);
         } else {
-            packet.write_byte(m_teams[0].m_intel_holder);
-            packet.skip(11);
+            stream.write_byte(m_teams[0].m_intel_holder);
+            stream.skip(11);
         }
         if (!m_teams[1].m_intel_taken) {
-            packet.write_vec3(m_teams[1].m_intel);
+            stream.write_vec3(m_teams[1].m_intel);
         } else {
-            packet.write_byte(m_teams[1].m_intel_holder);
-            packet.skip(11);
+            stream.write_byte(m_teams[1].m_intel_holder);
+            stream.skip(11);
         }
-        packet.write_vec3(m_teams[1].m_base);
-        packet.write_vec3(m_teams[1].m_base);
-        connection.send_packet(m_cache_state_data.data(), m_cache_state_data.size());
+        stream.write_vec3(m_teams[0].m_base);
+        stream.write_vec3(m_teams[1].m_base);
+        return connection.send_packet(m_cache_state_data.data(), m_cache_state_data.size());
     }
 
     /**
