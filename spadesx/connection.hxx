@@ -7,6 +7,7 @@
 #pragma once
 
 #include "baseconnection.hxx"
+#include "enums.hxx"
 #include "playerdata.hxx"
 
 #include <cstring>
@@ -140,6 +141,23 @@ class connection : public base_connection, public player_data
         stream.write_type(packet_type::weapon_input);
         stream.write_byte(m_id);
         stream.write_byte(get_weapon_input());
+    }
+
+    /**
+     * @brief Fill grenade packet
+     *
+     * @param stream Packet stream
+     * @param position Initial grenade position
+     * @param velocity Initial grenade velocity
+     * @param fuse Grenade fuse time
+     */
+    void fill_grenade_packet(data_stream& stream, const glm::vec3& position, const glm::vec3& velocity, float fuse)
+    {
+        stream.write_type(packet_type::grenade_packet);
+        stream.write_byte(m_id);
+        stream.write_float(fuse);
+        stream.write_vec3(position);
+        stream.write_vec3(velocity);
     }
 };
 

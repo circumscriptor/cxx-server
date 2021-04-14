@@ -117,6 +117,22 @@ class base_protocol
                     std::cout << "[WARNING]: hit packet - invalid hit id received" << std::endl;
                 }
             } break;
+            case packet_type::grenade_packet:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: grenade packet - invalid id received" << std::endl;
+                }
+
+                float     fuse;
+                glm::vec3 position;
+                glm::vec3 velocity;
+
+                fuse = stream.read_float();
+                stream.read_vec3(position);
+                stream.read_vec3(velocity);
+
+                on_grenade_throw(connection, position, velocity, fuse);
+            } break;
             case packet_type::existing_player:
             {
                 std::cout << "[  LOG  ]: existing player from: " << static_cast<int>(connection.get_id()) << std::endl;
@@ -237,6 +253,21 @@ class base_protocol
         data_stream stream(m_cache_kill_action);
         victim.fill_kill_action(stream);
         broadcast(m_cache_kill_action);
+    }
+
+    /**
+     * @brief Throw grenade
+     *
+     * @param source Source connection
+     * @param position Initial position
+     * @param velocity Initial velocity
+     * @param fuse Fuse
+     */
+    void throw_grenade(connection& source, const glm::vec3& position, const glm::vec3& velocity, float fuse)
+    {
+        data_stream stream(m_cache_grenade_packet);
+        source.fill_grenade_packet(stream, position, velocity, fuse);
+        broadcast(source, m_cache_grenade_packet);
     }
 
     /**
@@ -399,6 +430,20 @@ class base_protocol
                 kill(source, target, t_kill, m_respawn_time);
             }
         }
+    }
+
+    /**
+     * @brief Grenade throw action
+     *
+     * @param connection Connection
+     * @param position Position
+     * @param velocity Velocity
+     * @param fuse Fuse time
+     */
+    virtual void
+    on_grenade_throw(connection& connection, const glm::vec3& position, const glm::vec3& velocity, float fuse)
+    {
+        throw_grenade(connection, position, velocity, fuse);
     }
 
     /**
@@ -695,6 +740,7 @@ class base_protocol
     std::array<std::uint8_t, 769> m_cache_world_update;
     std::array<std::uint8_t, 90>  m_cache_state_data;
     std::array<std::uint8_t, 2>   m_cache_player_left;
+    std::array<std::uint8_t, 30>  m_cache_grenade_packet;
     std::vector<char>             m_compressed_map;
     std::size_t                   m_map_position;
     bool                          m_map_used{false};
