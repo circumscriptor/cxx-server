@@ -23,6 +23,7 @@ set(HEADERS_SERVER
         peer.hxx
         server.hxx
         spawn.hxx
+        world.hxx
 )
 
 target_sources(server

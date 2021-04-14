@@ -6,15 +6,10 @@
 
 #pragma once
 
-#include "connection.hxx"
-#include "manager.hxx"
-#include "map.hxx"
+#include "world.hxx"
 
-#include <array>
 #include <chrono>
-#include <enet/enet.h>
 #include <glm/glm.hpp>
-#include <memory>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -22,7 +17,7 @@
 
 namespace spadesx {
 
-class base_protocol : public connection_manager
+class base_protocol : public world_manager
 {
   public:
     /**
@@ -31,27 +26,13 @@ class base_protocol : public connection_manager
      * @param max_players Max number of players
      */
     base_protocol(std::uint8_t max_players) :
-        connection_manager{max_players},
+        world_manager{max_players},
         m_generator{std::random_device()()},
         m_distribution{0.F, 1.F}
     {
-        m_map = std::make_unique<map>();
-        if (!m_map) {
-            throw std::runtime_error("failed to allocate map class");
-        }
     }
 
     virtual ~base_protocol() = default;
-
-    /**
-     * @brief Read map from file
-     *
-     * @param string File path
-     */
-    void load_map(std::string_view string)
-    {
-        m_map->read_from_file(string);
-    }
 
     /**
      * @brief Default on_receive action
@@ -610,16 +591,6 @@ class base_protocol : public connection_manager
     }
 
     /**
-     * @brief Set fog color
-     *
-     * @param color Color (RGB)
-     */
-    void set_fog_color(const color3b& color)
-    {
-        m_fog_color = color;
-    }
-
-    /**
      * @brief Set world update delta time
      *
      * @param delta New delta time
@@ -629,17 +600,6 @@ class base_protocol : public connection_manager
         if (m_world_update_delta >= 0) {
             m_world_update_delta = delta;
         }
-    }
-
-    /**
-     * @brief Extract connection from peer
-     *
-     * @param peer Peer
-     * @return Reference to connection
-     */
-    static connection& peer_to_connection(ENetPeer* peer)
-    {
-        return *reinterpret_cast<connection*>(peer->data);
     }
 
     /**
@@ -654,9 +614,6 @@ class base_protocol : public connection_manager
 
   protected:
     std::uint8_t m_respawn_time{0}; //!< Current respawn time
-
-    std::unique_ptr<map> m_map;       //!< Map
-    color3b              m_fog_color; //!< Fog color
 
     double m_world_update_delta{0.1};
 

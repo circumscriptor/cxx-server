@@ -385,6 +385,17 @@ class connection_manager : protected packet_cache
         m_num_players--;
     }
 
+    /**
+     * @brief Extract connection from peer
+     *
+     * @param peer Peer
+     * @return Reference to connection
+     */
+    static connection& peer_to_connection(ENetPeer* peer)
+    {
+        return *reinterpret_cast<connection*>(peer->data);
+    }
+
   protected:
     /**
      * @brief Get next free connection
