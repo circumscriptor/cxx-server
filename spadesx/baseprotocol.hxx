@@ -84,9 +84,21 @@ class base_protocol
                 connection.set_input(stream.read_byte());
 
                 // broadcast
-                data_stream stream(m_cache_input_data);
-                connection.fill_input_data(stream);
+                data_stream output(m_cache_input_data);
+                connection.fill_input_data(output);
                 broadcast(connection, m_cache_input_data);
+            } break;
+            case packet_type::weapon_input:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: weapon input - invalid id received" << std::endl;
+                }
+                connection.set_weapon_input(stream.read_byte());
+
+                // broadcast
+                data_stream output(m_cache_weapon_input);
+                connection.fill_weapon_input(output);
+                broadcast(connection, m_cache_weapon_input);
             } break;
             case packet_type::existing_player:
             {
@@ -614,7 +626,8 @@ class base_protocol
 
     double m_world_update_delta{0.1};
 
-    std::array<std::uint8_t, 2>   m_cache_input_data;
+    std::array<std::uint8_t, 3>   m_cache_input_data;
+    std::array<std::uint8_t, 3>   m_cache_weapon_input;
     std::array<std::uint8_t, 5>   m_cache_kill_action;
     std::array<std::uint8_t, 32>  m_cache_create_player;
     std::array<std::uint8_t, 769> m_cache_world_update;

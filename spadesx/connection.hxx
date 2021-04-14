@@ -106,7 +106,20 @@ class connection : public base_connection, public player_data
     void fill_input_data(data_stream& stream)
     {
         stream.write_type(packet_type::input_data);
-        stream.write_byte(get_input());
+        stream.write_byte(m_id);
+        stream.write_byte(get_input_data());
+    }
+
+    /**
+     * @brief Fill input data
+     *
+     * @param stream Packet stream
+     */
+    void fill_weapon_input(data_stream& stream)
+    {
+        stream.write_type(packet_type::weapon_input);
+        stream.write_byte(m_id);
+        stream.write_byte(get_weapon_input());
     }
 };
 

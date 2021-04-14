@@ -86,11 +86,11 @@ struct player_data
     }
 
     /**
-     * @brief Get input
+     * @brief Get input data
      *
-     * @return Input
+     * @return Input data
      */
-    [[nodiscard]] std::uint8_t get_input() const
+    [[nodiscard]] std::uint8_t get_input_data() const
     {
         std::uint8_t input = 0;
         input |= m_up ? 0x01 : 0x00;
@@ -113,6 +113,19 @@ struct player_data
     {
         m_primary   = ((input & 0x01) != 0);
         m_secondary = ((input & 0x02) != 0);
+    }
+
+    /**
+     * @brief Get weapon input
+     *
+     * @return Weapon input
+     */
+    [[nodiscard]] std::uint8_t get_weapon_input() const
+    {
+        std::uint8_t input = 0;
+        input |= m_primary ? 0x01 : 0x00;
+        input |= m_secondary ? 0x02 : 0x00;
+        return input;
     }
 
     /**
