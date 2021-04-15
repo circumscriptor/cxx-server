@@ -7,37 +7,26 @@
 #pragma once
 
 #include "baseprotocol.hxx"
+#include "data/teamdata.hxx"
 #include "spawn.hxx"
 
 namespace spadesx {
 
-struct team_data
+/**
+ * @brief CTF team data
+ *
+ */
+class ctf_team_data : public team_data
 {
-    color3b              m_color;
-    std::array<char, 10> m_name;
-    std::uint8_t         m_score{0};
-    bool                 m_intel_taken{false};
-    std::uint8_t         m_intel_holder; // enemy team
-    glm::vec3            m_intel;
-    glm::vec3            m_base;
+  public:
+    intel_data m_intel; //!< Intel
+    glm::vec3  m_base;  //!< Base position
+};
 
-    void set_name(const std::string& name)
-    {
-        if (name.length() >= 10) {
-            std::copy(name.begin(), name.begin() + 10, m_name.begin());
-        } else {
-            std::copy(name.begin(), name.end(), m_name.begin());
-            m_name[name.length()] = '\0';
-        }
-    }
-
-    void reset_values()
-    {
-        m_score       = 0;
-        m_intel_taken = false;
-    }
-} __attribute__((aligned(64))) __attribute__((packed));
-
+/**
+ * @brief CTF protocol
+ *
+ */
 class ctf_protocol : public base_protocol
 {
   public:
@@ -55,8 +44,8 @@ class ctf_protocol : public base_protocol
     {
         get_spawn_location(team_type::a, entity_type::base, m_teams[0].m_base);
         get_spawn_location(team_type::b, entity_type::base, m_teams[1].m_base);
-        get_spawn_location(team_type::a, entity_type::intel, m_teams[0].m_intel);
-        get_spawn_location(team_type::b, entity_type::intel, m_teams[1].m_intel);
+        get_spawn_location(team_type::a, entity_type::intel, m_teams[0].m_intel.m_position);
+        get_spawn_location(team_type::b, entity_type::intel, m_teams[1].m_intel.m_position);
     }
 
     // bool on_connect(ENetPeer* peer) override
@@ -96,24 +85,24 @@ class ctf_protocol : public base_protocol
         stream.write_color3b(m_fog_color);
         stream.write_color3b(m_teams[0].m_color);
         stream.write_color3b(m_teams[1].m_color);
-        stream.write_array(m_teams[0].m_name.data(), 10);
-        stream.write_array(m_teams[1].m_name.data(), 10);
+        stream.write_array(m_teams[0].name().data(), 10);
+        stream.write_array(m_teams[1].name().data(), 10);
         stream.write_type(mode_type::ctf);
         // CTF
         stream.write_byte(m_teams[0].m_score + 9);
         stream.write_byte(m_teams[1].m_score);
         stream.write_byte(m_score_limit);
         stream.write_byte(intel_flags());
-        if (!m_teams[0].m_intel_taken) {
-            stream.write_vec3(m_teams[0].m_intel);
+        if (!m_teams[0].m_intel.is_taken()) {
+            stream.write_vec3(m_teams[0].m_intel.m_position);
         } else {
-            stream.write_byte(m_teams[0].m_intel_holder);
+            stream.write_byte(m_teams[0].m_intel.holder());
             stream.skip(11);
         }
-        if (!m_teams[1].m_intel_taken) {
-            stream.write_vec3(m_teams[1].m_intel);
+        if (!m_teams[1].m_intel.is_taken()) {
+            stream.write_vec3(m_teams[1].m_intel.m_position);
         } else {
-            stream.write_byte(m_teams[1].m_intel_holder);
+            stream.write_byte(m_teams[1].m_intel.holder());
             stream.skip(11);
         }
         stream.write_vec3(m_teams[0].m_base);
@@ -139,7 +128,13 @@ class ctf_protocol : public base_protocol
         }
     }
 
-    team_data& get_team(team_type team)
+    /**
+     * @brief Get team data
+     *
+     * @param team Team
+     * @return Team data
+     */
+    ctf_team_data& get_team(team_type team)
     {
         switch (team) {
             case team_type::a:
@@ -160,15 +155,15 @@ class ctf_protocol : public base_protocol
     [[nodiscard]] std::uint8_t intel_flags() const noexcept
     {
         std::uint8_t flags = 0;
-        flags |= (m_teams[0].m_intel_taken) ? 1 : 0;
-        flags |= (m_teams[1].m_intel_taken) ? 2 : 0;
+        flags |= (m_teams[0].m_intel.is_taken()) ? 1 : 0;
+        flags |= (m_teams[1].m_intel.is_taken()) ? 2 : 0;
         return flags;
     }
 
   private:
-    std::uint8_t             m_score_limit{10};
-    std::array<spawn, 3>     m_spawns;
-    std::array<team_data, 2> m_teams;
+    std::uint8_t                 m_score_limit{10};
+    std::array<spawn, 3>         m_spawns;
+    std::array<ctf_team_data, 2> m_teams;
 };
 
 } // namespace spadesx

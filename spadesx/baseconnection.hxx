@@ -124,31 +124,63 @@ class base_connection : public peer
         m_state = state_type::disconnected;
     }
 
+    /**
+     * @brief Check whether connection state is disconnected
+     *
+     * @return true If state is disconnected
+     */
     [[nodiscard]] bool is_disconnected() const noexcept
     {
         return m_state == state_type::disconnected;
     }
 
+    /**
+     * @brief Check whether connection state is connecting
+     *
+     * @return true If state is connecting
+     */
     [[nodiscard]] bool is_connecting() const noexcept
     {
         return m_state == state_type::connecting;
     }
 
+    /**
+     * @brief Check whether connection state is connected
+     *
+     * @return true If state is connected
+     */
     [[nodiscard]] bool is_connected() const noexcept
     {
         return m_state == state_type::connected;
     }
 
+    /**
+     * @brief Set connection state
+     *
+     * @param state Connection state
+     */
     void set_state(state_type state)
     {
         m_state = state;
     }
 
+    /**
+     * @brief Compare this connections's ID with other's ID
+     *
+     * @param other Other connection
+     * @return true If same
+     */
     bool operator==(const base_connection& other) const noexcept
     {
         return m_id == other.m_id;
     }
 
+    /**
+     * @brief Compare this connections's ID with other's ID
+     *
+     * @param other Other connection
+     * @return true If different
+     */
     bool operator!=(const base_connection& other) const noexcept
     {
         return m_id != other.m_id;

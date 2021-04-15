@@ -347,7 +347,7 @@ class base_protocol : public world_manager
     on_block_action(connection& source, block_action_type action, std::uint32_t x, std::uint32_t y, std::uint32_t z)
     {
         if (action == block_action_type::build) {
-            m_map->modify_block(x, y, z, true, color3b_to_uint32(source.m_color));
+            m_map->modify_block(x, y, z, true, source.m_color.to_uint32());
         } else if (action == block_action_type::bullet_or_spade) {
             m_map->destroy_block(x, y, z);
         } else if (action == block_action_type::spade_secondary) {

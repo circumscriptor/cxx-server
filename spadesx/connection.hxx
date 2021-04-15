@@ -20,6 +20,11 @@ class connection : public base_connection, public player_data
     friend class base_protocol;
 
   public:
+    /**
+     * @brief Construct a new connection object
+     *
+     * @param id Connection ID
+     */
     connection(std::uint8_t id) : base_connection(id)
     {
     }

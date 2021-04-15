@@ -5,13 +5,24 @@
 #
 #
 
+set(HEADERS_SERVER_DATA
+    data/colordata.hxx
+    data/enums.hxx
+    data/inputdata.hxx
+    data/inteldata.hxx
+    data/lastkilldata.hxx
+    data/namedata.hxx
+    data/playerdata.hxx
+    data/playerstate.hxx
+    data/positiondata.hxx
+    data/scoredata.hxx
+    data/transformdata.hxx
+    data/types.hxx
+    data/weapondata.hxx
+)
+
 set(HEADERS_SERVER
-        data/enums.hxx
-        data/inputdata.hxx
-        data/playerdata.hxx
-        data/playerstate.hxx
-        data/types.hxx
-        data/weapondata.hxx
+        ${HEADERS_SERVER_DATA}
         baseconnection.hxx
         baseprotocol.hxx
         connection.hxx
