@@ -4,6 +4,7 @@
  *
  */
 
+#include "commands/kill.hxx"
 #include "commands/say.hxx"
 #include "ctf.hxx"
 #include "server.hxx"
@@ -36,6 +37,7 @@ auto main(int argc, char** argv) -> int
     protocol.set_fog_color({0xFF, 0xFF, 0xFF});
 
     protocol.register_command<spadesx::say_command>("say");
+    protocol.register_command<spadesx::kill_command>("kill");
 
     return spadesx::server().run(protocol, 1);
 }
