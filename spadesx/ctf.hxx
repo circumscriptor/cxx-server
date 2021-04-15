@@ -7,6 +7,7 @@
 #pragma once
 
 #include "baseprotocol.hxx"
+#include "data/enums.hxx"
 #include "data/teamdata.hxx"
 #include "spawn.hxx"
 
@@ -71,6 +72,22 @@ class ctf_protocol : public base_protocol
     // {
     //     kill(killer, victim, type, m_respawn_time);
     // }
+
+    void on_update(connection& connection) override
+    {
+        if (connection.m_can_spawn && !connection.m_alive && connection.m_respawn_time == 0) {
+            connection.m_alive = true;
+            on_create(connection);
+        }
+        if (connection.m_alive && connection.m_respawn_time == 0) { // reuse respawn timer for restock
+            if (connection.m_team != team_type::spectator) {
+                if (glm::distance(connection.m_position, get_team(connection.m_team).m_base) <= 3.0) {
+                    connection.m_respawn_time = 15;
+                    broadcast_restock(connection);
+                }
+            }
+        }
+    }
 
     /**
      * @brief Send state data

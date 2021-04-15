@@ -218,6 +218,17 @@ class connection : public base_connection, public player_data
         stream.write_array(message.data(), size);
         return size + 3;
     }
+
+    /**
+     * @brief Fill restock packet
+     *
+     * @param stream Packet stream
+     */
+    void fill_restock(data_stream& stream)
+    {
+        stream.write_type(packet_type::restock);
+        stream.write_byte(m_id);
+    }
 };
 
 } // namespace spadesx

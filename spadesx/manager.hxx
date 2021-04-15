@@ -37,6 +37,7 @@ class packet_cache
     std::array<std::uint8_t, 15>  m_cache_block_action;
     std::array<std::uint8_t, 4>   m_cache_weapon_reload;
     std::array<std::uint8_t, 258> m_cache_chat_message;
+    std::array<std::uint8_t, 2>   m_cache_restock;
 };
 
 /**
@@ -281,6 +282,18 @@ class connection_manager : protected packet_cache
         stream.write_type(packet_type::player_left);
         stream.write_byte(connection.get_id());
         broadcast(connection, m_cache_player_left);
+    }
+
+    /**
+     * @brief Broadcast restock
+     *
+     * @param target Target to be restocked
+     */
+    void broadcast_restock(connection& target)
+    {
+        data_stream stream{m_cache_restock};
+        target.fill_restock(stream);
+        broadcast(m_cache_restock);
     }
 
     /**
