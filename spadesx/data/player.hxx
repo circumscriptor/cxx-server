@@ -6,16 +6,16 @@
 
 #pragma once
 
-#include "chatdata.hxx"
+#include "chat.hxx"
 #include "enums.hxx"
-#include "inputdata.hxx"
-#include "lastkilldata.hxx"
-#include "namedata.hxx"
-#include "playerstate.hxx"
-#include "scoredata.hxx"
-#include "transformdata.hxx"
+#include "input.hxx"
+#include "lastkill.hxx"
+#include "name.hxx"
+#include "score.hxx"
+#include "state.hxx"
+#include "transform.hxx"
 #include "types.hxx"
-#include "weapondata.hxx"
+#include "weapon.hxx"
 
 namespace spadesx {
 

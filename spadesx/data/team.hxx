@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "colordata.hxx"
-#include "namedata.hxx"
-#include "scoredata.hxx"
+#include "color.hxx"
+#include "name.hxx"
+#include "score.hxx"
 
 namespace spadesx {
 

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "positiondata.hxx"
+#include "position.hxx"
 
 namespace spadesx {
 

@@ -6,19 +6,19 @@
 #
 
 set(HEADERS_SERVER_DATA
-    data/colordata.hxx
+    data/color.hxx
     data/enums.hxx
-    data/inputdata.hxx
-    data/inteldata.hxx
-    data/lastkilldata.hxx
-    data/namedata.hxx
-    data/playerdata.hxx
-    data/playerstate.hxx
-    data/positiondata.hxx
-    data/scoredata.hxx
-    data/transformdata.hxx
+    data/input.hxx
+    data/intel.hxx
+    data/lastkill.hxx
+    data/name.hxx
+    data/player.hxx
+    data/state.hxx
+    data/position.hxx
+    data/score.hxx
+    data/transform.hxx
     data/types.hxx
-    data/weapondata.hxx
+    data/weapon.hxx
 )
 
 set(HEADERS_SERVER

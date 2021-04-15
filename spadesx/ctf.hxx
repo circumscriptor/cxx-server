@@ -8,7 +8,7 @@
 
 #include "baseprotocol.hxx"
 #include "data/enums.hxx"
-#include "data/teamdata.hxx"
+#include "data/team.hxx"
 #include "spawn.hxx"
 
 namespace spadesx {

@@ -8,7 +8,7 @@
 
 #include "baseconnection.hxx"
 #include "data/enums.hxx"
-#include "data/playerdata.hxx"
+#include "data/player.hxx"
 
 #include <iostream>
 
