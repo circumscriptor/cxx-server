@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "command.hxx"
 #include "connection.hxx"
 #include "data/enums.hxx"
 
@@ -418,6 +419,83 @@ class connection_manager : protected packet_cache
     std::uint8_t            m_max_players;    //!< Maximal number of players
     std::uint8_t            m_num_players{0}; //!< Current number of players
     std::vector<connection> m_connections;    //!< Player connections
+};
+
+/**
+ * @brief Register commands
+ *
+ */
+class command_manager
+{
+  public:
+    /**
+     * @brief Register command
+     *
+     * @tparam T Command type
+     * @param name Command name
+     */
+    template<typename T>
+    void register_command(const std::string& name, bool enable = true)
+    {
+        auto it = m_commands.find(name);
+        if (it == m_commands.end()) {
+            std::shared_ptr<command> shared = std::make_shared<T>();
+            if (enable) {
+                shared->enable();
+            }
+            m_commands.insert({name, shared});
+        }
+    }
+
+    /**
+     * @brief Get command
+     *
+     * @param name Command name
+     */
+    command& get_command(const std::string& name)
+    {
+        auto it = m_commands.find(name);
+        if (it == m_commands.end()) {
+            throw std::runtime_error("command not found");
+        }
+        return *(it->second.get());
+    }
+
+    /**
+     * @brief Parse command
+     *
+     * @param command Command
+     * @return true True on success
+     */
+    bool execute_command(std::string_view command, connection& connection, base_protocol& protocol)
+    {
+        if (command.empty() || command[0] != '/') {
+            return false;
+        }
+
+        auto n    = command.find(' ', 1);
+        auto name = command.substr(1, n - 1);
+        auto size = name.size();
+        if (name.back() == 0) {
+            size -= 1;
+        }
+
+        if (!name.empty()) {
+            auto it = m_commands.find(std::string{name.data(), size});
+            if (it != m_commands.end()) {
+                auto& cmd = *(it->second.get());
+                if (cmd.is_enabled()) {
+                    auto args = command.substr(n + 1);
+                    cmd.on_execute(args, connection, protocol);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+  private:
+    std::unordered_map<std::string, std::shared_ptr<command>> m_commands; //!< Command
 };
 
 } // namespace spadesx

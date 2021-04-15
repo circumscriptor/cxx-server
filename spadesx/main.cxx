@@ -4,6 +4,7 @@
  *
  */
 
+#include "commands/say.hxx"
 #include "ctf.hxx"
 #include "server.hxx"
 
@@ -33,6 +34,8 @@ auto main(int argc, char** argv) -> int
     protocol.get_team(spadesx::team_type::a).m_color = {0xFF, 0x00, 0x00};
     protocol.get_team(spadesx::team_type::b).m_color = {0x00, 0xFF, 0x00};
     protocol.set_fog_color({0xFF, 0xFF, 0xFF});
+
+    protocol.register_command<spadesx::say_command>("say");
 
     return spadesx::server().run(protocol, 1);
 }

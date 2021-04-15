@@ -18,7 +18,11 @@
 
 namespace spadesx {
 
-class base_protocol : public world_manager
+/**
+ * @brief Protocol base
+ *
+ */
+class base_protocol : public world_manager, public command_manager
 {
   public:
     /**
@@ -151,9 +155,23 @@ class base_protocol : public world_manager
                     std::cout << "[WARNING]: block action - invalid id received" << std::endl;
                 }
 
-                auto             type = stream.read_type<chat_type>();
-                std::string_view message(stream.data(), stream.left());
-                broadcast_message(connection, type, message);
+                auto        type = stream.read_type<chat_type>();
+                const auto* data = stream.data();
+                auto        left = stream.left();
+                if (data[left - 1] == 0) {
+                    left -= 1;
+                }
+                std::string_view message(data, left);
+
+                if (!message.empty()) {
+                    if (message[0] == '/') {
+                        if (!execute_command(message, connection, *this)) {
+                            system_message(connection, "invalid command");
+                        }
+                    } else {
+                        broadcast_message(connection, type, message);
+                    }
+                }
             } break;
             case packet_type::weapon_reload:
             {
@@ -208,7 +226,12 @@ class base_protocol : public world_manager
                 connection.m_kills  = stream.read_int();
                 stream.read_color3b(connection.m_color);
 
-                connection.m_name.assign(stream.data(), stream.left());
+                const auto* data = stream.data();
+                auto        left = stream.left();
+                if (data[left - 1] == 0) {
+                    left = std::strlen(data);
+                }
+                connection.set_name({data, left});
 
                 if (connection.m_alive) {
                     std::cout << "[WARNING]: player marked alive has sent existing player packet" << std::endl;
@@ -557,6 +580,11 @@ class base_protocol : public world_manager
     {
         if (peer->data != nullptr) {
             auto& connection = peer_to_connection(peer);
+
+            // prevent locking map
+            if (m_map_used && m_map_ownership == connection.get_id()) {
+                m_map_used = false;
+            }
 
             on_disconnect(connection);
             broadcast_leave(connection);

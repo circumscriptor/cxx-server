@@ -7,6 +7,7 @@
 #pragma once
 
 #include "baseconnection.hxx"
+#include "data/enums.hxx"
 #include "data/playerdata.hxx"
 
 #include <iostream>
