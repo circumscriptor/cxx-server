@@ -20,8 +20,9 @@ namespace spadesx {
  * @brief Packet cache
  *
  */
-struct packet_cache
+class packet_cache
 {
+  public:
     std::array<std::uint8_t, 3>   m_cache_input_data;
     std::array<std::uint8_t, 3>   m_cache_weapon_input;
     std::array<std::uint8_t, 5>   m_cache_kill_action;
@@ -156,89 +157,6 @@ class connection_manager : protected packet_cache
     void broadcast(const std::array<std::uint8_t, N>& data, bool unsequenced = false, std::uint8_t channel = 0)
     {
         broadcast(data.data(), data.size(), unsequenced, channel);
-    }
-
-    /**
-     * @brief Broadcast same data to multiple connections (team)
-     *
-     * @param source Source connection
-     * @param data Data
-     * @param size Length of data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    void broadcast_team(connection&  source,
-                        const void*  data,
-                        std::size_t  size,
-                        bool         unsequenced = false,
-                        std::uint8_t channel     = 0)
-    {
-        for (auto& connection : m_connections) {
-            if (connection == source) {
-                continue;
-            }
-            if (!connection.is_disconnected() && connection.m_team == source.m_team) {
-                connection.send_packet(data, size, unsequenced, channel);
-            }
-        }
-    }
-
-    /**
-     * @brief Broadcast same data to multiple connections (team) - cached array
-     *
-     * @tparam N Length of data
-     * @param source Source connection
-     * @param data Data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    template<std::size_t N>
-    void broadcast_team(connection&                        source,
-                        const std::array<std::uint8_t, N>& data,
-                        bool                               unsequenced = false,
-                        std::uint8_t                       channel     = 0)
-    {
-        broadcast_team(source, data.data(), data.size(), unsequenced, channel);
-    }
-
-    /**
-     * @brief Broadcast same data to multiple connections (team)
-     *
-     * @param team Team
-     * @param data Data
-     * @param size Length of data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    void broadcast_team(team_type    team,
-                        const void*  data,
-                        std::size_t  size,
-                        bool         unsequenced = false,
-                        std::uint8_t channel     = 0)
-    {
-        for (auto& connection : m_connections) {
-            if (!connection.is_disconnected() && connection.m_team == team) {
-                connection.send_packet(data, size, unsequenced, channel);
-            }
-        }
-    }
-
-    /**
-     * @brief Broadcast same data to multiple connections (team) - cached array
-     *
-     * @tparam N Length of data
-     * @param source Source connection
-     * @param data Data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    template<std::size_t N>
-    void broadcast_team(team_type                          team,
-                        const std::array<std::uint8_t, N>& data,
-                        bool                               unsequenced = false,
-                        std::uint8_t                       channel     = 0)
-    {
-        broadcast_team(team, data.data(), data.size(), unsequenced, channel);
     }
 
     /**
@@ -378,10 +296,25 @@ class connection_manager : protected packet_cache
 
         switch (type) {
             case chat_type::all:
-                broadcast(m_cache_chat_message.data(), size);
+                if (!source.m_muted) {
+                    for (auto& connection : m_connections) {
+                        if (!connection.is_disconnected() && !connection.m_deaf) {
+                            connection.send_packet(m_cache_chat_message.data(), size);
+                        }
+                    }
+                }
                 break;
             case chat_type::team:
-                broadcast_team(source.m_team, m_cache_chat_message.data(), size);
+                if (!source.m_muted) {
+                    for (auto& connection : m_connections) {
+                        if (connection.m_team != source.m_team) {
+                            continue;
+                        }
+                        if (!connection.is_disconnected() && !connection.m_deaf) {
+                            connection.send_packet(m_cache_chat_message.data(), size);
+                        }
+                    }
+                }
             default:
                 return; // invalid type
         }

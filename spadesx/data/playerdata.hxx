@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "chatdata.hxx"
 #include "enums.hxx"
 #include "inputdata.hxx"
 #include "lastkilldata.hxx"
@@ -30,7 +31,8 @@ class player_data :
     public weapon_data,
     public score_data,
     public name_data<16>,
-    public color_data
+    public color_data,
+    public chat_data
 {
   public:
     /**
@@ -67,6 +69,7 @@ class player_data :
         reset_input_data();
         reset_transform();
         reset_score();
+        reset_chat();
         m_health       = 100;
         m_tool         = tool_type::gun;
         m_respawn_time = 0;

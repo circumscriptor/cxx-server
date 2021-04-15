@@ -208,10 +208,7 @@ class base_protocol : public world_manager
                 connection.m_kills  = stream.read_int();
                 stream.read_color3b(connection.m_color);
 
-                auto length = stream.left();
-                length      = (length > 15) ? 15 : length;
-                connection.m_name.resize(length);
-                stream.read_array(connection.m_name.data(), length);
+                connection.m_name.assign(stream.data(), stream.left());
 
                 if (connection.m_alive) {
                     std::cout << "[WARNING]: player marked alive has sent existing player packet" << std::endl;

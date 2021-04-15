@@ -114,6 +114,21 @@ class base_connection : public peer
     }
 
     /**
+     * @brief Send generic packet
+     *
+     * @tparam N Size of the packet
+     * @param data Pointer to the memory location containing packet data
+     * @param unsequenced Unsequenced flag
+     * @param channel Channel
+     * @return true On success
+     */
+    template<std::size_t N>
+    bool send_packet(const std::array<std::uint8_t, N>& data, bool unsequenced = true, std::uint8_t channel = 0)
+    {
+        return send_packet(data.data(), data.size(), unsequenced, channel);
+    }
+
+    /**
      * @brief Disconnect
      *
      * @param reason Disconnection reason

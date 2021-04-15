@@ -9,6 +9,8 @@
 #include "baseconnection.hxx"
 #include "data/playerdata.hxx"
 
+#include <iostream>
+
 namespace spadesx {
 
 /**
@@ -40,7 +42,7 @@ class connection : public base_connection, public player_data
      */
     bool send_existing_player(connection& other, std::uint8_t channel = 0)
     {
-        ENetPacket* packet = enet_packet_create(nullptr, 12 + m_name.length(), ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket* packet = enet_packet_create(nullptr, 12 + other.m_name.length(), ENET_PACKET_FLAG_RELIABLE);
         data_stream stream = packet;
 
         stream.write_type(packet_type::existing_player);
@@ -50,7 +52,7 @@ class connection : public base_connection, public player_data
         stream.write_type(other.m_tool);
         stream.write_int(other.m_kills);
         stream.write_color3b(other.m_color);
-        stream.write_array(other.m_name.data(), m_name.length());
+        stream.write_array(other.m_name.data(), other.m_name.length());
         return send(packet, channel);
     }
 
@@ -213,7 +215,7 @@ class connection : public base_connection, public player_data
         stream.write_byte(m_id);
         stream.write_type(type);
         stream.write_array(message.data(), size);
-        return size + 2;
+        return size + 3;
     }
 };
 
