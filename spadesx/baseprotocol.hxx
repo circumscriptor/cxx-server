@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "data/enums.hxx"
 #include "world.hxx"
 
 #include <chrono>
@@ -143,6 +144,16 @@ class base_protocol : public world_manager
                 auto z      = stream.read_int();
 
                 on_block_action(connection, action, x, y, z);
+            } break;
+            case packet_type::chat_message:
+            {
+                if (connection.get_id() != stream.read_byte()) {
+                    std::cout << "[WARNING]: block action - invalid id received" << std::endl;
+                }
+
+                auto             type = stream.read_type<chat_type>();
+                std::string_view message(stream.data(), stream.left());
+                broadcast_message(connection, type, message);
             } break;
             case packet_type::weapon_reload:
             {

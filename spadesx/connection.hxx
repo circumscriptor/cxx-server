@@ -213,7 +213,7 @@ class connection : public base_connection, public player_data
         stream.write_byte(m_id);
         stream.write_type(type);
         stream.write_array(message.data(), size);
-        return size;
+        return size + 2;
     }
 };
 

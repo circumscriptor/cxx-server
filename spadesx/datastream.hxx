@@ -72,6 +72,36 @@ class data_stream
     auto operator=(const data_stream& other) -> data_stream& = default;
 
     /**
+     * @brief Current position
+     *
+     * @return Pointer
+     */
+    [[nodiscard]] const char* data() const noexcept
+    {
+        return reinterpret_cast<const char*>(m_data);
+    }
+
+    // /**
+    //  * @brief Current position
+    //  *
+    //  * @return Pointer
+    //  */
+    // [[nodiscard]] std::uint8_t* begin() const noexcept
+    // {
+    //     return m_data;
+    // }
+
+    // /**
+    //  * @brief End
+    //  *
+    //  * @return Pointer
+    //  */
+    // [[nodiscard]] std::uint8_t* end() const noexcept
+    // {
+    //     return m_end;
+    // }
+
+    /**
      * @brief Get number of bytes left (length - position)
      *
      * @return Number of bytes left

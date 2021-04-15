@@ -7,7 +7,9 @@
 #pragma once
 
 #include "connection.hxx"
+#include "data/enums.hxx"
 
+#include <iostream>
 #include <stdexcept>
 #include <string_view>
 #include <vector>
@@ -200,6 +202,46 @@ class connection_manager : protected packet_cache
     }
 
     /**
+     * @brief Broadcast same data to multiple connections (team)
+     *
+     * @param team Team
+     * @param data Data
+     * @param size Length of data
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_team(team_type    team,
+                        const void*  data,
+                        std::size_t  size,
+                        bool         unsequenced = false,
+                        std::uint8_t channel     = 0)
+    {
+        for (auto& connection : m_connections) {
+            if (!connection.is_disconnected() && connection.m_team == team) {
+                connection.send_packet(data, size, unsequenced, channel);
+            }
+        }
+    }
+
+    /**
+     * @brief Broadcast same data to multiple connections (team) - cached array
+     *
+     * @tparam N Length of data
+     * @param source Source connection
+     * @param data Data
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    template<std::size_t N>
+    void broadcast_team(team_type                          team,
+                        const std::array<std::uint8_t, N>& data,
+                        bool                               unsequenced = false,
+                        std::uint8_t                       channel     = 0)
+    {
+        broadcast_team(team, data.data(), data.size(), unsequenced, channel);
+    }
+
+    /**
      * @brief Broadcast input data
      *
      * @param source Source connection
@@ -336,13 +378,12 @@ class connection_manager : protected packet_cache
 
         switch (type) {
             case chat_type::all:
-                broadcast(source, m_cache_chat_message.data(), size);
+                broadcast(m_cache_chat_message.data(), size);
                 break;
             case chat_type::team:
-                broadcast_team(source, m_cache_chat_message.data(), size);
+                broadcast_team(source.m_team, m_cache_chat_message.data(), size);
             default:
-                // ?
-                return;
+                return; // invalid type
         }
     }
 
