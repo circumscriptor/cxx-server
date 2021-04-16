@@ -8,6 +8,7 @@
 
 #include "connection.hxx"
 #include "data/enums.hxx"
+#include "datastream.hxx"
 
 #include <stdexcept>
 #include <string_view>
@@ -36,6 +37,9 @@ class packet
     static constexpr const std::size_t weapon_reload_size  = 4;
     static constexpr const std::size_t chat_message_size   = 258;
     static constexpr const std::size_t restock_size        = 2;
+    static constexpr const std::size_t intel_capture_size  = 3;
+    static constexpr const std::size_t intel_pickup_size   = 2;
+    static constexpr const std::size_t intel_drop_size     = 13;
 };
 
 /**
@@ -436,6 +440,57 @@ class connection_manager
         stream.write_type(chat_type::system);
         stream.write_array(message.data(), size);
         return size + 3;
+    }
+
+    /**
+     * @brief
+     *
+     * @param source Source connection
+     * @param winning If true, then it's winning capture
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_intel_capture(connection& source, bool winning, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        data_stream stream{m_cache, packet::intel_capture_size};
+        source.fill_intel_capture(stream, winning);
+        broadcast(m_cache, packet::intel_capture_size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcast intel pickup
+     *
+     * @param source Source connection
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_intel_pickup(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        data_stream stream{m_cache, packet::intel_pickup_size};
+        source.fill_intel_pickup(stream);
+        broadcast(m_cache, packet::intel_pickup_size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcast intel drop
+     *
+     * @param source Source connection
+     * @param x The x-coordinate (block)
+     * @param y The y-coordinate (block)
+     * @param z The z-coordinate (block)
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_intel_drop(connection&   source,
+                              std::uint32_t x,
+                              std::uint32_t y,
+                              std::uint32_t z,
+                              bool          unsequenced = false,
+                              std::uint8_t  channel     = 0)
+    {
+        data_stream stream{m_cache, packet::intel_drop_size};
+        source.fill_intel_drop(stream, x, y, z);
+        broadcast(m_cache, packet::intel_drop_size, unsequenced, channel);
     }
 
     /**

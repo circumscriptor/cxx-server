@@ -7,6 +7,7 @@
 #pragma once
 
 #include "baseprotocol.hxx"
+#include "data/base.hxx"
 #include "data/enums.hxx"
 #include "data/team.hxx"
 #include "spawn.hxx"
@@ -20,8 +21,12 @@ namespace spadesx {
 class ctf_team_data : public team_data
 {
   public:
+    ctf_team_data(team_type type) : team_data{type}
+    {
+    }
+
     intel_data m_intel; //!< Intel
-    glm::vec3  m_base;  //!< Base position
+    base_data  m_base;  //!< Base
 };
 
 /**
@@ -31,7 +36,7 @@ class ctf_team_data : public team_data
 class ctf_protocol : public base_protocol
 {
   public:
-    ctf_protocol(std::uint8_t max_players) : base_protocol(max_players)
+    ctf_protocol(std::uint8_t max_players) : base_protocol(max_players), m_teams{team_type::a, team_type::b}
     {
     }
 
@@ -43,10 +48,29 @@ class ctf_protocol : public base_protocol
 
     void on_start() override
     {
-        get_spawn_location(team_type::a, entity_type::base, m_teams[0].m_base);
-        get_spawn_location(team_type::b, entity_type::base, m_teams[1].m_base);
+        for (auto& team : m_teams) {
+            team.m_intel.reset();
+        }
+        get_spawn_location(team_type::a, entity_type::base, m_teams[0].m_base.m_position);
+        get_spawn_location(team_type::b, entity_type::base, m_teams[1].m_base.m_position);
         get_spawn_location(team_type::a, entity_type::intel, m_teams[0].m_intel.m_position);
         get_spawn_location(team_type::b, entity_type::intel, m_teams[1].m_intel.m_position);
+    }
+
+    void on_kill(connection& killer, connection& victim, kill_type type, std::uint8_t respawn_time) override
+    {
+        server_handler::on_kill(killer, victim, type, respawn_time);
+        if (victim.m_team != team_type::spectator) {
+            auto& enemy_team = get_enemy_team(victim.m_team);
+            if (enemy_team.m_intel.is_held_by(victim.get_id())) {
+                enemy_team.m_intel.drop(victim.m_position);
+
+                auto x = static_cast<std::uint32_t>(enemy_team.m_intel.m_position.x);
+                auto y = static_cast<std::uint32_t>(enemy_team.m_intel.m_position.y);
+                auto z = static_cast<std::uint32_t>(enemy_team.m_intel.m_position.z);
+                broadcast_intel_drop(victim, x, y, z);
+            }
+        }
     }
 
     void on_update(connection& connection) override
@@ -58,9 +82,28 @@ class ctf_protocol : public base_protocol
         }
         if (connection.m_alive && connection.m_respawn_time == 0) { // reuse respawn timer for restock
             if (connection.m_team != team_type::spectator) {
-                if (glm::distance(connection.m_position, get_team(connection.m_team).m_base) <= 3.0) {
-                    connection.m_respawn_time = 15;
-                    broadcast_restock(connection);
+                auto& team       = get_team(connection.m_team);
+                auto& enemy_team = get_enemy_team(connection.m_team);
+                if (team.m_base.distance(connection) <= 3.0) {
+                    if (enemy_team.m_intel.is_held_by(connection.get_id())) {
+                        team.add_score();
+                        broadcast_intel_capture(connection, team.m_score == m_score_limit);
+
+                        enemy_team.m_intel.drop();
+                        get_spawn_location(enemy_team.type(), entity_type::intel, enemy_team.m_intel.m_position);
+
+                        auto x = static_cast<std::uint32_t>(enemy_team.m_intel.m_position.x);
+                        auto y = static_cast<std::uint32_t>(enemy_team.m_intel.m_position.y);
+                        auto z = static_cast<std::uint32_t>(enemy_team.m_intel.m_position.z);
+                        broadcast_intel_drop(connection, x, y, z);
+                    } else {
+                        connection.m_respawn_time = 15;
+                        broadcast_restock(connection);
+                    }
+                }
+                if (!enemy_team.m_intel.is_taken() && enemy_team.m_intel.distance(connection) <= 2.0) {
+                    enemy_team.m_intel.pick(connection.get_id());
+                    broadcast_intel_pickup(connection);
                 }
             }
         }
@@ -99,8 +142,8 @@ class ctf_protocol : public base_protocol
             stream.write_byte(m_teams[1].m_intel.holder());
             stream.skip(11);
         }
-        stream.write_vec3(m_teams[0].m_base);
-        stream.write_vec3(m_teams[1].m_base);
+        stream.write_vec3(m_teams[0].m_base.m_position);
+        stream.write_vec3(m_teams[1].m_base.m_position);
         return connection.send_packet(m_cache, packet::state_data_size);
     }
 
@@ -135,6 +178,24 @@ class ctf_protocol : public base_protocol
                 return m_teams[0];
             case team_type::b:
                 return m_teams[1];
+            default:
+                throw std::runtime_error("no team data for the given team");
+        }
+    }
+
+    /**
+     * @brief Get enemy team data
+     *
+     * @param team Team
+     * @return Enemy team data
+     */
+    ctf_team_data& get_enemy_team(team_type team)
+    {
+        switch (team) {
+            case team_type::a:
+                return m_teams[1];
+            case team_type::b:
+                return m_teams[0];
             default:
                 throw std::runtime_error("no team data for the given team");
         }

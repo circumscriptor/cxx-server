@@ -137,6 +137,7 @@ class base_protocol : public server_handler, public command_manager
     {
         for (auto& other : m_connections) {
             if (connection != other && other.is_connected()) { // send only connected players
+                // TODO: Do not send if player didn't send existing player packet
                 connection.send_existing_player(other);
             }
         }

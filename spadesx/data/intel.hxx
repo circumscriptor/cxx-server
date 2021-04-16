@@ -9,7 +9,6 @@
 #include "position.hxx"
 
 #include <cstdint>
-#include <glm/glm.hpp>
 
 namespace spadesx {
 
@@ -20,6 +19,24 @@ namespace spadesx {
 class intel_data : public position_data
 {
   public:
+    /**
+     * @brief Reset intel
+     *
+     */
+    void reset()
+    {
+        m_taken = false;
+    }
+
+    /**
+     * @brief Drop intel
+     *
+     */
+    void drop()
+    {
+        m_taken = false;
+    }
+
     /**
      * @brief Drop intel
      *
@@ -42,17 +59,6 @@ class intel_data : public position_data
     }
 
     /**
-     * @brief Get distance between player's position and intel's position
-     *
-     * @param position Player's position
-     * @return Distance
-     */
-    [[nodiscard]] float distance(const glm::vec3& position) const noexcept
-    {
-        return glm::distance(m_position, position);
-    }
-
-    /**
      * @brief Is intel taken
      *
      * @return true If taken
@@ -70,6 +76,17 @@ class intel_data : public position_data
     [[nodiscard]] std::uint8_t holder() const noexcept
     {
         return m_holder;
+    }
+
+    /**
+     * @brief Check whether the intel taken by the given player
+     *
+     * @param id Player ID
+     * @return true If is taken by the given player
+     */
+    [[nodiscard]] bool is_held_by(std::uint8_t id) const noexcept
+    {
+        return m_taken && m_holder == id;
     }
 
   private:

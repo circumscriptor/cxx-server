@@ -6,6 +6,7 @@
 #
 
 set(HEADERS_SERVER_DATA
+    base.hxx
     color.hxx
     enums.hxx
     input.hxx

@@ -111,7 +111,7 @@ class server_handler : public world_manager
         if (target < m_num_players) {
             auto& victim = m_connections[target];
             if (victim.is_connected()) {
-                on_player_hit(source, victim, type);
+                on_packet_hit(source, victim, type);
             } else {
                 std::cout << "[WARNING]: hit packet - invalid target" << std::endl;
             }
@@ -398,6 +398,19 @@ class server_handler : public world_manager
     }
 
     /**
+     * @brief On kill event
+     *
+     * @param killer Killer
+     * @param victim Victim
+     * @param type Kill type
+     * @param respawn_time Respawn time
+     */
+    virtual void on_kill(connection& killer, connection& victim, kill_type type, std::uint8_t respawn_time)
+    {
+        kill_and_broadcast(killer, victim, type, respawn_time);
+    }
+
+    /**
      * @brief Position update
      *
      * @param source Source connection
@@ -452,7 +465,7 @@ class server_handler : public world_manager
      * @param target Target (connection)
      * @param type Hit type
      */
-    virtual void on_player_hit(connection& source, connection& target, hit_type type)
+    virtual void on_packet_hit(connection& source, connection& target, hit_type type)
     {
         if (!source.m_can_kill) {
             return;
@@ -485,7 +498,7 @@ class server_handler : public world_manager
                 } else {
                     t_kill = kill_type::weapon;
                 }
-                kill_and_broadcast(source, target, t_kill, m_respawn_time);
+                on_kill(source, target, t_kill, m_respawn_time);
             }
         }
     }
@@ -593,7 +606,7 @@ class server_handler : public world_manager
     virtual void on_team_change(connection& source, team_type team)
     {
         if (source.m_alive) {
-            kill_and_broadcast(source, source, kill_type::team_change, m_respawn_time);
+            on_kill(source, source, kill_type::team_change, m_respawn_time);
         }
         source.m_team = team;
     }
@@ -607,7 +620,7 @@ class server_handler : public world_manager
     virtual void on_weapon_change(connection& source, weapon_type weapon)
     {
         if (source.m_alive) {
-            kill_and_broadcast(source, source, kill_type::weapon_change, m_respawn_time);
+            on_kill(source, source, kill_type::weapon_change, m_respawn_time);
         }
         source.set_weapon(weapon);
     }

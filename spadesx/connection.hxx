@@ -264,6 +264,47 @@ class connection : public base_connection, public player_data
         stream.write_type(packet_type::restock);
         stream.write_byte(m_id);
     }
+
+    /**
+     * @brief Fill intel capture packet
+     *
+     * @param stream Packet stream
+     * @param winning If true, then it's winning capture
+     */
+    void fill_intel_capture(data_stream& stream, bool winning)
+    {
+        stream.write_type(packet_type::intel_capture);
+        stream.write_byte(m_id);
+        stream.write_byte(winning ? 1 : 0);
+    }
+
+    /**
+     * @brief Fill intel pickup packet
+     *
+     * @param stream Packet stream
+     */
+    void fill_intel_pickup(data_stream& stream)
+    {
+        stream.write_type(packet_type::intel_pickup);
+        stream.write_byte(m_id);
+    }
+
+    /**
+     * @brief Fill intel drop
+     *
+     * @param stream Packet stream
+     * @param x The x-coordinate (block)
+     * @param y The y-coordinate (block)
+     * @param z The z-coordinate (block)
+     */
+    void fill_intel_drop(data_stream& stream, std::uint32_t x, std::uint32_t y, std::uint32_t z)
+    {
+        stream.write_type(packet_type::intel_drop);
+        stream.write_byte(m_id);
+        stream.write_int(x);
+        stream.write_int(y);
+        stream.write_int(z);
+    }
 };
 
 } // namespace spadesx

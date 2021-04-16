@@ -28,7 +28,8 @@ auto main(int argc, char** argv) -> int
     }
 
     protocol.get_spawn(spadesx::team_type::a).set({64.F, 224.F}, {128.F, 290.F});
-    protocol.get_spawn(spadesx::team_type::b).set({384.F, 224.F}, {448.F, 290.F});
+    protocol.get_spawn(spadesx::team_type::b).set({64.F, 224.F}, {128.F, 290.F});
+    // protocol.get_spawn(spadesx::team_type::b).set({384.F, 224.F}, {448.F, 290.F});
     protocol.get_spawn(spadesx::team_type::spectator).set({256.F, 256.F}, {256.F, 256.F});
     protocol.get_team(spadesx::team_type::a).set_name("Team A");
     protocol.get_team(spadesx::team_type::b).set_name("Team B");
