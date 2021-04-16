@@ -96,7 +96,7 @@ class ctf_protocol : public base_protocol
      */
     bool on_send_state(connection& connection) override
     {
-        data_stream stream(m_cache_state_data);
+        data_stream stream{m_cache, packet_cache::state_data_size};
         stream.write_type(packet_type::state_data);
         stream.write_byte(connection.get_id());
         stream.write_color3b(m_fog_color);
@@ -124,7 +124,7 @@ class ctf_protocol : public base_protocol
         }
         stream.write_vec3(m_teams[0].m_base);
         stream.write_vec3(m_teams[1].m_base);
-        return connection.send_packet(m_cache_state_data.data(), m_cache_state_data.size());
+        return connection.send_packet(m_cache, packet_cache::state_data_size);
     }
 
     /**

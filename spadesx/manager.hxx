@@ -10,6 +10,7 @@
 #include "connection.hxx"
 #include "data/enums.hxx"
 
+#include <cstddef>
 #include <iostream>
 #include <stdexcept>
 #include <string_view>
@@ -24,20 +25,22 @@ namespace spadesx {
 class packet_cache
 {
   public:
-    std::array<std::uint8_t, 3>   m_cache_input_data;
-    std::array<std::uint8_t, 3>   m_cache_weapon_input;
-    std::array<std::uint8_t, 5>   m_cache_kill_action;
-    std::array<std::uint8_t, 32>  m_cache_create_player;
-    std::array<std::uint8_t, 769> m_cache_world_update;
-    std::array<std::uint8_t, 90>  m_cache_state_data;
-    std::array<std::uint8_t, 2>   m_cache_player_left;
-    std::array<std::uint8_t, 30>  m_cache_grenade_packet;
-    std::array<std::uint8_t, 3>   m_cache_set_tool;
-    std::array<std::uint8_t, 5>   m_cache_set_color;
-    std::array<std::uint8_t, 15>  m_cache_block_action;
-    std::array<std::uint8_t, 4>   m_cache_weapon_reload;
-    std::array<std::uint8_t, 258> m_cache_chat_message;
-    std::array<std::uint8_t, 2>   m_cache_restock;
+    static constexpr const std::size_t input_data_size     = 3;
+    static constexpr const std::size_t weapon_input_size   = 3;
+    static constexpr const std::size_t kill_action_size    = 5;
+    static constexpr const std::size_t create_player_size  = 32;
+    static constexpr const std::size_t world_update_size   = 769;
+    static constexpr const std::size_t state_data_size     = 90;
+    static constexpr const std::size_t grenade_packet_size = 30;
+    static constexpr const std::size_t player_left_size    = 2;
+    static constexpr const std::size_t block_action_size   = 15;
+    static constexpr const std::size_t set_tool_size       = 3;
+    static constexpr const std::size_t set_color_size      = 5;
+    static constexpr const std::size_t weapon_reload_size  = 4;
+    static constexpr const std::size_t chat_message_size   = 258;
+    static constexpr const std::size_t restock_size        = 2;
+
+    std::uint8_t m_cache[769];
 };
 
 /**
@@ -113,24 +116,6 @@ class connection_manager : protected packet_cache
     }
 
     /**
-     * @brief Broadcast same data to multiple connections (except source) - cached array
-     *
-     * @tparam N Length of data
-     * @param source Source connection
-     * @param data Data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    template<std::size_t N>
-    void broadcast(const connection&                  source,
-                   const std::array<std::uint8_t, N>& data,
-                   bool                               unsequenced = false,
-                   std::uint8_t                       channel     = 0)
-    {
-        broadcast(source, data.data(), data.size(), unsequenced, channel);
-    }
-
-    /**
      * @brief Broadcast same data to multiple connections
      *
      * @param data Data
@@ -148,41 +133,59 @@ class connection_manager : protected packet_cache
     }
 
     /**
-     * @brief Broadcast same data to multiple connections - cached array
-     *
-     * @tparam N Length of data
-     * @param data Data
-     * @param unsequenced If true sets unsequenced flag
-     * @param channel Channel
-     */
-    template<std::size_t N>
-    void broadcast(const std::array<std::uint8_t, N>& data, bool unsequenced = false, std::uint8_t channel = 0)
-    {
-        broadcast(data.data(), data.size(), unsequenced, channel);
-    }
-
-    /**
      * @brief Broadcast input data
      *
      * @param source Source connection
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void broadcast_input_data(connection& source)
+    void broadcast_input_data(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache_input_data};
+        data_stream stream{m_cache, packet_cache::input_data_size};
         source.fill_input_data(stream);
-        broadcast(source, m_cache_input_data);
+        broadcast(source, m_cache, packet_cache::input_data_size, unsequenced, channel);
     }
 
     /**
      * @brief Broadcast weapon input
      *
      * @param source Source connection
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void broadcast_weapon_input(connection& source)
+    void broadcast_weapon_input(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream output{m_cache_weapon_input};
-        source.fill_weapon_input(output);
-        broadcast(source, m_cache_weapon_input);
+        data_stream stream{m_cache, packet_cache::weapon_input_size};
+        source.fill_weapon_input(stream);
+        broadcast(source, m_cache, packet_cache::weapon_input_size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcast create player packet
+     *
+     * @param connection Player to be created
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_create(connection& connection, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        data_stream stream{m_cache, packet_cache::create_player_size};
+        auto        size = connection.fill_create_player(stream);
+        broadcast(m_cache, size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcast player left
+     *
+     * @param connection Connection
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_leave(connection& connection, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        data_stream stream{m_cache, packet_cache::player_left_size};
+        connection.fill_player_left(stream);
+        broadcast(connection, m_cache, packet_cache::player_left_size, unsequenced, channel);
     }
 
     /**
@@ -192,17 +195,24 @@ class connection_manager : protected packet_cache
      * @param victim Victim
      * @param type Kill type
      * @param respawn_time Respawn time
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void kill_and_broadcast(connection& killer, connection& victim, kill_type type, std::uint8_t respawn_time)
+    void kill_and_broadcast(connection&  killer,
+                            connection&  victim,
+                            kill_type    type,
+                            std::uint8_t respawn_time,
+                            bool         unsequenced = false,
+                            std::uint8_t channel     = 0)
     {
         victim.m_last_kill_killer = killer.get_id();
         victim.m_last_kill_type   = type;
         victim.m_respawn_time     = respawn_time;
         victim.reset_death();
 
-        data_stream stream{m_cache_kill_action};
+        data_stream stream{m_cache, packet_cache::kill_action_size};
         victim.fill_kill_action(stream);
-        broadcast(m_cache_kill_action);
+        broadcast(m_cache, packet_cache::kill_action_size, unsequenced, channel);
     }
 
     /**
@@ -212,12 +222,19 @@ class connection_manager : protected packet_cache
      * @param position Initial position
      * @param velocity Initial velocity
      * @param fuse Fuse time
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void broadcast_grenade(connection& source, const glm::vec3& position, const glm::vec3& velocity, float fuse)
+    void broadcast_grenade(connection&      source,
+                           const glm::vec3& position,
+                           const glm::vec3& velocity,
+                           float            fuse,
+                           bool             unsequenced = false,
+                           std::uint8_t     channel     = 0)
     {
-        data_stream stream{m_cache_grenade_packet};
+        data_stream stream{m_cache, packet_cache::grenade_packet_size};
         source.fill_grenade_packet(stream, position, velocity, fuse);
-        broadcast(source, m_cache_grenade_packet);
+        broadcast(source, m_cache, packet_cache::grenade_packet_size, unsequenced, channel);
     }
 
     /**
@@ -228,25 +245,73 @@ class connection_manager : protected packet_cache
      * @param y The y-coordinate of the block (or grenade)
      * @param z The z-coordinate of the block (or grenade)
      * @param action Block action
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
     void broadcast_block_action(connection&       source,
                                 std::uint32_t     x,
                                 std::uint32_t     y,
                                 std::uint32_t     z,
-                                block_action_type action)
+                                block_action_type action,
+                                bool              unsequenced = false,
+                                std::uint8_t      channel     = 0)
     {
-        data_stream stream{m_cache_block_action};
+        data_stream stream{m_cache, packet_cache::block_action_size};
         source.fill_block_action(stream, x, y, z, action);
-        broadcast(m_cache_block_action);
+        broadcast(m_cache, packet_cache::block_action_size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcast set tool
+     *
+     * @param source Source connection
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_set_tool(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        data_stream stream{m_cache, packet_cache::set_tool_size};
+        source.fill_set_tool(stream);
+        broadcast(source, m_cache, packet_cache::set_tool_size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcast set color
+     *
+     * @param source Source connection
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_set_color(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        data_stream stream{m_cache, packet_cache::set_color_size};
+        source.fill_set_color(stream);
+        broadcast(source, m_cache, packet_cache::set_color_size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcast weapon reload
+     *
+     * @param source Source connection
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_weapon_reload(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        data_stream stream{m_cache, packet_cache::weapon_reload_size};
+        source.fill_weapon_reload(stream);
+        broadcast(source, m_cache, packet_cache::weapon_reload_size, unsequenced, channel);
     }
 
     /**
      * @brief Broadcast world update
      *
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void broadcast_world_update()
+    void broadcast_world_update(bool unsequenced = true, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache_world_update};
+        data_stream stream{m_cache, packet_cache::world_update_size};
         stream.write_type(packet_type::world_update);
         for (auto& connection : m_connections) {
             stream.write_vec3(connection.m_position);
@@ -254,46 +319,23 @@ class connection_manager : protected packet_cache
         }
         for (auto& connection : m_connections) {
             if (connection.is_connected()) {
-                connection.send_packet(m_cache_world_update.data(), m_cache_world_update.size(), true);
+                connection.send_packet(m_cache, packet_cache::world_update_size, unsequenced, channel);
             }
         }
-    }
-
-    /**
-     * @brief Broadcast create player packet
-     *
-     * @param connection Player to be created
-     */
-    void broadcast_create(connection& connection)
-    {
-        data_stream stream{m_cache_create_player};
-        auto        size = connection.fill_create_player(stream);
-        broadcast(m_cache_create_player.data(), size);
-    }
-
-    /**
-     * @brief Broadcast player left
-     *
-     * @param connection Connection
-     */
-    void broadcast_leave(connection& connection)
-    {
-        data_stream stream(m_cache_player_left);
-        stream.write_type(packet_type::player_left);
-        stream.write_byte(connection.get_id());
-        broadcast(connection, m_cache_player_left);
     }
 
     /**
      * @brief Broadcast restock
      *
      * @param target Target to be restocked
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void broadcast_restock(connection& target)
+    void broadcast_restock(connection& target, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache_restock};
+        data_stream stream{m_cache, packet_cache::restock_size};
         target.fill_restock(stream);
-        broadcast(m_cache_restock);
+        broadcast(m_cache, packet_cache::restock_size, unsequenced, channel);
     }
 
     /**
@@ -302,10 +344,16 @@ class connection_manager : protected packet_cache
      * @param source Source connection
      * @param type Chat type
      * @param message Message
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void broadcast_message(connection& source, chat_type type, std::string_view message)
+    void broadcast_message(connection&      source,
+                           chat_type        type,
+                           std::string_view message,
+                           bool             unsequenced = false,
+                           std::uint8_t     channel     = 0)
     {
-        data_stream stream{m_cache_chat_message};
+        data_stream stream{m_cache, packet_cache::chat_message_size};
         auto        size = source.fill_chat_message(stream, type, message);
 
         switch (type) {
@@ -313,7 +361,7 @@ class connection_manager : protected packet_cache
                 if (!source.m_muted) {
                     for (auto& connection : m_connections) {
                         if (!connection.is_disconnected() && !connection.m_deaf) {
-                            connection.send_packet(m_cache_chat_message.data(), size);
+                            connection.send_packet(m_cache, size, unsequenced, channel);
                         }
                     }
                 }
@@ -325,7 +373,7 @@ class connection_manager : protected packet_cache
                             continue;
                         }
                         if (!connection.is_disconnected() && !connection.m_deaf) {
-                            connection.send_packet(m_cache_chat_message.data(), size);
+                            connection.send_packet(m_cache, size, unsequenced, channel);
                         }
                     }
                 }
@@ -338,12 +386,14 @@ class connection_manager : protected packet_cache
      * @brief Send system message
      *
      * @param message Message
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void broadcast_system_message(std::string_view message)
+    void broadcast_system_message(std::string_view message, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache_chat_message};
+        data_stream stream{m_cache, packet_cache::chat_message_size};
         auto        size = fill_system_message(stream, message);
-        broadcast(m_cache_chat_message.data(), size);
+        broadcast(m_cache, size, unsequenced, channel);
     }
 
     /**
@@ -351,12 +401,15 @@ class connection_manager : protected packet_cache
      *
      * @param target Target connection
      * @param message Message
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
      */
-    void system_message(connection& target, std::string_view message)
+    void
+    system_message(connection& target, std::string_view message, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache_chat_message};
+        data_stream stream{m_cache, packet_cache::chat_message_size};
         auto        size = fill_system_message(stream, message);
-        target.send_packet(m_cache_chat_message.data(), size);
+        target.send_packet(m_cache, size, unsequenced, channel);
     }
 
     /**

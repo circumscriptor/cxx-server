@@ -116,11 +116,7 @@ class base_protocol : public world_manager, public command_manager
 
                 connection.m_tool = stream.read_type<tool_type>();
 
-                data_stream output(m_cache_set_tool);
-                output.write_type(packet_type::set_tool);
-                output.write_byte(connection.get_id());
-                output.write_type(connection.m_tool);
-                broadcast(connection, m_cache_set_tool);
+                broadcast_set_tool(connection);
             } break;
             case packet_type::set_color:
             {
@@ -130,11 +126,7 @@ class base_protocol : public world_manager, public command_manager
 
                 stream.read_color3b(connection.m_color);
 
-                data_stream output(m_cache_set_color);
-                output.write_type(packet_type::set_color);
-                output.write_byte(connection.get_id());
-                output.write_color3b(connection.m_color);
-                broadcast(connection, m_cache_set_color);
+                broadcast_set_color(connection);
             } break;
             case packet_type::block_action:
             {
@@ -182,9 +174,7 @@ class base_protocol : public world_manager, public command_manager
                 connection.m_clip_ammo    = stream.read_byte();
                 connection.m_reserve_ammo = stream.read_byte();
 
-                data_stream output(m_cache_weapon_reload);
-                connection.fill_weapon_reload(output);
-                broadcast(connection, m_cache_weapon_reload);
+                broadcast_weapon_reload(connection);
             } break;
             case packet_type::change_team:
             {

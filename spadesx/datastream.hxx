@@ -36,8 +36,8 @@ class data_stream
     /**
      * @brief Construct a new data_stream object
      *
-     * @param data_start
-     * @param data_end
+     * @param data_start Data start
+     * @param data_end Data end
      */
     data_stream(std::uint8_t* data_start, std::uint8_t* data_end) noexcept : m_data{data_start}, m_end{data_end}
     {
@@ -51,6 +51,16 @@ class data_stream
      */
     template<std::size_t N>
     data_stream(std::array<std::uint8_t, N>& source) noexcept : m_data{source.begin()}, m_end{source.end()}
+    {
+    }
+
+    /**
+     * @brief Construct a new data_stream object
+     *
+     * @param data Data
+     * @param size Size
+     */
+    data_stream(std::uint8_t* data, std::size_t size) noexcept : m_data{data}, m_end{data + size}
     {
     }
 

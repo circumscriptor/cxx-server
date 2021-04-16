@@ -111,7 +111,18 @@ class connection : public base_connection, public player_data
         stream.write_type(m_team);
         stream.write_vec3(m_position);
         stream.write_array(m_name.data(), m_name.length());
-        return 18 + m_name.length();
+        return 16 + m_name.length();
+    }
+
+    /**
+     * @brief Fill player left packet
+     *
+     * @param stream Packet stream
+     */
+    void fill_player_left(data_stream& stream)
+    {
+        stream.write_type(packet_type::player_left);
+        stream.write_byte(m_id);
     }
 
     /**
@@ -119,13 +130,37 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_kill_action(data_stream& stream) const
+    void fill_kill_action(data_stream& stream)
     {
         stream.write_type(packet_type::kill_action);
         stream.write_byte(m_id);
         stream.write_byte(m_last_kill_killer);
         stream.write_type(m_last_kill_type);
         stream.write_byte(m_respawn_time);
+    }
+
+    /**
+     * @brief Fill set tool
+     *
+     * @param stream Packet stream
+     */
+    void fill_set_tool(data_stream& stream)
+    {
+        stream.write_type(packet_type::set_tool);
+        stream.write_byte(m_id);
+        stream.write_type(m_tool);
+    }
+
+    /**
+     * @brief Fill set color
+     *
+     * @param stream Packet stream
+     */
+    void fill_set_color(data_stream& stream)
+    {
+        stream.write_type(packet_type::set_color);
+        stream.write_byte(m_id);
+        stream.write_color3b(m_color);
     }
 
     /**
