@@ -8,6 +8,7 @@
 
 #include "data/enums.hxx"
 #include "datastream.hxx"
+#include "line.hxx"
 #include "world.hxx"
 
 #include <string_view>
@@ -211,6 +212,26 @@ class server_handler : public world_manager
     }
 
     /**
+     * @brief Handle block line
+     *
+     * @param source Source connection
+     * @param stream Packet stream
+     */
+    void handle_block_line(connection& source, data_stream& stream)
+    {
+        if (source.get_id() != stream.read_byte()) {
+            std::cout << "[WARNING]: block line - invalid id received" << std::endl;
+        }
+
+        glm::ivec3 start;
+        glm::ivec3 end;
+        stream.read_ivec3(start);
+        stream.read_ivec3(end);
+
+        on_block_line(source, start, end);
+    }
+
+    /**
      * @brief Handle chat message
      *
      * @param source Source connection
@@ -375,6 +396,9 @@ class server_handler : public world_manager
                 break;
             case packet_type::block_action:
                 handle_block_action(connection, stream);
+                break;
+            case packet_type::block_line:
+                handle_block_line(connection, stream);
                 break;
             case packet_type::chat_message:
                 handle_chat_message(connection, stream);
@@ -584,6 +608,37 @@ class server_handler : public world_manager
     }
 
     /**
+     * @brief Block line
+     *
+     * @param source Source connection
+     * @param start Start position
+     * @param end End position
+     */
+    virtual void on_block_line(connection& source, glm::ivec3 start, glm::ivec3 end)
+    {
+        if (!source.m_can_build) {
+            return;
+        }
+
+        if (!m_map->has_neighbor(start.x, start.y, start.z)) {
+            return;
+        }
+
+        if (!m_map->has_neighbor(end.x, end.y, end.z)) {
+            return;
+        }
+
+        auto size = m_line.line(start, end);
+
+        for (std::uint32_t i = 0; i < size; ++i) {
+            const auto& block = m_line.get(i);
+            m_map->modify_block(block.x, block.y, block.z, true, source.get_color());
+        }
+
+        broadcast_block_line(source, start, end);
+    }
+
+    /**
      * @brief Reload weapon
      *
      * @param source Source connection
@@ -670,6 +725,7 @@ class server_handler : public world_manager
     }
 
   protected:
+    block_line   m_line;            //!< Block line
     std::uint8_t m_respawn_time{0}; //!< Current respawn time
 };
 

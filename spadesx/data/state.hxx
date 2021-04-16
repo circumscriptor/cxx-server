@@ -46,7 +46,7 @@ class player_state
     {
         reset_player_state_death();
         m_can_spawn = false;
-        m_can_break = true;
+        m_can_build = true;
         m_can_kill  = true;
     }
 
@@ -54,7 +54,7 @@ class player_state
     bool m_gliding{false};   //!< In the air (airborne)
     bool m_crouching{false}; //!< Crouching state
     bool m_can_spawn{false}; //!< Is player allowed to spawn
-    bool m_can_break{true};  //!< Is player allowed to break blocks
+    bool m_can_build{true};  //!< Is player allowed to break blocks
     bool m_can_kill{true};   //!< Is player allowed to kill players
 };
 

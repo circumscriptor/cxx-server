@@ -9,6 +9,7 @@
 #include "baseconnection.hxx"
 #include "data/enums.hxx"
 #include "data/player.hxx"
+#include "datastream.hxx"
 
 #include <iostream>
 
@@ -222,6 +223,21 @@ class connection : public base_connection, public player_data
         stream.write_int(x);
         stream.write_int(y);
         stream.write_int(z);
+    }
+
+    /**
+     * @brief Fill block line packet
+     *
+     * @param stream Packet stream
+     * @param start Start position
+     * @param end End position
+     */
+    void fill_block_line(data_stream& stream, const glm::ivec3& start, const glm::ivec3& end)
+    {
+        stream.write_type(packet_type::block_line);
+        stream.write_byte(m_id);
+        stream.write_ivec3(start);
+        stream.write_ivec3(end);
     }
 
     /**

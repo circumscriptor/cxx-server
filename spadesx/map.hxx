@@ -191,6 +191,54 @@ class map
     }
 
     /**
+     * @brief Check whether the block (or air) has a neighbor (another solid block attached)
+     *
+     * @param offset The offset
+     * @return true If the block has a neighbor
+     * @return false If the block does not have a neighbor
+     */
+    [[nodiscard]] bool has_neighbor(std::uint32_t offset) const
+    {
+        // check above, below
+        auto z = offset & 0x3F;
+        if (z > 0 && is_block(offset - 1)) { // check block above
+            return true;
+        }
+        if (z + 1 < size_z && is_block(offset + 1)) { // check block below
+            return true;
+        }
+        // check left, right
+        auto x = (offset >> 6) & 0x1FF;
+        if (x > 0 && is_block(offset - size_z)) { // check block on left
+            return true;
+        }
+        if (x + 1 < size_x && is_block(offset + size_z)) { // check block on right
+            return true;
+        }
+        // check up, down
+        auto y = (offset >> 15) & 0x1FF;
+        if (y > 0 && is_block(offset - size_yz)) { // check block left
+            return true;
+        }
+        if (y + 1 < size_y && is_block(offset + size_yz)) { // check block right
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @brief Check whether the block (or air) has a neighbor (another solid block attached)
+     *
+     * @param offset The offset
+     * @return true If the block has a neighbor
+     * @return false If the block does not have a neighbor
+     */
+    [[nodiscard]] bool has_neighbor(std::uint32_t x, std::uint32_t y, std::uint32_t z) const
+    {
+        return has_neighbor(get_offset(x, y, z));
+    }
+
+    /**
      * @brief Get the color of the block on the given offset
      *
      * @param offset The offset

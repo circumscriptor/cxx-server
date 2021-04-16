@@ -211,13 +211,25 @@ class data_stream
     /**
      * @brief Read 3D-vector
      *
-     * @param result Vector3 object
+     * @param result Vector
      */
     void read_vec3(glm::vec3& result)
     {
         result.x = read_float();
         result.y = read_float();
         result.z = read_float();
+    }
+
+    /**
+     * @brief Read integer 3D-vector
+     *
+     * @param result Vector
+     */
+    void read_ivec3(glm::ivec3& result)
+    {
+        result.x = static_cast<int>(read_int());
+        result.y = static_cast<int>(read_int());
+        result.z = static_cast<int>(read_int());
     }
 
     /**
@@ -307,13 +319,25 @@ class data_stream
     /**
      * @brief Write 3D-vector
      *
-     * @param value Vector3 object
+     * @param value Vector
      */
     void write_vec3(const glm::vec3& value)
     {
         write_float(value.x);
         write_float(value.y);
         write_float(value.z);
+    }
+
+    /**
+     * @brief Write integer 3D-vector
+     *
+     * @param value Vector
+     */
+    void write_ivec3(const glm::ivec3& value)
+    {
+        write_int(value.x);
+        write_int(value.y);
+        write_int(value.z);
     }
 
     /**

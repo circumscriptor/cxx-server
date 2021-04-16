@@ -10,6 +10,7 @@
 #include "data/enums.hxx"
 #include "datastream.hxx"
 
+#include <glm/fwd.hpp>
 #include <stdexcept>
 #include <string_view>
 #include <vector>
@@ -32,6 +33,7 @@ class packet
     static constexpr const std::size_t grenade_packet_size = 30;
     static constexpr const std::size_t player_left_size    = 2;
     static constexpr const std::size_t block_action_size   = 15;
+    static constexpr const std::size_t block_line_size     = 26;
     static constexpr const std::size_t set_tool_size       = 3;
     static constexpr const std::size_t set_color_size      = 5;
     static constexpr const std::size_t weapon_reload_size  = 4;
@@ -273,6 +275,26 @@ class connection_manager
         data_stream stream{m_cache, packet::block_action_size};
         source.fill_block_action(stream, x, y, z, action);
         broadcast(m_cache, packet::block_action_size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcast block line
+     *
+     * @param source Source connection
+     * @param start Start position
+     * @param end End position
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_block_line(connection&       source,
+                              const glm::ivec3& start,
+                              const glm::ivec3& end,
+                              bool              unsequenced = false,
+                              std::uint8_t      channel     = 0)
+    {
+        data_stream stream{m_cache, packet::block_line_size};
+        source.fill_block_line(stream, start, end);
+        broadcast(m_cache, packet::block_line_size, unsequenced, channel);
     }
 
     /**
