@@ -49,35 +49,12 @@ class ctf_protocol : public base_protocol
         get_spawn_location(team_type::b, entity_type::intel, m_teams[1].m_intel.m_position);
     }
 
-    // bool on_connect(ENetPeer* peer) override
-    // {
-    //     return true;
-    // }
-
-    // void on_disconnect(ENetPeer* peer) override
-    // {
-    // }
-
-    // void on_receive(ENetPeer* peer, ENetPacket* packet) override
-    // {
-    // }
-
-    void on_create(connection& connection) override
-    {
-        get_spawn_location(connection.m_team, entity_type::player, connection.m_position);
-        broadcast_create(connection);
-    }
-
-    // void on_kill(connection& killer, connection& victim, kill_type type) override
-    // {
-    //     kill(killer, victim, type, m_respawn_time);
-    // }
-
     void on_update(connection& connection) override
     {
         if (connection.m_can_spawn && !connection.m_alive && connection.m_respawn_time == 0) {
             connection.m_alive = true;
-            on_create(connection);
+            get_spawn_location(connection.m_team, entity_type::player, connection.m_position);
+            broadcast_create(connection);
         }
         if (connection.m_alive && connection.m_respawn_time == 0) { // reuse respawn timer for restock
             if (connection.m_team != team_type::spectator) {
@@ -96,7 +73,7 @@ class ctf_protocol : public base_protocol
      */
     bool on_send_state(connection& connection) override
     {
-        data_stream stream{m_cache, packet_cache::state_data_size};
+        data_stream stream{m_cache, packet::state_data_size};
         stream.write_type(packet_type::state_data);
         stream.write_byte(connection.get_id());
         stream.write_color3b(m_fog_color);
@@ -124,7 +101,7 @@ class ctf_protocol : public base_protocol
         }
         stream.write_vec3(m_teams[0].m_base);
         stream.write_vec3(m_teams[1].m_base);
-        return connection.send_packet(m_cache, packet_cache::state_data_size);
+        return connection.send_packet(m_cache, packet::state_data_size);
     }
 
     /**

@@ -23,14 +23,18 @@ class world_manager : public connection_manager
     /**
      * @brief Construct a new world_manager object
      *
+     */
+    world_manager() : world_manager{32}
+    {
+    }
+
+    /**
+     * @brief Construct a new world_manager object
+     *
      * @param max_players Max number of players
      */
-    world_manager(std::uint8_t max_players) : connection_manager{max_players}
+    world_manager(std::uint8_t max_players) : connection_manager{max_players}, m_map{new map()}
     {
-        m_map = std::make_unique<map>();
-        if (!m_map) {
-            throw std::runtime_error("failed to allocate map class");
-        }
     }
 
     /**
@@ -66,6 +70,11 @@ class world_manager : public connection_manager
     void world_update()
     {
         // TODO: Write world update
+    }
+
+    map& get_map()
+    {
+        return *m_map.get();
     }
 
   protected:

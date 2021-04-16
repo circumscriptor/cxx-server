@@ -30,4 +30,14 @@ target_link_libraries(server
         ${ENET_LIBRARY}
 )
 
+target_include_directories(server
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/Spades
+)
+
+target_compile_features(server
+    PUBLIC
+        cxx_std_17
+)
+
 add_subdirectory(spadesx)
