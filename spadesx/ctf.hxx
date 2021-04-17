@@ -209,14 +209,10 @@ class ctf_protocol : public base_protocol
      */
     void capture_intel(connection& source, ctf_team_data& team, ctf_team_data& enemy_team, const glm::vec3& position)
     {
+        source.add_score();
         enemy_team.intel().drop(position);
         broadcast_intel_capture(source, team.add_score().has_reached_score(m_score_limit));
-
-        if (enemy_team.team() == team_type::a) {
-            broadcast_move_object(object_id::team_a_intel, enemy_team.team(), position);
-        } else {
-            broadcast_move_object(object_id::team_b_intel, enemy_team.team(), position);
-        }
+        broadcast_move_object(enemy_team.intel().id(), enemy_team.team(), position);
     }
 
     /**
