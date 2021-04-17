@@ -10,6 +10,7 @@ set(HEADERS_SERVER_DATA
     enums.hxx
     input.hxx
     name.hxx
+    packet.hxx
     player.hxx
     state.hxx
     position.hxx

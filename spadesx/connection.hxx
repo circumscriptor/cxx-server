@@ -9,6 +9,7 @@
 #include "baseconnection.hxx"
 #include "data/entity.hxx"
 #include "data/enums.hxx"
+#include "data/packet.hxx"
 #include "data/player.hxx"
 #include "datastream.hxx"
 
@@ -77,15 +78,7 @@ class connection : public base_connection, public player_data
     {
         ENetPacket* packet = enet_packet_create(nullptr, 12 + other.m_length, ENET_PACKET_FLAG_RELIABLE);
         data_stream stream = packet;
-
-        stream.write_type(packet_type::existing_player);
-        stream.write_byte(other.m_id);
-        stream.write_type(other.m_team);
-        stream.write_type(other.m_weapon);
-        stream.write_type(other.m_tool);
-        stream.write_int(other.m_kills);
-        stream.write_color3b(other.m_color);
-        stream.write_array(other.m_name, other.m_length);
+        other.fill_existing_player(stream);
         return send(packet, channel);
     }
 
@@ -98,14 +91,9 @@ class connection : public base_connection, public player_data
      */
     bool send_kill_action(connection& other, std::uint8_t channel = 0)
     {
-        ENetPacket* packet = enet_packet_create(nullptr, 5, ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket* packet = enet_packet_create(nullptr, packet::kill_action_size, ENET_PACKET_FLAG_RELIABLE);
         data_stream stream = packet;
-
-        stream.write_type(packet_type::kill_action);
-        stream.write_byte(other.m_id);
-        stream.write_byte(other.m_last_kill_killer);
-        stream.write_type(other.m_last_kill_type);
-        stream.write_byte(other.m_respawn_time);
+        other.fill_kill_action(stream);
         return send(packet, channel);
     }
 
@@ -119,14 +107,44 @@ class connection : public base_connection, public player_data
      */
     bool send_set_hp(const glm::vec3& source, bool weapon, std::uint8_t channel = 0)
     {
-        ENetPacket* packet = enet_packet_create(nullptr, 15, ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket* packet = enet_packet_create(nullptr, packet::set_hp_size, ENET_PACKET_FLAG_RELIABLE);
         data_stream stream = packet;
+        fill_set_hp(stream, source, weapon);
+        return send(packet, channel);
+    }
 
+    /**
+     * @brief Set hp packet
+     *
+     * @param stream Packet stream
+     * @param source Location of the source of the damage
+     * @param weapon Was weapon used?
+     */
+    void fill_set_hp(data_stream& stream, const glm::vec3& source, bool weapon)
+    {
         stream.write_type(packet_type::set_hp);
         stream.write_byte(m_health);
         stream.write_byte(weapon ? 1 : 0);
         stream.write_vec3(source);
-        return send(packet, channel);
+    }
+
+    /**
+     * @brief Fill existing player packet
+     *
+     * @param stream Packet stream
+     * @return Packet size
+     */
+    std::uint32_t fill_existing_player(data_stream& stream) const
+    {
+        stream.write_type(packet_type::existing_player);
+        stream.write_byte(m_id);
+        stream.write_type(m_team);
+        stream.write_type(m_weapon);
+        stream.write_type(m_tool);
+        stream.write_int(m_kills);
+        stream.write_color3b(m_color);
+        stream.write_array(m_name, m_length);
+        return 12 + m_length;
     }
 
     /**
