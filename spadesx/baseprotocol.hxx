@@ -284,6 +284,7 @@ class base_protocol : public server_handler, public command_manager
             m_world_update_timer = now;
             // update world
             // ...
+            world_update();
             broadcast_world_update();
         }
     }

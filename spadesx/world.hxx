@@ -64,12 +64,33 @@ class world_manager : public connection_manager
     }
 
     /**
+     * @brief Update a player
+     *
+     * @param connection Connection
+     */
+    void world_update_player(connection& connection)
+    {
+        if (connection.m_crouching != connection.m_crouch) {
+            if (connection.m_crouch) {
+                connection.m_position.z += 0.9F;
+            } else {
+                connection.m_position.z -= 0.9F;
+            }
+            connection.m_crouching = connection.m_crouch;
+        }
+    }
+
+    /**
      * @brief World update
      *
      */
     void world_update()
     {
-        // TODO: Write world update
+        for (auto& connection : m_connections) {
+            if (connection.m_alive) {
+                world_update_player(connection);
+            }
+        }
     }
 
     /**
