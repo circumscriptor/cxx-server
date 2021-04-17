@@ -55,8 +55,9 @@ class player_data :
     {
         reset_player_state_death();
         reset_input_data();
-        m_health = 100;
-        m_tool   = tool_type::gun;
+        m_health       = 100;
+        m_tool         = tool_type::gun;
+        m_restock_time = 0;
     }
 
     /**
@@ -73,12 +74,14 @@ class player_data :
         m_health       = 100;
         m_tool         = tool_type::gun;
         m_respawn_time = 0;
+        m_restock_time = 0;
     }
 
     std::uint8_t m_health;          //!< Player's health
     tool_type    m_tool;            //!< Currently held tool
     team_type    m_team;            //!< Current team
     std::uint8_t m_respawn_time{0}; //!< Respawn time
+    std::uint8_t m_restock_time{0}; //!< Restock timer
 };
 
 } // namespace spadesx

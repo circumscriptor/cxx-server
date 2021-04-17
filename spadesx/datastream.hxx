@@ -341,6 +341,18 @@ class data_stream
     }
 
     /**
+     * @brief Write unsigned 3D-vector
+     *
+     * @param value Vector
+     */
+    void write_uvec3(const glm::uvec3& value)
+    {
+        write_int(value.x);
+        write_int(value.y);
+        write_int(value.z);
+    }
+
+    /**
      * @brief Write n-bytes
      *
      * @param buffer The buffer to be used

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "position.hxx"
+#include "connection.hxx"
 
 #include <cstdint>
 
@@ -16,7 +16,7 @@ namespace spadesx {
  * @brief Intel data
  *
  */
-class intel_data : public position_data
+class intel : public position_data
 {
   public:
     /**
@@ -59,6 +59,16 @@ class intel_data : public position_data
     }
 
     /**
+     * @brief Pick intel
+     *
+     * @param connection Connection (player)
+     */
+    void pick(const connection& connection)
+    {
+        pick(connection.get_id());
+    }
+
+    /**
      * @brief Is intel taken
      *
      * @return true If taken
@@ -87,6 +97,17 @@ class intel_data : public position_data
     [[nodiscard]] bool is_held_by(std::uint8_t id) const noexcept
     {
         return m_taken && m_holder == id;
+    }
+
+    /**
+     * @brief Check whether the intel taken by the given player
+     *
+     * @param connection Connection (player)
+     * @return true If is taken by the given player
+     */
+    [[nodiscard]] bool is_held_by(const connection& connection) const noexcept
+    {
+        return is_held_by(connection.get_id());
     }
 
   private:

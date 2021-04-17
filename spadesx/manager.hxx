@@ -42,6 +42,7 @@ class packet
     static constexpr const std::size_t intel_capture_size  = 3;
     static constexpr const std::size_t intel_pickup_size   = 2;
     static constexpr const std::size_t intel_drop_size     = 13;
+    static constexpr const std::size_t move_object_size    = 15;
 };
 
 /**
@@ -472,7 +473,8 @@ class connection_manager
      * @param unsequenced If true sets unsequenced flag
      * @param channel Channel
      */
-    void broadcast_intel_capture(connection& source, bool winning, bool unsequenced = false, std::uint8_t channel = 0)
+    void
+    broadcast_intel_capture(const connection& source, bool winning, bool unsequenced = false, std::uint8_t channel = 0)
     {
         data_stream stream{m_cache, packet::intel_capture_size};
         source.fill_intel_capture(stream, winning);
@@ -486,7 +488,7 @@ class connection_manager
      * @param unsequenced If true sets unsequenced flag
      * @param channel Channel
      */
-    void broadcast_intel_pickup(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
+    void broadcast_intel_pickup(const connection& source, bool unsequenced = false, std::uint8_t channel = 0)
     {
         data_stream stream{m_cache, packet::intel_pickup_size};
         source.fill_intel_pickup(stream);
@@ -497,22 +499,41 @@ class connection_manager
      * @brief Broadcast intel drop
      *
      * @param source Source connection
-     * @param x The x-coordinate (block)
-     * @param y The y-coordinate (block)
-     * @param z The z-coordinate (block)
+     * @param position New intel position
      * @param unsequenced If true sets unsequenced flag
      * @param channel Channel
      */
-    void broadcast_intel_drop(connection&   source,
-                              std::uint32_t x,
-                              std::uint32_t y,
-                              std::uint32_t z,
-                              bool          unsequenced = false,
-                              std::uint8_t  channel     = 0)
+    void broadcast_intel_drop(const connection& source,
+                              const glm::uvec3& position,
+                              bool              unsequenced = false,
+                              std::uint8_t      channel     = 0)
     {
         data_stream stream{m_cache, packet::intel_drop_size};
-        source.fill_intel_drop(stream, x, y, z);
+        source.fill_intel_drop(stream, position);
         broadcast(m_cache, packet::intel_drop_size, unsequenced, channel);
+    }
+
+    /**
+     * @brief Broadcasst move object
+     *
+     * @param object_id Object ID
+     * @param team Team
+     * @param position Position
+     * @param unsequenced If true sets unsequenced flag
+     * @param channel Channel
+     */
+    void broadcast_move_object(std::uint8_t     object_id,
+                               team_type        team,
+                               const glm::vec3& position,
+                               bool             unsequenced = false,
+                               std::uint8_t     channel     = 0)
+    {
+        data_stream stream{m_cache, packet::move_object_size};
+        stream.write_type(packet_type::move_object);
+        stream.write_byte(object_id);
+        stream.write_type(team);
+        stream.write_vec3(position);
+        broadcast(m_cache, packet::move_object_size, unsequenced, channel);
     }
 
     /**

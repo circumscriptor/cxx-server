@@ -12,16 +12,19 @@
 #include <climits>
 #include <glm/common.hpp>
 #include <glm/ext/vector_int3.hpp>
-#include <glm/fwd.hpp>
 #include <glm/gtx/string_cast.hpp>
 
 namespace spadesx {
 
+/**
+ * @brief Block line generator
+ *
+ */
 class block_line
 {
   public:
-    static constexpr const std::uint32_t max_line_length = 50;
-    static constexpr const int           tmax_alt_value  = 0x3FFFFFFF / 1024;
+    static constexpr const std::uint32_t max_line_length = 50;                //!< Max length
+    static constexpr const int           tmax_alt_value  = 0x3FFFFFFF / 1024; //!< TMAX Alt?
 
     /**
      * @brief Fill line with positions

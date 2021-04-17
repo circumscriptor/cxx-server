@@ -6,11 +6,9 @@
 #
 
 set(HEADERS_SERVER_DATA
-    base.hxx
     color.hxx
     enums.hxx
     input.hxx
-    intel.hxx
     lastkill.hxx
     name.hxx
     player.hxx

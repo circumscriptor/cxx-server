@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "base.hxx"
 #include "command.hxx"
 #include "handler.hxx"
 
@@ -46,6 +47,31 @@ class base_protocol : public server_handler, public command_manager
     }
 
     ~base_protocol() override = default;
+
+    /**
+     * @brief Check restock
+     *
+     * @param source Source connection
+     * @param base Base
+     * @return true If restock is possible (distance and time, not team)
+     */
+    bool check_restock(connection& source, base& base) const
+    {
+        return source.m_restock_time == 0 && base.distance(source) <= m_base_trigger_distance;
+    }
+
+    /**
+     * @brief Restock and broadcast
+     *
+     * @param source Source connection
+     * @param restock_time Restock time
+     */
+    void restock(connection& source, std::uint8_t restock_time)
+    {
+        source.m_reserve_ammo = get_weapon_stock(source.m_weapon);
+        source.m_restock_time = restock_time;
+        broadcast_restock(source);
+    }
 
     /**
      * @brief Get spawn location
@@ -238,11 +264,14 @@ class base_protocol : public server_handler, public command_manager
         }
 
         auto now = std::chrono::steady_clock::now();
-        if (std::chrono::duration<double>(now - m_respawn_timer).count() >= 1) {
-            m_respawn_timer = now;
+        if (std::chrono::duration<double>(now - m_one_second_timer).count() >= 1) {
+            m_one_second_timer = now;
             for (auto& connection : m_connections) {
                 if (connection.m_respawn_time != 0) {
                     connection.m_respawn_time--;
+                }
+                if (connection.m_restock_time != 0) {
+                    connection.m_restock_time--;
                 }
             }
         }
@@ -330,6 +359,9 @@ class base_protocol : public server_handler, public command_manager
   protected:
     double m_world_update_delta{0.1};
 
+    float        m_base_trigger_distance{5.F};
+    std::uint8_t m_restock_time{15};
+
     std::vector<char> m_compressed_map;
     std::size_t       m_map_position;
     bool              m_map_used{false};
@@ -337,7 +369,7 @@ class base_protocol : public server_handler, public command_manager
 
     std::mt19937                                       m_generator;          //!< Random number generator
     std::uniform_real_distribution<float>              m_distribution;       //!< Real number distribution
-    std::chrono::time_point<std::chrono::steady_clock> m_respawn_timer;      //!< Respawn timer
+    std::chrono::time_point<std::chrono::steady_clock> m_one_second_timer;   //!< Respawn timer
     std::chrono::time_point<std::chrono::steady_clock> m_world_update_timer; //!< World update timer
 };
 

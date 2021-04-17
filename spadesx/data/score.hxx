@@ -18,6 +18,17 @@ class score_data
 {
   public:
     /**
+     * @brief Reached score
+     *
+     * @param score Score
+     * @return true If reached score
+     */
+    [[nodiscard]] bool has_reached_score(std::uint8_t score) const noexcept
+    {
+        return m_score >= score;
+    }
+
+    /**
      * @brief Reset score
      *
      */
@@ -32,9 +43,10 @@ class score_data
      * @brief Add score
      *
      */
-    void add_score() noexcept
+    score_data& add_score() noexcept
     {
         m_score += 1;
+        return *this;
     }
 
     /**

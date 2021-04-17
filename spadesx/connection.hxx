@@ -21,8 +21,6 @@ namespace spadesx {
  */
 class connection : public base_connection, public player_data
 {
-    friend class base_protocol;
-
   public:
     /**
      * @brief Construct a new connection object
@@ -120,7 +118,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_player_left(data_stream& stream)
+    void fill_player_left(data_stream& stream) const
     {
         stream.write_type(packet_type::player_left);
         stream.write_byte(m_id);
@@ -131,7 +129,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_kill_action(data_stream& stream)
+    void fill_kill_action(data_stream& stream) const
     {
         stream.write_type(packet_type::kill_action);
         stream.write_byte(m_id);
@@ -145,7 +143,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_set_tool(data_stream& stream)
+    void fill_set_tool(data_stream& stream) const
     {
         stream.write_type(packet_type::set_tool);
         stream.write_byte(m_id);
@@ -157,7 +155,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_set_color(data_stream& stream)
+    void fill_set_color(data_stream& stream) const
     {
         stream.write_type(packet_type::set_color);
         stream.write_byte(m_id);
@@ -169,7 +167,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_input_data(data_stream& stream)
+    void fill_input_data(data_stream& stream) const
     {
         stream.write_type(packet_type::input_data);
         stream.write_byte(m_id);
@@ -181,7 +179,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_weapon_input(data_stream& stream)
+    void fill_weapon_input(data_stream& stream) const
     {
         stream.write_type(packet_type::weapon_input);
         stream.write_byte(m_id);
@@ -196,7 +194,8 @@ class connection : public base_connection, public player_data
      * @param velocity Initial grenade velocity
      * @param fuse Grenade fuse time
      */
-    void fill_grenade_packet(data_stream& stream, const glm::vec3& position, const glm::vec3& velocity, float fuse)
+    void
+    fill_grenade_packet(data_stream& stream, const glm::vec3& position, const glm::vec3& velocity, float fuse) const
     {
         stream.write_type(packet_type::grenade_packet);
         stream.write_byte(m_id);
@@ -214,8 +213,11 @@ class connection : public base_connection, public player_data
      * @param z The z-coordinate of the block (or grenade)
      * @param action Block action
      */
-    void
-    fill_block_action(data_stream& stream, std::uint32_t x, std::uint32_t y, std::uint32_t z, block_action_type action)
+    void fill_block_action(data_stream&      stream,
+                           std::uint32_t     x,
+                           std::uint32_t     y,
+                           std::uint32_t     z,
+                           block_action_type action) const
     {
         stream.write_type(packet_type::block_action);
         stream.write_byte(m_id);
@@ -232,7 +234,7 @@ class connection : public base_connection, public player_data
      * @param start Start position
      * @param end End position
      */
-    void fill_block_line(data_stream& stream, const glm::ivec3& start, const glm::ivec3& end)
+    void fill_block_line(data_stream& stream, const glm::ivec3& start, const glm::ivec3& end) const
     {
         stream.write_type(packet_type::block_line);
         stream.write_byte(m_id);
@@ -245,7 +247,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_weapon_reload(data_stream& stream)
+    void fill_weapon_reload(data_stream& stream) const
     {
         stream.write_type(packet_type::weapon_reload);
         stream.write_byte(m_id);
@@ -260,7 +262,7 @@ class connection : public base_connection, public player_data
      * @param type Chat type
      * @param message Message
      */
-    std::size_t fill_chat_message(data_stream& stream, chat_type type, std::string_view message)
+    std::size_t fill_chat_message(data_stream& stream, chat_type type, std::string_view message) const
     {
         auto size = std::min(message.size(), std::size_t(256));
         stream.write_type(packet_type::chat_message);
@@ -275,7 +277,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_restock(data_stream& stream)
+    void fill_restock(data_stream& stream) const
     {
         stream.write_type(packet_type::restock);
         stream.write_byte(m_id);
@@ -287,7 +289,7 @@ class connection : public base_connection, public player_data
      * @param stream Packet stream
      * @param winning If true, then it's winning capture
      */
-    void fill_intel_capture(data_stream& stream, bool winning)
+    void fill_intel_capture(data_stream& stream, bool winning) const
     {
         stream.write_type(packet_type::intel_capture);
         stream.write_byte(m_id);
@@ -299,7 +301,7 @@ class connection : public base_connection, public player_data
      *
      * @param stream Packet stream
      */
-    void fill_intel_pickup(data_stream& stream)
+    void fill_intel_pickup(data_stream& stream) const
     {
         stream.write_type(packet_type::intel_pickup);
         stream.write_byte(m_id);
@@ -309,17 +311,13 @@ class connection : public base_connection, public player_data
      * @brief Fill intel drop
      *
      * @param stream Packet stream
-     * @param x The x-coordinate (block)
-     * @param y The y-coordinate (block)
-     * @param z The z-coordinate (block)
+     * @param position New position
      */
-    void fill_intel_drop(data_stream& stream, std::uint32_t x, std::uint32_t y, std::uint32_t z)
+    void fill_intel_drop(data_stream& stream, const glm::uvec3& position) const
     {
         stream.write_type(packet_type::intel_drop);
         stream.write_byte(m_id);
-        stream.write_int(x);
-        stream.write_int(y);
-        stream.write_int(z);
+        stream.write_uvec3(position);
     }
 };
 

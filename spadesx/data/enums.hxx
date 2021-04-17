@@ -119,7 +119,7 @@ enum class block_action_type { build = 0, bullet_or_spade = 1, spade_secondary =
  * @brief Team enum
  *
  */
-enum class team_type { spectator = 0xFF, a = 0, b = 1 };
+enum class team_type { spectator = 0xFF, a = 0, b = 1, neutral = 2 };
 
 /**
  * @brief Entity type
