@@ -9,6 +9,7 @@
 #include "base.hxx"
 #include "baseprotocol.hxx"
 #include "data/enums.hxx"
+#include "data/position.hxx"
 #include "data/team.hxx"
 #include "data/weapon.hxx"
 #include "intel.hxx"
@@ -26,12 +27,58 @@ namespace spadesx {
 class ctf_team_data : public team_data
 {
   public:
-    ctf_team_data(team_type type) : team_data{type}
+    /**
+     * @brief Construct a new ctf_team_data object
+     *
+     * @param team Team
+     */
+    ctf_team_data(team_type team) : team_data{team}, m_intel{team}, m_base{team}
     {
     }
 
-    intel m_intel; //!< Intel
-    base  m_base;  //!< Base
+    /**
+     * @brief Get the intel object
+     *
+     * @return Intel
+     */
+    constexpr intel_data& intel() noexcept
+    {
+        return m_intel;
+    }
+
+    /**
+     * @brief Get the intel object
+     *
+     * @return Intel
+     */
+    [[nodiscard]] constexpr const intel_data& intel() const noexcept
+    {
+        return m_intel;
+    }
+
+    /**
+     * @brief Get the base object
+     *
+     * @return Base
+     */
+    constexpr base_data& base() noexcept
+    {
+        return m_base;
+    }
+
+    /**
+     * @brief Get the base object
+     *
+     * @return Base
+     */
+    [[nodiscard]] constexpr const base_data& base() const noexcept
+    {
+        return m_base;
+    }
+
+  private:
+    intel_data m_intel; //!< Intel
+    base_data  m_base;  //!< Base
 };
 
 /**
@@ -45,29 +92,29 @@ class ctf_protocol : public base_protocol
     {
     }
 
-    void get_spawn_location(team_type team, entity_type /*entity*/, glm::vec3& v) override
+    void get_spawn_location(team_type team, entity& entity) override
     {
-        get_spawn(team).get(get_random_float(), get_random_float(), v);
-        v.z = m_map->get_height(v.x, v.y);
+        get_spawn(team).get(get_random_float(), get_random_float(), entity.m_position);
+        entity.m_position.z = m_map->get_height(entity.m_position.x, entity.m_position.y);
     }
 
     void on_start() override
     {
         for (auto& team : m_teams) {
-            team.m_intel.reset();
+            team.intel().reset();
             team.reset_score();
         }
-        get_spawn_location(team_type::a, entity_type::base, m_teams[0].m_base.m_position);
-        get_spawn_location(team_type::b, entity_type::base, m_teams[1].m_base.m_position);
-        get_spawn_location(team_type::a, entity_type::intel, m_teams[0].m_intel.m_position);
-        get_spawn_location(team_type::b, entity_type::intel, m_teams[1].m_intel.m_position);
+        get_spawn_location(team_type::a, m_teams[0].base());
+        get_spawn_location(team_type::b, m_teams[1].base());
+        get_spawn_location(team_type::a, m_teams[0].intel());
+        get_spawn_location(team_type::b, m_teams[1].intel());
     }
 
     void on_kill(connection& killer, connection& victim, kill_type type, std::uint8_t respawn_time) override
     {
         server_handler::on_kill(killer, victim, type, respawn_time);
-        if (victim.m_team != team_type::spectator) {
-            auto& enemy_team = get_enemy_team(victim.m_team);
+        if (victim.team() != team_type::spectator) {
+            auto& enemy_team = get_enemy_team(victim.team());
             if (check_and_drop_intel(victim, enemy_team, victim.m_position)) {
                 std::cout << "[  LOG  ]: player " << victim.name() << " dropped intel (reason: killed by "
                           << killer.name() << ")" << std::endl;
@@ -77,8 +124,8 @@ class ctf_protocol : public base_protocol
 
     void on_disconnect(connection& connection) override
     {
-        if (connection.m_team != team_type::spectator) {
-            auto& enemy_team = get_enemy_team(connection.m_team);
+        if (connection.team() != team_type::spectator) {
+            auto& enemy_team = get_enemy_team(connection.team());
             if (check_and_drop_intel(connection, enemy_team, connection.m_position)) {
                 std::cout << "[  LOG  ]: player " << connection.name() << " dropped intel (reason: disconnected)"
                           << std::endl;
@@ -94,7 +141,7 @@ class ctf_protocol : public base_protocol
      */
     void pickup_intel(ctf_team_data& team, const connection& enemy)
     {
-        team.m_intel.pick(enemy);
+        team.intel().pick(enemy);
         broadcast_intel_pickup(enemy);
     }
 
@@ -107,8 +154,8 @@ class ctf_protocol : public base_protocol
      */
     bool check_and_pickup_intel(const connection& source, ctf_team_data& enemy_team)
     {
-        if (!enemy_team.m_intel.is_taken()) {
-            if (enemy_team.m_intel.distance(source) <= m_intel_pickup_distance) {
+        if (!enemy_team.intel().is_taken()) {
+            if (enemy_team.intel().distance(source) <= m_intel_pickup_distance) {
                 pickup_intel(enemy_team, source);
                 return true;
             }
@@ -127,12 +174,12 @@ class ctf_protocol : public base_protocol
     {
         // check boundaries
         if (std::uint32_t(position.x) >= 512 || std::uint32_t(position.y) >= 512 || std::uint32_t(position.z) >= 64) {
-            enemy_team.m_intel.drop();
-            get_spawn_location(enemy_team.type(), entity_type::intel, enemy_team.m_intel.m_position);
+            enemy_team.intel().drop();
+            get_spawn_location(enemy_team.team(), enemy_team.intel());
         } else {
-            enemy_team.m_intel.drop(position);
+            enemy_team.intel().drop(position);
         }
-        broadcast_intel_drop(source, enemy_team.m_intel.m_position);
+        broadcast_intel_drop(source, enemy_team.intel().m_position);
     }
 
     /**
@@ -145,7 +192,7 @@ class ctf_protocol : public base_protocol
      */
     bool check_and_drop_intel(const connection& source, ctf_team_data& enemy_team, const glm::uvec3& position)
     {
-        if (enemy_team.m_intel.is_held_by(source)) {
+        if (enemy_team.intel().is_held_by(source)) {
             drop_intel(source, enemy_team, position);
             return true;
         }
@@ -162,13 +209,13 @@ class ctf_protocol : public base_protocol
      */
     void capture_intel(connection& source, ctf_team_data& team, ctf_team_data& enemy_team, const glm::vec3& position)
     {
-        enemy_team.m_intel.drop(position);
+        enemy_team.intel().drop(position);
         broadcast_intel_capture(source, team.add_score().has_reached_score(m_score_limit));
-        // broadcast_intel_drop(source, position);
-        if (enemy_team.type() == team_type::a) {
-            broadcast_move_object(object_id::team_a_intel, enemy_team.type(), position);
+
+        if (enemy_team.team() == team_type::a) {
+            broadcast_move_object(object_id::team_a_intel, enemy_team.team(), position);
         } else {
-            broadcast_move_object(object_id::team_b_intel, enemy_team.type(), position);
+            broadcast_move_object(object_id::team_b_intel, enemy_team.team(), position);
         }
     }
 
@@ -182,10 +229,10 @@ class ctf_protocol : public base_protocol
      */
     bool check_and_capture_intel(connection& source, ctf_team_data& team, ctf_team_data& enemy_team)
     {
-        if (enemy_team.m_intel.is_held_by(source)) {
-            if (team.m_base.distance(source) <= m_base_trigger_distance) {
-                get_spawn_location(enemy_team.type(), entity_type::intel, enemy_team.m_intel.m_position);
-                capture_intel(source, team, enemy_team, enemy_team.m_intel.m_position);
+        if (enemy_team.intel().is_held_by(source)) {
+            if (team.base().distance(source) <= m_base_trigger_distance) {
+                get_spawn_location(enemy_team.team(), enemy_team.intel());
+                capture_intel(source, team, enemy_team, enemy_team.intel().m_position);
                 return true;
             }
         }
@@ -201,18 +248,18 @@ class ctf_protocol : public base_protocol
     {
         if (connection.m_can_spawn && !connection.m_alive && connection.m_respawn_time == 0) {
             connection.m_alive = true;
-            get_spawn_location(connection.m_team, entity_type::player, connection.m_position);
+            get_spawn_location(connection.team(), connection);
             broadcast_create(connection);
         }
         if (connection.m_alive) {
-            if (connection.m_team != team_type::spectator) {
-                auto& team = get_team(connection.m_team);
+            if (connection.team() != team_type::spectator) {
+                auto& team = get_team(connection.team());
 
-                if (check_restock(connection, team.m_base)) {
+                if (check_restock(connection, team.base())) {
                     restock(connection, m_restock_time);
                 }
 
-                auto& enemy_team = get_enemy_team(connection.m_team);
+                auto& enemy_team = get_enemy_team(connection.team());
 
                 if (check_and_pickup_intel(connection, enemy_team)) {
                     std::cout << "[  LOG  ]: intel taken by " << connection.name() << std::endl;
@@ -222,8 +269,6 @@ class ctf_protocol : public base_protocol
                     std::cout << "[  LOG  ]: intel captured by " << connection.name() << std::endl;
                     if (team.has_reached_score(m_score_limit)) {
                         std::cout << "[  LOG  ]: end game" << std::endl;
-                        team.m_score       = 0;
-                        enemy_team.m_score = 0;
                     }
                 }
             }
@@ -239,32 +284,32 @@ class ctf_protocol : public base_protocol
     {
         data_stream stream{m_cache, packet::state_data_size};
         stream.write_type(packet_type::state_data);
-        stream.write_byte(connection.get_id());
+        stream.write_byte(connection.id());
         stream.write_color3b(m_fog_color);
-        stream.write_color3b(m_teams[0].m_color);
-        stream.write_color3b(m_teams[1].m_color);
+        stream.write_color3b(m_teams[0].color());
+        stream.write_color3b(m_teams[1].color());
         stream.write_array(m_teams[0].name().data(), 10);
         stream.write_array(m_teams[1].name().data(), 10);
         stream.write_type(mode_type::ctf);
         // CTF
-        stream.write_byte(m_teams[0].m_score);
-        stream.write_byte(m_teams[1].m_score);
+        stream.write_byte(m_teams[0].get_score());
+        stream.write_byte(m_teams[1].get_score());
         stream.write_byte(m_score_limit);
         stream.write_byte(intel_flags());
-        if (!m_teams[0].m_intel.is_taken()) {
-            stream.write_vec3(m_teams[0].m_intel.m_position);
+        if (!m_teams[0].intel().is_taken()) {
+            stream.write_vec3(m_teams[0].intel().m_position);
         } else {
-            stream.write_byte(m_teams[0].m_intel.holder());
+            stream.write_byte(m_teams[0].intel().holder());
             stream.skip(11);
         }
-        if (!m_teams[1].m_intel.is_taken()) {
-            stream.write_vec3(m_teams[1].m_intel.m_position);
+        if (!m_teams[1].intel().is_taken()) {
+            stream.write_vec3(m_teams[1].intel().m_position);
         } else {
-            stream.write_byte(m_teams[1].m_intel.holder());
+            stream.write_byte(m_teams[1].intel().holder());
             stream.skip(11);
         }
-        stream.write_vec3(m_teams[0].m_base.m_position);
-        stream.write_vec3(m_teams[1].m_base.m_position);
+        stream.write_vec3(m_teams[0].base().m_position);
+        stream.write_vec3(m_teams[1].base().m_position);
         return connection.send_packet(m_cache, packet::state_data_size);
     }
 
@@ -333,8 +378,8 @@ class ctf_protocol : public base_protocol
     [[nodiscard]] std::uint8_t intel_flags() const noexcept
     {
         std::uint8_t flags = 0;
-        flags |= (m_teams[0].m_intel.is_taken()) ? 1 : 0;
-        flags |= (m_teams[1].m_intel.is_taken()) ? 2 : 0;
+        flags |= (m_teams[0].intel().is_taken()) ? 1 : 0;
+        flags |= (m_teams[1].intel().is_taken()) ? 2 : 0;
         return flags;
     }
 

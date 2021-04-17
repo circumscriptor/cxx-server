@@ -72,9 +72,14 @@ class world_manager : public connection_manager
         // TODO: Write world update
     }
 
+    /**
+     * @brief Get the map object
+     *
+     * @return Map
+     */
     map& get_map()
     {
-        return *m_map.get();
+        return *m_map;
     }
 
   protected:

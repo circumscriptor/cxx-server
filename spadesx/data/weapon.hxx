@@ -168,11 +168,17 @@ class weapon_data
 {
   public:
     /**
+     * @brief Construct a new weapon data object
+     *
+     */
+    constexpr weapon_data() noexcept = default;
+
+    /**
      * @brief Set weapon data
      *
      * @param weapon Weapon type
      */
-    void set_weapon(weapon_type weapon)
+    constexpr void set_weapon(weapon_type weapon)
     {
         const auto& w  = weapons::get(weapon);
         m_clip_ammo    = w.get_clip();
@@ -191,9 +197,32 @@ class weapon_data
         return weapons::get(m_weapon).get_damage(hit);
     }
 
-    std::uint8_t m_clip_ammo;    //!< Clip ammo
-    std::uint8_t m_reserve_ammo; //!< Reserve ammo
-    weapon_type  m_weapon;       //!< Current weapon
+    /**
+     * @brief Get current weapon type
+     *
+     * @return Weapon type
+     */
+    [[nodiscard]] constexpr weapon_type weapon() const noexcept
+    {
+        return m_weapon;
+    }
+
+    /**
+     * @brief Change weapon type
+     *
+     * @param weapon New weapon type
+     */
+    constexpr void change_weapon(weapon_type weapon) noexcept
+    {
+        m_weapon = weapon;
+    }
+
+  protected:
+    weapon_type m_weapon{weapon_type::rifle}; //!< Current weapon
+
+  public:
+    std::uint8_t m_clip_ammo{0};    //!< Clip ammo
+    std::uint8_t m_reserve_ammo{0}; //!< Reserve ammo
 };
 
 } // namespace spadesx

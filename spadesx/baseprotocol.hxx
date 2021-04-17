@@ -55,7 +55,7 @@ class base_protocol : public server_handler, public command_manager
      * @param base Base
      * @return true If restock is possible (distance and time, not team)
      */
-    bool check_restock(connection& source, base& base) const
+    bool check_restock(connection& source, base_data& base) const
     {
         return source.m_restock_time == 0 && base.distance(source) <= m_base_trigger_distance;
     }
@@ -68,7 +68,7 @@ class base_protocol : public server_handler, public command_manager
      */
     void restock(connection& source, std::uint8_t restock_time)
     {
-        source.m_reserve_ammo = get_weapon_stock(source.m_weapon);
+        source.m_reserve_ammo = get_weapon_stock(source.weapon());
         source.m_restock_time = restock_time;
         broadcast_restock(source);
     }
@@ -77,7 +77,7 @@ class base_protocol : public server_handler, public command_manager
      * @brief Get spawn location
      *
      */
-    virtual void get_spawn_location(team_type team, entity_type /*entity*/, glm::vec3& v)
+    virtual void get_spawn_location(team_type team, entity& entity)
     {
     }
 
@@ -209,13 +209,13 @@ class base_protocol : public server_handler, public command_manager
                 // TODO: Allow multiple users to receive the same compressed map
                 if (connection.send_map_start(m_compressed_map.size())) {
                     m_map_used      = true;
-                    m_map_ownership = connection.get_id();
+                    m_map_ownership = connection.id();
                     m_map_position  = 0;
-                    std::cout << "[  LOG  ]: map start packet sent to "
-                              << static_cast<std::uint32_t>(connection.get_id()) << std::endl;
+                    std::cout << "[  LOG  ]: map start packet sent to " << static_cast<std::uint32_t>(connection.id())
+                              << std::endl;
                 }
 
-            } else if (m_map_used && m_map_ownership == connection.get_id()) {
+            } else if (m_map_used && m_map_ownership == connection.id()) {
 
                 auto diff = m_compressed_map.size() - m_map_position;
                 auto size = std::min(diff, std::size_t(8192));
@@ -223,11 +223,11 @@ class base_protocol : public server_handler, public command_manager
                 if (size == 0) {
                     on_map_loading_done(connection);
                     m_map_used = false;
-                    std::cout << "[  LOG  ]: map loading done, id: " << static_cast<std::uint32_t>(connection.get_id())
+                    std::cout << "[  LOG  ]: map loading done, id: " << static_cast<std::uint32_t>(connection.id())
                               << std::endl;
                 } else if (connection.send_map_chunk(m_compressed_map.data() + m_map_position, size)) {
                     m_map_position += size;
-                    // std::cout << "[  LOG  ]: map chunk sent to " << static_cast<std::uint32_t>(connection.get_id())
+                    // std::cout << "[  LOG  ]: map chunk sent to " << static_cast<std::uint32_t>(connection.id())
                     //           << "(size " << size << "): " << m_map_position << " of " << m_compressed_map.size()
                     //           << std::endl;
                 }
@@ -319,7 +319,7 @@ class base_protocol : public server_handler, public command_manager
             auto& connection = peer_to_connection(peer);
 
             // prevent locking map
-            if (m_map_used && m_map_ownership == connection.get_id()) {
+            if (m_map_used && m_map_ownership == connection.id()) {
                 m_map_used = false;
             }
 

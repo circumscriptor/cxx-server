@@ -18,12 +18,18 @@ class score_data
 {
   public:
     /**
+     * @brief Construct a new score data object
+     *
+     */
+    constexpr score_data() = default;
+
+    /**
      * @brief Reached score
      *
      * @param score Score
      * @return true If reached score
      */
-    [[nodiscard]] bool has_reached_score(std::uint8_t score) const noexcept
+    [[nodiscard]] constexpr bool has_reached_score(std::uint8_t score) const noexcept
     {
         return m_score >= score;
     }
@@ -32,7 +38,7 @@ class score_data
      * @brief Reset score
      *
      */
-    void reset_score() noexcept
+    constexpr void reset_score() noexcept
     {
         m_score  = 0;
         m_kills  = 0;
@@ -43,7 +49,7 @@ class score_data
      * @brief Add score
      *
      */
-    score_data& add_score() noexcept
+    constexpr score_data& add_score() noexcept
     {
         m_score += 1;
         return *this;
@@ -53,20 +59,53 @@ class score_data
      * @brief Add kill score
      *
      */
-    void add_kill_score() noexcept
+    constexpr score_data& add_kill() noexcept
     {
         m_kills += 1;
+        return *this;
     }
 
     /**
      * @brief Add death score
      *
      */
-    void add_death_score() noexcept
+    constexpr score_data& add_death() noexcept
     {
         m_deaths += 1;
+        return *this;
     }
 
+    /**
+     * @brief Get score
+     *
+     * @return Score
+     */
+    [[nodiscard]] constexpr std::uint8_t get_score() const noexcept
+    {
+        return m_score;
+    }
+
+    /**
+     * @brief Get number of kills
+     *
+     * @return Number of kills
+     */
+    [[nodiscard]] constexpr std::uint32_t get_kills() const noexcept
+    {
+        return m_kills;
+    }
+
+    /**
+     * @brief Get number of deaths
+     *
+     * @return Number of deaths
+     */
+    [[nodiscard]] constexpr std::uint32_t get_deaths() const noexcept
+    {
+        return m_deaths;
+    }
+
+  protected:
     std::uint8_t  m_score{0};  //!< Score
     std::uint32_t m_kills{0};  //!< Kill score
     std::uint32_t m_deaths{0}; //!< Death counter

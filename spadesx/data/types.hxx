@@ -82,17 +82,4 @@ class color3b
     }
 };
 
-/**
- * @brief Object IDs
- *
- */
-class object_id
-{
-  public:
-    static constexpr const std::uint8_t team_a_intel = 0; //!< ID of team a's intel
-    static constexpr const std::uint8_t team_b_intel = 1; //!< ID of team b's intel
-    static constexpr const std::uint8_t team_a_base  = 2; //!< ID of team a's base
-    static constexpr const std::uint8_t team_b_base  = 3; //!< ID of team b's base
-};
-
 } // namespace spadesx

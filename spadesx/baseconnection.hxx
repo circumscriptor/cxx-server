@@ -19,50 +19,11 @@ namespace spadesx {
 class base_connection : public peer
 {
   public:
-    static constexpr const std::uint8_t invalid_id = 0xFF; //!< Invalid ID
-
     /**
      * @brief Construct a new base_connection object
      *
      */
-    base_connection() : m_id{invalid_id}
-    {
-    }
-
-    /**
-     * @brief Construct a new base_connection object
-     *
-     * @param id Connection ID (produced by protocol)
-     */
-    base_connection(std::uint8_t id) : m_id{id}
-    {
-    }
-
-    /**
-     * @brief Destroy the base_connection object
-     *
-     */
-    ~base_connection() = default;
-
-    /**
-     * @brief Check whether this connection has valid ID
-     *
-     * @return true If ID is valid
-     */
-    [[nodiscard]] bool is_valid() const noexcept
-    {
-        return m_id != invalid_id;
-    }
-
-    /**
-     * @brief Get connection id
-     *
-     * @return ID
-     */
-    [[nodiscard]] std::uint8_t get_id() const
-    {
-        return m_id;
-    }
+    constexpr base_connection() noexcept = default;
 
     /**
      * @brief Send map start packet
@@ -136,7 +97,7 @@ class base_connection : public peer
     void disconnect(reason_type reason)
     {
         peer::disconnect(static_cast<std::uint32_t>(reason));
-        m_state = state_type::disconnected;
+        set_state(state_type::disconnected);
     }
 
     /**
@@ -144,7 +105,7 @@ class base_connection : public peer
      *
      * @return true If state is disconnected
      */
-    [[nodiscard]] bool is_disconnected() const noexcept
+    [[nodiscard]] constexpr bool is_disconnected() const noexcept
     {
         return m_state == state_type::disconnected;
     }
@@ -154,7 +115,7 @@ class base_connection : public peer
      *
      * @return true If state is connecting
      */
-    [[nodiscard]] bool is_connecting() const noexcept
+    [[nodiscard]] constexpr bool is_connecting() const noexcept
     {
         return m_state == state_type::connecting;
     }
@@ -164,7 +125,7 @@ class base_connection : public peer
      *
      * @return true If state is connected
      */
-    [[nodiscard]] bool is_connected() const noexcept
+    [[nodiscard]] constexpr bool is_connected() const noexcept
     {
         return m_state == state_type::connected;
     }
@@ -174,31 +135,9 @@ class base_connection : public peer
      *
      * @param state Connection state
      */
-    void set_state(state_type state)
+    constexpr void set_state(state_type state) noexcept
     {
         m_state = state;
-    }
-
-    /**
-     * @brief Compare this connections's ID with other's ID
-     *
-     * @param other Other connection
-     * @return true If same
-     */
-    bool operator==(const base_connection& other) const noexcept
-    {
-        return m_id == other.m_id;
-    }
-
-    /**
-     * @brief Compare this connections's ID with other's ID
-     *
-     * @param other Other connection
-     * @return true If different
-     */
-    bool operator!=(const base_connection& other) const noexcept
-    {
-        return m_id != other.m_id;
     }
 
   protected:
@@ -213,8 +152,7 @@ class base_connection : public peer
         return unsequenced ? ENET_PACKET_FLAG_RELIABLE : ENET_PACKET_FLAG_UNSEQUENCED;
     }
 
-    std::uint8_t m_id{invalid_id};                  //!< Connection ID (used by protocol)
-    state_type   m_state{state_type::disconnected}; //!< Connection state (used by protocol)
+    state_type m_state{state_type::disconnected}; //!< Connection state (used by protocol)
 };
 
 } // namespace spadesx

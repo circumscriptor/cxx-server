@@ -33,8 +33,8 @@ auto main(int argc, char** argv) -> int
     protocol.get_spawn(spadesx::team_type::spectator).set({256.F, 256.F}, {256.F, 256.F});
     protocol.get_team(spadesx::team_type::a).set_name("Team A");
     protocol.get_team(spadesx::team_type::b).set_name("Team B");
-    protocol.get_team(spadesx::team_type::a).m_color = {0xFF, 0x00, 0x00};
-    protocol.get_team(spadesx::team_type::b).m_color = {0x00, 0xFF, 0x00};
+    protocol.get_team(spadesx::team_type::a).color() = {0xFF, 0x00, 0x00};
+    protocol.get_team(spadesx::team_type::b).color() = {0x00, 0xFF, 0x00};
     protocol.set_fog_color({0xFF, 0xFF, 0xFF});
 
     protocol.register_command<spadesx::say_command>("say");

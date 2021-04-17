@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <string>
+#include <array>
 #include <string_view>
 
 namespace spadesx {
@@ -21,16 +21,24 @@ class name_data
 {
   public:
     /**
+     * @brief Construct a new name data object
+     *
+     */
+    constexpr name_data() noexcept = default;
+
+    /**
      * @brief Set name
      *
      * @param name New name
      * @param max_size Max size
      */
-    void set_name(std::string_view name)
+    constexpr void set_name(std::string_view name) noexcept
     {
-        auto size = std::min(name.size(), N);
-        m_name.reserve(N);
-        m_name.assign(name.data(), size);
+        const auto* _it  = name.begin();
+        const auto* _end = name.end();
+        for (m_length = 0; _it != _end && *_it != 0 && m_length < N; ++m_length, ++_it) {
+            m_name[m_length] = *_it;
+        }
     }
 
     /**
@@ -38,13 +46,14 @@ class name_data
      *
      * @return Name
      */
-    [[nodiscard]] std::string_view name() const noexcept
+    [[nodiscard]] constexpr std::string_view name() const noexcept
     {
-        return m_name;
+        return {m_name.data(), m_length};
     }
 
   protected:
-    std::string m_name; //!< Name
+    std::array<char, N> m_name;      //!< Name
+    std::size_t         m_length{0}; //!< Length of the name
 };
 
 } // namespace spadesx

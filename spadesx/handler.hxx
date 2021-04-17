@@ -75,7 +75,7 @@ class server_handler : public world_manager
      */
     void handle_input_data(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: input data - invalid id received" << std::endl;
         }
 
@@ -91,7 +91,7 @@ class server_handler : public world_manager
      */
     void handle_weapon_input(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: weapon input - invalid id received" << std::endl;
         }
 
@@ -129,7 +129,7 @@ class server_handler : public world_manager
      */
     void handle_grenade_packet(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: grenade packet - invalid id received" << std::endl;
         }
 
@@ -152,7 +152,7 @@ class server_handler : public world_manager
      */
     void handle_set_tool(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: set tool - invalid id received" << std::endl;
         }
 
@@ -178,7 +178,7 @@ class server_handler : public world_manager
      */
     void handle_set_color(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: set color - invalid id received" << std::endl;
         }
 
@@ -195,7 +195,7 @@ class server_handler : public world_manager
      */
     void handle_block_action(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: block action - invalid id received" << std::endl;
         }
 
@@ -219,7 +219,7 @@ class server_handler : public world_manager
      */
     void handle_block_line(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: block line - invalid id received" << std::endl;
         }
 
@@ -239,7 +239,7 @@ class server_handler : public world_manager
      */
     void handle_chat_message(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: chat message - invalid id received" << std::endl;
         }
 
@@ -270,7 +270,7 @@ class server_handler : public world_manager
      */
     void handle_weapon_reload(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: weapon reload - invalid id received" << std::endl;
         }
 
@@ -288,7 +288,7 @@ class server_handler : public world_manager
      */
     void handle_team_change(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: change team - invalid id received" << std::endl;
         }
 
@@ -313,7 +313,7 @@ class server_handler : public world_manager
      */
     void handle_weapon_change(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: change weapon - invalid id received" << std::endl;
         }
 
@@ -338,7 +338,7 @@ class server_handler : public world_manager
      */
     void handle_existing_player(connection& source, data_stream& stream)
     {
-        if (source.get_id() != stream.read_byte()) {
+        if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: existing player - invalid id received" << std::endl;
         }
         auto    team   = stream.read_type<team_type>();
@@ -346,7 +346,7 @@ class server_handler : public world_manager
         auto    tool   = stream.read_type<tool_type>();
         auto    kills  = stream.read_int();
         color3b color;
-        stream.read_color3b(source.m_color);
+        stream.read_color3b(source.color());
 
         const auto* data = stream.data();
         auto        left = stream.left();
@@ -495,7 +495,7 @@ class server_handler : public world_manager
             return;
         }
 
-        if (source.m_team == target.m_team) {
+        if (source.team() == target.team()) {
             return;
         }
 
@@ -506,7 +506,7 @@ class server_handler : public world_manager
             }
             damage = 50;
         } else {
-            damage = get_weapon_damage(source.m_weapon, type);
+            damage = source.get_weapon_damage(type);
         }
 
         if (damage > 0) {
@@ -560,7 +560,7 @@ class server_handler : public world_manager
      */
     virtual void on_set_color(connection& source, const color3b& color)
     {
-        source.m_color = color;
+        source.color() = color;
         broadcast_set_color(source);
     }
 
@@ -592,7 +592,7 @@ class server_handler : public world_manager
     {
         switch (action) {
             case block_action_type::build:
-                m_map->modify_block(x, y, z, true, source.m_color.to_uint32());
+                m_map->modify_block(x, y, z, true, source.get_color());
                 break;
             case block_action_type::bullet_or_spade:
                 m_map->destroy_block(x, y, z);
@@ -663,7 +663,7 @@ class server_handler : public world_manager
         if (source.m_alive) {
             on_kill(source, source, kill_type::team_change, m_respawn_time);
         }
-        source.m_team = team;
+        source.change_team(team);
     }
 
     /**
@@ -691,12 +691,12 @@ class server_handler : public world_manager
      * @param color Block color
      * @param name Name
      */
-    virtual void on_existing_player(connection&      source,
-                                    team_type        team,
-                                    weapon_type      weapon,
-                                    tool_type        tool,
-                                    std::uint32_t    kills,
-                                    const color3b&   color,
+    virtual void on_existing_player(connection& source,
+                                    team_type   team,
+                                    weapon_type weapon,
+                                    tool_type /*tool*/,
+                                    std::uint32_t /*kills*/,
+                                    const color3b& /*color*/,
                                     std::string_view name)
     {
         if (source.m_alive) {
@@ -704,11 +704,14 @@ class server_handler : public world_manager
             source.m_alive = false;
         }
 
-        source.m_team   = team;
-        source.m_weapon = weapon;
-        source.m_tool   = tool;
-        source.m_kills  = kills;
-        source.m_color  = color;
+        source.change_team(team);
+        source.change_weapon(weapon);
+
+        // these must not be provided by player:
+        // source.m_tool  = tool;
+        // source.m_kills = kills;
+        // source.m_color = color;
+
         source.set_name(name);
 
         source.m_can_spawn = true;

@@ -17,7 +17,7 @@ namespace spadesx {
  * @brief Team data
  *
  */
-class team_data : public score_data, public name_data<10>, public color_data
+class team_data : public score_data, public color_data, public name_data<10>
 {
   public:
     /**
@@ -25,7 +25,7 @@ class team_data : public score_data, public name_data<10>, public color_data
      *
      * @param team Team
      */
-    team_data(team_type team) : m_team{team}
+    constexpr team_data(team_type team) noexcept : m_team{team}
     {
     }
 
@@ -34,7 +34,7 @@ class team_data : public score_data, public name_data<10>, public color_data
      *
      * @return Team type
      */
-    [[nodiscard]] team_type type() const noexcept
+    [[nodiscard]] team_type team() const noexcept
     {
         return m_team;
     }

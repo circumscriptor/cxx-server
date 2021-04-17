@@ -7,6 +7,7 @@
 #pragma once
 
 #include "connection.hxx"
+#include "data/enums.hxx"
 
 #include <cstdint>
 
@@ -16,35 +17,47 @@ namespace spadesx {
  * @brief Intel data
  *
  */
-class intel : public position_data
+class intel_data : public entity
 {
   public:
     /**
-     * @brief Reset intel
+     * @brief Construct a new intel object
+     *
+     * @param team Team
+     */
+    constexpr intel_data(team_type team) noexcept : entity{entity_type::intel, object_id::intel_id(team), team}
+    {
+    }
+
+    /**
+     * @brief Reset intel (same as drop)
      *
      */
-    void reset()
+    constexpr void reset() noexcept
     {
-        m_taken = false;
+        m_taken  = false;
+        m_holder = object_id::invalid;
+    }
+
+    /**
+     * @brief Drop intel (return back to previous location)
+     *
+     */
+    constexpr void drop() noexcept
+    {
+        m_taken  = false;
+        m_holder = object_id::invalid;
     }
 
     /**
      * @brief Drop intel
      *
      */
-    void drop()
-    {
-        m_taken = false;
-    }
-
-    /**
-     * @brief Drop intel
-     *
-     */
-    void drop(const glm::vec3& position)
+    constexpr void drop(const glm::vec3& position) noexcept
     {
         m_position = position;
         m_taken    = false;
+        m_holder   = object_id::invalid;
     }
 
     /**
@@ -52,7 +65,7 @@ class intel : public position_data
      *
      * @param player Player
      */
-    void pick(std::uint8_t player)
+    constexpr void pick(std::uint8_t player) noexcept
     {
         m_holder = player;
         m_taken  = true;
@@ -63,9 +76,10 @@ class intel : public position_data
      *
      * @param connection Connection (player)
      */
-    void pick(const connection& connection)
+    constexpr void pick(const connection& connection) noexcept
     {
-        pick(connection.get_id());
+        m_holder = connection.id();
+        m_taken  = true;
     }
 
     /**
@@ -73,7 +87,7 @@ class intel : public position_data
      *
      * @return true If taken
      */
-    [[nodiscard]] bool is_taken() const noexcept
+    [[nodiscard]] constexpr bool is_taken() const noexcept
     {
         return m_taken;
     }
@@ -83,7 +97,7 @@ class intel : public position_data
      *
      * @return Holder
      */
-    [[nodiscard]] std::uint8_t holder() const noexcept
+    [[nodiscard]] constexpr std::uint8_t holder() const noexcept
     {
         return m_holder;
     }
@@ -94,7 +108,7 @@ class intel : public position_data
      * @param id Player ID
      * @return true If is taken by the given player
      */
-    [[nodiscard]] bool is_held_by(std::uint8_t id) const noexcept
+    [[nodiscard]] constexpr bool is_held_by(std::uint8_t id) const noexcept
     {
         return m_taken && m_holder == id;
     }
@@ -105,14 +119,14 @@ class intel : public position_data
      * @param connection Connection (player)
      * @return true If is taken by the given player
      */
-    [[nodiscard]] bool is_held_by(const connection& connection) const noexcept
+    [[nodiscard]] constexpr bool is_held_by(const connection& connection) const noexcept
     {
-        return is_held_by(connection.get_id());
+        return m_taken && m_holder == connection.id();
     }
 
   private:
-    std::uint8_t m_holder;       //!< Intel holder
-    bool         m_taken{false}; //!< Is intel taken
+    std::uint8_t m_holder{object_id::invalid}; //!< Intel holder
+    bool         m_taken{false};               //!< Is intel taken
 };
 
 } // namespace spadesx

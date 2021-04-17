@@ -6,14 +6,12 @@
 
 #pragma once
 
-#include "chat.hxx"
+#include "entity.hxx"
 #include "enums.hxx"
 #include "input.hxx"
-#include "lastkill.hxx"
 #include "name.hxx"
 #include "score.hxx"
 #include "state.hxx"
-#include "transform.hxx"
 #include "types.hxx"
 #include "weapon.hxx"
 
@@ -24,22 +22,23 @@ namespace spadesx {
  *
  */
 class player_data :
+    public entity,
     public input_data,
     public player_state,
-    public last_kill_data,
-    public transform_data,
     public weapon_data,
     public score_data,
     public name_data<16>,
-    public color_data,
-    public chat_data
+    public color_data
 {
   public:
     /**
      * @brief Construct a new player_data object
      *
+     * @param id ID
      */
-    player_data() noexcept = default;
+    constexpr player_data(std::uint8_t id) noexcept : entity{entity_type::player, id, team_type::neutral}
+    {
+    }
 
     /**
      * @brief Destroy the player_data object
@@ -51,7 +50,7 @@ class player_data :
      * @brief Reset values after death
      *
      */
-    void reset_death()
+    constexpr void reset_death() noexcept
     {
         reset_player_state_death();
         reset_input_data();
@@ -70,18 +69,44 @@ class player_data :
         reset_input_data();
         reset_transform();
         reset_score();
-        reset_chat();
         m_health       = 100;
         m_tool         = tool_type::gun;
         m_respawn_time = 0;
         m_restock_time = 0;
     }
 
-    std::uint8_t m_health;          //!< Player's health
-    tool_type    m_tool;            //!< Currently held tool
-    team_type    m_team;            //!< Current team
-    std::uint8_t m_respawn_time{0}; //!< Respawn time
-    std::uint8_t m_restock_time{0}; //!< Restock timer
+    /**
+     * @brief Reset position (and orientation) data
+     *
+     */
+    void reset_transform() noexcept
+    {
+        reset_position();
+        m_orientation = {0.F, 0.F, 0.F};
+    }
+
+    glm::vec3 m_orientation; //!< Player orientation
+
+    std::uint8_t m_health{100};          //!< Player's health
+    tool_type    m_tool{tool_type::gun}; //!< Currently held tool
+    std::uint8_t m_respawn_time{0};      //!< Respawn time
+    std::uint8_t m_restock_time{0};      //!< Restock timer
+
+    /**
+     * @brief Set kill data
+     *
+     * @param killer Killer
+     * @param type Kill type
+     */
+    void set_last_kill(std::uint8_t killer, kill_type type) noexcept
+    {
+        m_last_kill_killer = killer;
+        m_last_kill_type   = type;
+    }
+
+  protected:
+    std::uint8_t m_last_kill_killer{object_id::invalid};   //!< Last death killer
+    kill_type    m_last_kill_type{kill_type::team_change}; //!< Last death type
 };
 
 } // namespace spadesx

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "baseconnection.hxx"
+#include "data/entity.hxx"
 #include "data/enums.hxx"
 #include "data/player.hxx"
 #include "datastream.hxx"
@@ -27,11 +28,43 @@ class connection : public base_connection, public player_data
      *
      * @param id Connection ID
      */
-    connection(std::uint8_t id) : base_connection(id)
+    connection(std::uint8_t id) : player_data{id}
     {
     }
 
     connection(const connection&) = default;
+
+    /**
+     * @brief Check whether this connection has valid ID
+     *
+     * @return true If ID is valid
+     */
+    [[nodiscard]] bool is_valid() const noexcept
+    {
+        return m_id != object_id::invalid;
+    }
+
+    /**
+     * @brief Compare this connections's ID with other's ID
+     *
+     * @param other Other connection
+     * @return true If same
+     */
+    bool operator==(const connection& other) const noexcept
+    {
+        return m_id == other.m_id;
+    }
+
+    /**
+     * @brief Compare this connections's ID with other's ID
+     *
+     * @param other Other connection
+     * @return true If different
+     */
+    bool operator!=(const connection& other) const noexcept
+    {
+        return m_id != other.m_id;
+    }
 
     /**
      * @brief Send existing player packet
@@ -42,7 +75,7 @@ class connection : public base_connection, public player_data
      */
     bool send_existing_player(connection& other, std::uint8_t channel = 0)
     {
-        ENetPacket* packet = enet_packet_create(nullptr, 12 + other.m_name.length(), ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket* packet = enet_packet_create(nullptr, 12 + other.name().size(), ENET_PACKET_FLAG_RELIABLE);
         data_stream stream = packet;
 
         stream.write_type(packet_type::existing_player);
@@ -52,7 +85,7 @@ class connection : public base_connection, public player_data
         stream.write_type(other.m_tool);
         stream.write_int(other.m_kills);
         stream.write_color3b(other.m_color);
-        stream.write_array(other.m_name.data(), other.m_name.length());
+        stream.write_array(other.m_name.data(), other.name().size());
         return send(packet, channel);
     }
 
@@ -109,8 +142,8 @@ class connection : public base_connection, public player_data
         stream.write_type(m_weapon);
         stream.write_type(m_team);
         stream.write_vec3(m_position);
-        stream.write_array(m_name.data(), m_name.length());
-        return 16 + m_name.length();
+        stream.write_array(m_name.data(), name().size());
+        return 16 + name().size();
     }
 
     /**

@@ -222,9 +222,8 @@ class connection_manager
                             bool         unsequenced = false,
                             std::uint8_t channel     = 0)
     {
-        victim.m_last_kill_killer = killer.get_id();
-        victim.m_last_kill_type   = type;
-        victim.m_respawn_time     = respawn_time;
+        victim.set_last_kill(killer.id(), type);
+        victim.m_respawn_time = respawn_time;
         victim.reset_death();
 
         data_stream stream{m_cache, packet::kill_action_size};
@@ -406,7 +405,7 @@ class connection_manager
             case chat_type::team:
                 if (!source.m_muted) {
                     for (auto& connection : m_connections) {
-                        if (connection.m_team != source.m_team) {
+                        if (connection.team() != source.team()) {
                             continue;
                         }
                         if (!connection.is_disconnected() && !connection.m_deaf) {
