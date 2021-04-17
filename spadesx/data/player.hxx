@@ -36,7 +36,7 @@ class player_data :
      *
      * @param id ID
      */
-    constexpr player_data(std::uint8_t id) noexcept : entity{entity_type::player, id, team_type::neutral}
+    constexpr player_data(std::uint8_t id) noexcept : entity{entity_type::player, id, team_type::spectator}
     {
     }
 
@@ -85,7 +85,7 @@ class player_data :
         m_orientation = {0.F, 0.F, 0.F};
     }
 
-    glm::vec3 m_orientation; //!< Player orientation
+    glm::vec3 m_orientation{0.F, 0.F, 0.F}; //!< Player orientation
 
     std::uint8_t m_health{100};          //!< Player's health
     tool_type    m_tool{tool_type::gun}; //!< Currently held tool

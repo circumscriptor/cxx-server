@@ -108,7 +108,7 @@ class weapons
      * @param weapon Weapon
      * @return Weapon data
      */
-    static const weapon_params& get(weapon_type weapon) noexcept
+    static constexpr const weapon_params& get(weapon_type weapon) noexcept
     {
         switch (weapon) {
             case weapon_type::rifle:

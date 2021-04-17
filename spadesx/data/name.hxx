@@ -24,7 +24,9 @@ class name_data
      * @brief Construct a new name data object
      *
      */
-    constexpr name_data() noexcept = default;
+    constexpr name_data() noexcept : m_name{0}
+    {
+    }
 
     /**
      * @brief Set name
@@ -48,12 +50,12 @@ class name_data
      */
     [[nodiscard]] constexpr std::string_view name() const noexcept
     {
-        return {m_name.data(), m_length};
+        return {m_name, m_length};
     }
 
   protected:
-    std::array<char, N> m_name;      //!< Name
-    std::size_t         m_length{0}; //!< Length of the name
+    char        m_name[N];   //!< Name
+    std::size_t m_length{0}; //!< Length of the name
 };
 
 } // namespace spadesx

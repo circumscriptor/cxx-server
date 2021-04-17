@@ -223,10 +223,10 @@ class server_handler : public world_manager
             std::cout << "[WARNING]: block line - invalid id received" << std::endl;
         }
 
-        glm::ivec3 start;
-        glm::ivec3 end;
-        stream.read_ivec3(start);
-        stream.read_ivec3(end);
+        glm::uvec3 start;
+        glm::uvec3 end;
+        stream.read_uvec3(start);
+        stream.read_uvec3(end);
 
         on_block_line(source, start, end);
     }
@@ -341,6 +341,7 @@ class server_handler : public world_manager
         if (source.id() != stream.read_byte()) {
             std::cout << "[WARNING]: existing player - invalid id received" << std::endl;
         }
+
         auto    team   = stream.read_type<team_type>();
         auto    weapon = stream.read_type<weapon_type>();
         auto    tool   = stream.read_type<tool_type>();
@@ -357,6 +358,8 @@ class server_handler : public world_manager
             }
         }
 
+        source.m_has_joined = true;
+
         on_existing_player(source, team, weapon, tool, kills, color, {data, left});
     }
 
@@ -369,6 +372,12 @@ class server_handler : public world_manager
      */
     void default_receive(connection& connection, packet_type type, data_stream& stream)
     {
+        if (!connection.m_has_joined) {
+            if (type == packet_type::existing_player) {
+                handle_existing_player(connection, stream);
+            }
+            return;
+        }
         switch (type) {
             case packet_type::position_data:
                 handle_position_data(connection, stream);
@@ -413,6 +422,7 @@ class server_handler : public world_manager
                 handle_weapon_change(connection, stream);
                 break;
             case packet_type::existing_player:
+                std::cout << "[WARNING]: existing player sent after player has joined" << std::endl;
                 handle_existing_player(connection, stream);
                 break;
             default:
@@ -614,7 +624,7 @@ class server_handler : public world_manager
      * @param start Start position
      * @param end End position
      */
-    virtual void on_block_line(connection& source, glm::ivec3 start, glm::ivec3 end)
+    virtual void on_block_line(connection& source, glm::uvec3 start, glm::uvec3 end)
     {
         if (!source.m_can_build) {
             return;

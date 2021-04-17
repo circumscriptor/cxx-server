@@ -21,20 +21,14 @@ class input_data
      * @brief Construct a new input_data object
      *
      */
-    input_data() noexcept = default;
-
-    /**
-     * @brief Destroy the input_data object
-     *
-     */
-    ~input_data() noexcept = default;
+    constexpr input_data() noexcept = default;
 
     /**
      * @brief Set input
      *
      * @param input Input
      */
-    void set_input(std::uint8_t input) noexcept
+    constexpr void set_input(std::uint8_t input) noexcept
     {
         m_up     = ((input & 0x01) != 0);
         m_down   = ((input & 0x02) != 0);
@@ -51,7 +45,7 @@ class input_data
      *
      * @return Input data
      */
-    [[nodiscard]] std::uint8_t get_input_data() const noexcept
+    [[nodiscard]] constexpr std::uint8_t get_input_data() const noexcept
     {
         std::uint8_t input = 0;
         input |= m_up ? 0x01 : 0x00;
@@ -70,7 +64,7 @@ class input_data
      *
      * @param input Weapon input
      */
-    void set_weapon_input(std::uint8_t input) noexcept
+    constexpr void set_weapon_input(std::uint8_t input) noexcept
     {
         m_primary   = ((input & 0x01) != 0);
         m_secondary = ((input & 0x02) != 0);
@@ -81,7 +75,7 @@ class input_data
      *
      * @return Weapon input
      */
-    [[nodiscard]] std::uint8_t get_weapon_input() const noexcept
+    [[nodiscard]] constexpr std::uint8_t get_weapon_input() const noexcept
     {
         std::uint8_t input = 0;
         input |= m_primary ? 0x01 : 0x00;
@@ -93,7 +87,7 @@ class input_data
      * @brief Reset input
      *
      */
-    void reset_input_data() noexcept
+    constexpr void reset_input_data() noexcept
     {
         m_up        = false;
         m_down      = false;

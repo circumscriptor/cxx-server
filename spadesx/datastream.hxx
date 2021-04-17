@@ -233,6 +233,18 @@ class data_stream
     }
 
     /**
+     * @brief Read integer 3D-vector
+     *
+     * @param result Vector
+     */
+    void read_uvec3(glm::uvec3& result)
+    {
+        result.x = read_int();
+        result.y = read_int();
+        result.z = read_int();
+    }
+
+    /**
      * @brief Read n-bytes and store in the buffer
      *
      * @param buffer The buffer to be used

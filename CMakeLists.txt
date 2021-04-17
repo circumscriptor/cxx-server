@@ -24,6 +24,11 @@ else()
     set(ENET_LIBRARY enet)
 endif()
 
+target_compile_options(server
+    PRIVATE
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
+)
+
 target_link_libraries(server
     PRIVATE
         Boost::iostreams

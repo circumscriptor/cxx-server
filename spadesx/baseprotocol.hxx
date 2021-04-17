@@ -8,6 +8,7 @@
 
 #include "base.hxx"
 #include "command.hxx"
+#include "data/enums.hxx"
 #include "handler.hxx"
 
 #include <chrono>
@@ -163,13 +164,16 @@ class base_protocol : public server_handler, public command_manager
     {
         for (auto& other : m_connections) {
             if (connection != other && other.is_connected()) { // send only connected players
-                // TODO: Do not send if player didn't send existing player packet
-                connection.send_existing_player(other);
+                if (other.m_has_joined) {
+                    connection.send_existing_player(other);
+                }
             }
         }
         for (auto& other : m_connections) {
             if (connection != other && other.is_connected() && !other.m_alive) {
-                connection.send_kill_action(other);
+                if (other.m_has_joined) {
+                    connection.send_kill_action(other);
+                }
             }
         }
     }
@@ -323,7 +327,9 @@ class base_protocol : public server_handler, public command_manager
                 m_map_used = false;
             }
 
-            on_disconnect(connection);
+            if (connection.m_has_joined) {
+                on_disconnect(connection);
+            }
             broadcast_leave(connection);
 
             detach_connection(connection);
