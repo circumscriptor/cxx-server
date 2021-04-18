@@ -191,6 +191,29 @@ class map
     }
 
     /**
+     * @brief Same as is_block, but water is empty and out of bounds returns true
+     *
+     * @param x The x-coordinate of ...
+     * @param y The y-coordinate of ...
+     * @param z The z-coordinate of ...
+     * @return true ...
+     */
+    bool is_clip_box(float x, float y, float z) const
+    {
+        if (x < 0.F || x >= 512.F || y < 0.F || y >= 512.F || z >= 64.F) {
+            return true;
+        }
+        if (z < 0.F) {
+            return false;
+        }
+        auto _z = static_cast<std::uint32_t>(z);
+        if (_z == 63) {
+            _z = 62;
+        }
+        return is_block(static_cast<std::uint32_t>(x), static_cast<std::uint32_t>(y), _z);
+    }
+
+    /**
      * @brief Check whether the block (or air) has a neighbor (another solid block attached)
      *
      * @param offset The offset

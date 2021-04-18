@@ -44,22 +44,24 @@ class player_state
         m_wade       = false;
         m_gliding    = false;
         m_crouching  = false;
+        m_jumping    = false;
         m_has_joined = false;
         m_can_spawn  = false;
         m_can_build  = true;
         m_can_kill   = true;
     }
 
-    bool m_deaf{false};      //!< Chat (deaf)
-    bool m_muted{false};     //!< Chat (muted)
-    bool m_alive{false};     //!< Is player alive
-    bool m_wade{false};      //!< Is player in water
-    bool m_gliding{false};   //!< In the air (airborne)
-    bool m_crouching{false}; //!< Crouching state
-    bool m_has_joined{false};
-    bool m_can_spawn{false}; //!< Is player allowed to spawn
-    bool m_can_build{true};  //!< Is player allowed to break blocks
-    bool m_can_kill{true};   //!< Is player allowed to kill players
+    bool m_deaf{false};       //!< Chat (deaf)
+    bool m_muted{false};      //!< Chat (muted)
+    bool m_alive{false};      //!< Is player alive
+    bool m_wade{false};       //!< Is player in water
+    bool m_gliding{false};    //!< In the air (airborne)
+    bool m_crouching{false};  //!< Crouching state
+    bool m_jumping{false};    //!< Is mid jump?
+    bool m_has_joined{false}; //!< Has player joined
+    bool m_can_spawn{false};  //!< Is player allowed to spawn
+    bool m_can_build{true};   //!< Is player allowed to break blocks
+    bool m_can_kill{true};    //!< Is player allowed to kill players
 };
 
 } // namespace spadesx

@@ -10,8 +10,8 @@
 #include "data/entity.hxx"
 #include "data/enums.hxx"
 #include "data/packet.hxx"
-#include "data/player.hxx"
 #include "datastream.hxx"
+#include "update.hxx"
 
 #include <iostream>
 
@@ -21,7 +21,7 @@ namespace spadesx {
  * @brief Connection - player data
  *
  */
-class connection : public base_connection, public player_data
+class connection : public base_connection, public player_update
 {
   public:
     /**
@@ -29,7 +29,7 @@ class connection : public base_connection, public player_data
      *
      * @param id Connection ID
      */
-    connection(std::uint8_t id) : player_data{id}
+    connection(std::uint8_t id) : player_update{id}
     {
     }
 
