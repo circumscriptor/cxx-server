@@ -18,6 +18,7 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -206,11 +207,11 @@ class map
         if (z < 0.F) {
             return false;
         }
-        auto _z = static_cast<std::uint32_t>(z);
+        auto _z = static_cast<std::uint32_t>(std::floor(z));
         if (_z == 63) {
             _z = 62;
         }
-        return is_block(static_cast<std::uint32_t>(x), static_cast<std::uint32_t>(y), _z);
+        return is_block(static_cast<std::uint32_t>(std::floor(x)), static_cast<std::uint32_t>(std::floor(y)), _z);
     }
 
     /**

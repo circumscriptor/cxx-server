@@ -478,14 +478,7 @@ class server_handler : public world_manager
     {
         source.set_input(input);
 
-        if (source.m_jump) {
-            if (source.m_jumping && !(source.m_velocity.z >= 0.F && source.m_velocity.z < 0.017F)) {
-                source.m_jumping = false;
-            } else {
-                source.m_jumping = true;
-            }
-        }
-
+        source.set_jump(source.m_jump);
         source.set_crouch(source.m_crouch);
 
         broadcast_input_data(source);
@@ -768,10 +761,10 @@ class server_handler : public world_manager
     }
 
   protected:
-    float        m_melee_distance{5.F};
-    std::uint8_t m_melee_damage{50};
-    block_line   m_line;            //!< Block line
-    std::uint8_t m_respawn_time{0}; //!< Current respawn time
+    float        m_melee_distance{5.F}; //!< Melee distance
+    std::uint8_t m_melee_damage{50};    //!< Melee damage
+    block_line   m_line;                //!< Block line
+    std::uint8_t m_respawn_time{0};     //!< Current respawn time
 };
 
 } // namespace spadesx

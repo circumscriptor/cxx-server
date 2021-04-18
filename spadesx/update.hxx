@@ -43,9 +43,11 @@ class player_update : public player_data
      */
     void box_clip_move(map& map, float delta)
     {
-        bool  climb = false;
+        bool  climb    = false;
+        float modifier = delta * 32.F;
         float offset;
         float m;
+        float z;
 
         if (m_crouching) {
             offset = 0.45F;
@@ -55,12 +57,10 @@ class player_update : public player_data
             m      = 1.35F;
         }
 
-        float modifier = delta * 32.F;
-        float new_x    = m_position.x + m_velocity.x * modifier;
-        float new_y    = m_position.y + m_velocity.y * modifier;
-        float new_z    = m_position.z + offset;
-
-        float z;
+        glm::vec3 next;
+        next.x = m_position.x + m_velocity.x * modifier;
+        next.y = m_position.y + m_velocity.y * modifier;
+        next.z = m_position.z + offset;
 
         // check for X
 
@@ -73,24 +73,24 @@ class player_update : public player_data
         }
 
         while (z >= -1.36F && //
-               !map.is_clip_box(new_x + modifier, m_position.y - 0.45F, new_z + z) &&
-               !map.is_clip_box(new_x + modifier, m_position.y + 0.45F, new_z + z))
+               !map.is_clip_box(next.x + modifier, m_position.y - 0.45F, next.z + z) &&
+               !map.is_clip_box(next.x + modifier, m_position.y + 0.45F, next.z + z))
         {
             z -= 0.9F;
         }
 
         if (z < -1.36F) {
-            m_position.x = new_x;
+            m_position.x = next.x;
         } else if (!m_crouching && m_orientation.z < 0.5F && !m_sprint) {
             z = 0.35F;
             while (z >= -2.36F && //
-                   !map.is_clip_box(new_x + modifier, m_position.y - 0.45F, new_z + z) &&
-                   !map.is_clip_box(new_x + modifier, m_position.y + 0.45F, new_z + z))
+                   !map.is_clip_box(next.x + modifier, m_position.y - 0.45F, next.z + z) &&
+                   !map.is_clip_box(next.x + modifier, m_position.y + 0.45F, next.z + z))
             {
                 z -= 0.9F;
             }
             if (z < -2.36F) {
-                m_position.x = new_x;
+                m_position.x = next.x;
                 climb        = true;
             } else {
                 m_velocity.x = 0.F;
@@ -110,24 +110,24 @@ class player_update : public player_data
         }
 
         while (z >= -1.36F && //
-               !map.is_clip_box(m_position.x - 0.45F, new_y + modifier, new_z + z) &&
-               !map.is_clip_box(m_position.x + 0.45F, new_y + modifier, new_z + z))
+               !map.is_clip_box(m_position.x - 0.45F, next.y + modifier, next.z + z) &&
+               !map.is_clip_box(m_position.x + 0.45F, next.y + modifier, next.z + z))
         {
             z -= 0.9F;
         }
 
         if (z < -1.36F) {
-            m_position.y = new_y;
+            m_position.y = next.y;
         } else if (!m_crouching && m_orientation.z < 0.5F && !m_sprint && !climb) {
             z = 0.35F;
             while (z >= -2.36F && //
-                   !map.is_clip_box(m_position.x - 0.45F, new_y + modifier, new_z + z) &&
-                   !map.is_clip_box(m_position.x + 0.45F, new_y + modifier, new_z + z))
+                   !map.is_clip_box(m_position.x - 0.45F, next.y + modifier, next.z + z) &&
+                   !map.is_clip_box(m_position.x + 0.45F, next.y + modifier, next.z + z))
             {
                 z -= 0.9F;
             }
             if (z < -2.36F) {
-                m_position.y = new_y;
+                m_position.y = next.y;
                 climb        = true;
             } else {
                 m_velocity.y = 0.F;
@@ -136,24 +136,28 @@ class player_update : public player_data
             m_velocity.y = 0.F;
         }
 
+        // move z
+
         if (climb) {
             m_velocity.x *= 0.5F;
             m_velocity.y *= 0.5F;
-            new_z -= 1.F;
+            next.z -= 1.F;
             m = -1.35F;
         } else {
             if (m_velocity.z < 0.F) {
                 m = -m;
             }
-            new_z += m_velocity.z * delta * 32.F;
+            next.z += m_velocity.z * delta * 32.F;
         }
+
+        // check ground
 
         m_gliding = true;
 
-        if (map.is_clip_box(m_position.x - 0.45F, m_position.y - 0.45F, new_z + m) ||
-            map.is_clip_box(m_position.x - 0.45F, m_position.y + 0.45F, new_z + m) ||
-            map.is_clip_box(m_position.x + 0.45F, m_position.y - 0.45F, new_z + m) ||
-            map.is_clip_box(m_position.x + 0.45F, m_position.y + 0.45F, new_z + m))
+        if (map.is_clip_box(m_position.x - 0.45F, m_position.y - 0.45F, next.z + m) ||
+            map.is_clip_box(m_position.x - 0.45F, m_position.y + 0.45F, next.z + m) ||
+            map.is_clip_box(m_position.x + 0.45F, m_position.y - 0.45F, next.z + m) ||
+            map.is_clip_box(m_position.x + 0.45F, m_position.y + 0.45F, next.z + m))
         {
             if (m_velocity.z >= 0.F) {
                 m_wade    = m_position.z > 61.F;
@@ -161,7 +165,7 @@ class player_update : public player_data
             }
             m_velocity.z = 0.F;
         } else {
-            m_position.z = new_z - offset;
+            m_position.z = next.z - offset;
         }
 
         // reposition(m_position);
@@ -175,6 +179,19 @@ class player_update : public player_data
     bool is_on_ground_or_wade()
     {
         return (m_velocity.z >= 0.F && m_velocity.z < 0.017F) && !m_gliding;
+    }
+
+    /**
+     * @brief Set jump
+     *
+     * @param jump Jump value
+     */
+    void set_jump(bool jump)
+    {
+        if (jump) {
+            m_jumping = !m_jumping && is_on_ground_or_wade();
+            // m_jumping = !(m_jumping && !(m_velocity.z >= 0.F && m_velocity.z < 0.017F));
+        }
     }
 
     /**
@@ -195,9 +212,11 @@ class player_update : public player_data
     }
 
     /**
-     * @brief Move player
+     * @brief Move player (and return fall damage)
      *
+     * @param map Map
      * @param delta Delta time
+     * @return Fall damage (if > 0)
      */
     int move_player(map& map, float delta)
     {
