@@ -71,6 +71,7 @@ class base_protocol : public server_handler, public command_manager
     {
         source.m_reserve_ammo = get_weapon_stock(source.weapon());
         source.m_restock_time = restock_time;
+        source.m_health       = 100;
         broadcast_restock(source);
     }
 
