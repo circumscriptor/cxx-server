@@ -36,6 +36,7 @@ auto main(int argc, char** argv) -> int
     protocol.get_team(spadesx::team_type::a).color() = {0xFF, 0x00, 0x00};
     protocol.get_team(spadesx::team_type::b).color() = {0x00, 0xFF, 0x00};
     protocol.set_fog_color({0xFF, 0xFF, 0xFF});
+    protocol.set_respawn_time(3);
 
     protocol.register_command<spadesx::say_command>("say");
     protocol.register_command<spadesx::kill_command>("kill");
