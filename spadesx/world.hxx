@@ -65,7 +65,13 @@ class world_manager : public connection_manager
         m_fog_color = color;
     }
 
-    static void box_clip_move(connection& player, float delta)
+    /**
+     * @brief On fall damage event
+     *
+     * @param source Source connection (player)
+     * @param damage Damage
+     */
+    virtual void on_fall_damage(connection& source, int damage)
     {
     }
 
@@ -77,8 +83,9 @@ class world_manager : public connection_manager
      */
     void world_update_player(connection& player, float delta)
     {
-        if (player.move_player(*m_map, delta) > 0) {
-            std::cout << "fall damage" << std::endl;
+        auto fall_damage = player.move_player(*m_map, delta);
+        if (fall_damage > 0) {
+            on_fall_damage(player, fall_damage);
         }
     }
 

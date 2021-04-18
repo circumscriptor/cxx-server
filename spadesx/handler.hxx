@@ -551,6 +551,23 @@ class server_handler : public world_manager
     }
 
     /**
+     * @brief On fall damage
+     *
+     * @param source Source connection
+     * @param damage Damage
+     */
+    void on_fall_damage(connection& source, int damage) override
+    {
+        std::cout << "fall damage: " << damage << std::endl;
+        if (source.m_health > damage) {
+            source.m_health -= damage;
+            source.send_set_hp(source.m_position, false);
+        } else {
+            kill_and_broadcast(source, source, kill_type::fall, m_respawn_time);
+        }
+    }
+
+    /**
      * @brief Throw grenade
      *
      * @param source Source connection
