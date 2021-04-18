@@ -155,7 +155,7 @@ class player_update : public player_data
             map.is_clip_box(m_position.x + 0.45F, m_position.y - 0.45F, new_z + m) ||
             map.is_clip_box(m_position.x + 0.45F, m_position.y + 0.45F, new_z + m))
         {
-            if (m_velocity.z >= 0) {
+            if (m_velocity.z >= 0.F) {
                 m_wade    = m_position.z > 61.F;
                 m_gliding = false;
             }
@@ -168,13 +168,40 @@ class player_update : public player_data
     }
 
     /**
+     * @brief Is on ground or in water
+     *
+     * @return true If is ou ground or in water
+     */
+    bool is_on_ground_or_wade()
+    {
+        return (m_velocity.z >= 0.F && m_velocity.z < 0.017F) && !m_gliding;
+    }
+
+    /**
+     * @brief Set crouch
+     *
+     * @param crouch Crouch value
+     */
+    void set_crouch(bool crouch)
+    {
+        if (m_crouching != crouch) {
+            if (crouch) {
+                m_position.z += 0.9F;
+            } else {
+                m_position.z -= 0.9F;
+            }
+            m_crouching = crouch;
+        }
+    }
+
+    /**
      * @brief Move player
      *
      * @param delta Delta time
      */
     int move_player(map& map, float delta)
     {
-        if (m_jumping) {
+        if (m_jumping && is_on_ground_or_wade()) {
             m_jumping    = false;
             m_velocity.z = -0.36F;
         }

@@ -452,7 +452,9 @@ class server_handler : public world_manager
      */
     virtual void on_position_data(connection& source, const glm::vec3& position)
     {
+        // if (glm::distance(source.m_position, position) >= 0.1F) {
         source.m_position = position;
+        // }
     }
 
     /**
@@ -475,6 +477,17 @@ class server_handler : public world_manager
     virtual void on_input_data(connection& source, std::uint8_t input)
     {
         source.set_input(input);
+
+        if (source.m_jump) {
+            if (source.m_jumping && !(source.m_velocity.z >= 0.F && source.m_velocity.z < 0.017F)) {
+                source.m_jumping = false;
+            } else {
+                source.m_jumping = true;
+            }
+        }
+
+        source.set_crouch(source.m_crouch);
+
         broadcast_input_data(source);
     }
 
@@ -511,10 +524,10 @@ class server_handler : public world_manager
 
         std::uint8_t damage = 0;
         if (type == hit_type::melee) {
-            if (glm::distance(source.m_position, target.m_position) > 5.0) {
+            if (glm::distance(source.m_position, target.m_position) > m_melee_distance) {
                 return;
             }
-            damage = 50;
+            damage = m_melee_damage;
         } else {
             damage = source.get_weapon_damage(type);
         }
@@ -738,6 +751,8 @@ class server_handler : public world_manager
     }
 
   protected:
+    float        m_melee_distance{5.F};
+    std::uint8_t m_melee_damage{50};
     block_line   m_line;            //!< Block line
     std::uint8_t m_respawn_time{0}; //!< Current respawn time
 };

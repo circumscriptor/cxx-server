@@ -77,20 +77,6 @@ class world_manager : public connection_manager
      */
     void world_update_player(connection& player, float delta)
     {
-        if (player.m_jumping != player.m_jump) {
-            if (player.m_jump && !player.m_gliding) {
-                player.m_jumping = true;
-            }
-        }
-        if (player.m_crouching != player.m_crouch) {
-            if (player.m_crouch) {
-                player.m_position.z += 0.9F;
-            } else {
-                player.m_position.z -= 0.9F;
-            }
-            player.m_crouching = player.m_crouch;
-        }
-
         if (player.move_player(*m_map, delta) > 0) {
             std::cout << "fall damage" << std::endl;
         }

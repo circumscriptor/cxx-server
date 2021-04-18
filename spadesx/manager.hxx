@@ -128,11 +128,18 @@ class connection_manager
      * @param unsequenced If true sets unsequenced flag
      * @param channel Channel
      */
-    void broadcast_input_data(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
+    void broadcast_input_data(connection&  source,
+                              bool         include_sender = false,
+                              bool         unsequenced    = false,
+                              std::uint8_t channel        = 0)
     {
         data_stream stream{m_cache, packet::input_data_size};
         source.fill_input_data(stream);
-        broadcast(source, m_cache, packet::input_data_size, unsequenced, channel);
+        if (!include_sender) {
+            broadcast(source, m_cache, packet::input_data_size, unsequenced, channel);
+        } else {
+            broadcast(m_cache, packet::input_data_size, unsequenced, channel);
+        }
     }
 
     /**
