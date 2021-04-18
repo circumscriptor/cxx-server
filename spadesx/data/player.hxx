@@ -83,9 +83,11 @@ class player_data :
     {
         reset_position();
         m_orientation = {0.F, 0.F, 0.F};
+        m_velocity    = {0.F, 0.F, 0.F};
     }
 
     glm::vec3 m_orientation{0.F, 0.F, 0.F}; //!< Player orientation
+    glm::vec3 m_velocity{0.F, 0.F, 0.F};    //!< Player velocity
 
     std::uint8_t m_health{100};          //!< Player's health
     tool_type    m_tool{tool_type::gun}; //!< Currently held tool

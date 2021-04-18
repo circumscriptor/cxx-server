@@ -41,6 +41,7 @@ class player_state
         m_muted      = false;
         m_deaf       = false;
         m_alive      = false;
+        m_wade       = false;
         m_gliding    = false;
         m_crouching  = false;
         m_has_joined = false;
@@ -52,6 +53,7 @@ class player_state
     bool m_deaf{false};      //!< Chat (deaf)
     bool m_muted{false};     //!< Chat (muted)
     bool m_alive{false};     //!< Is player alive
+    bool m_wade{false};      //!< Is player in water
     bool m_gliding{false};   //!< In the air (airborne)
     bool m_crouching{false}; //!< Crouching state
     bool m_has_joined{false};

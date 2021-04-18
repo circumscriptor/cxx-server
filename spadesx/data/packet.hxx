@@ -39,7 +39,7 @@ class packet
     static constexpr const std::size_t progress_bar         = 8;
     static constexpr const std::size_t intel_capture_size   = 3;
     static constexpr const std::size_t intel_pickup_size    = 2;
-    static constexpr const std::size_t intel_drop_size      = 13;
+    static constexpr const std::size_t intel_drop_size      = 14;
     static constexpr const std::size_t restock_size         = 2;
     static constexpr const std::size_t fog_color_size       = 5;
     static constexpr const std::size_t weapon_reload_size   = 4;

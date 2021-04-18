@@ -280,11 +280,12 @@ class base_protocol : public server_handler, public command_manager
             }
         }
 
-        if (std::chrono::duration<double>(now - m_world_update_timer).count() >= m_world_update_delta) {
+        double delta = std::chrono::duration<double>(now - m_world_update_timer).count();
+        if (delta >= m_world_update_delta) {
             m_world_update_timer = now;
             // update world
             // ...
-            world_update();
+            world_update(static_cast<float>(delta)); // or m_world_update_delta?
             broadcast_world_update();
         }
     }
