@@ -164,17 +164,13 @@ class base_protocol : public server_handler, public command_manager
     void send_existing_players(connection& connection)
     {
         for (auto& other : m_connections) {
-            if (connection != other && other.is_connected()) { // send only connected players
-                if (other.m_has_joined) {
-                    connection.send_existing_player(other);
-                }
+            if (connection != other && other.is_connected() && other.m_has_joined) { // send only connected players
+                connection.send_existing_player(other);
             }
         }
         for (auto& other : m_connections) {
-            if (connection != other && other.is_connected() && !other.m_alive) {
-                if (other.m_has_joined) {
-                    connection.send_kill_action(other);
-                }
+            if (connection != other && other.is_connected() && !other.m_alive && other.m_has_joined) {
+                connection.send_kill_action(other);
             }
         }
     }
