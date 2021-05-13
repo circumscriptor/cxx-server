@@ -65,6 +65,7 @@ if(DOXYGEN_FOUND)
 
     set(DOXYGEN_QUIET YES)
     set(DOXYGEN_PREDEFINED "DOXYGEN_SHOULD_SKIP_THIS")
+    set(DOXYGEN_DOT_GRAPH_MAX_NODES 100)
     
     #
     # Add documentation target

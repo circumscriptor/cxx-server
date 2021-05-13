@@ -6,7 +6,6 @@
 #pragma once
 
 #include "baseprotocol.hxx"
-#include "enet.hxx"
 
 namespace spadesx {
 

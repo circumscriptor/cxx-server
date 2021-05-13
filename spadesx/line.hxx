@@ -5,13 +5,10 @@
 
 #pragma once
 
-#include "map.hxx"
+#include "world.hxx"
 
-#include <cassert>
-#include <climits>
 #include <glm/common.hpp>
 #include <glm/ext/vector_int3.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 namespace spadesx {
 

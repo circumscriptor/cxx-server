@@ -5,14 +5,13 @@
 
 #pragma once
 
+#include "intel.hxx"
+
 #include <memory>
-#include <stdexcept>
-#include <string_view>
 #include <unordered_map>
 
 namespace spadesx {
 
-class connection;
 class base_protocol;
 
 /**

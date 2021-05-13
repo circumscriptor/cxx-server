@@ -5,13 +5,7 @@
 
 #pragma once
 
-#include "entity.hxx"
-#include "enums.hxx"
-#include "input.hxx"
-#include "name.hxx"
-#include "score.hxx"
 #include "state.hxx"
-#include "types.hxx"
 #include "weapon.hxx"
 
 namespace spadesx {

@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "data/enums.hxx"
-#include "datastream.hxx"
 #include "peer.hxx"
 
 namespace spadesx {

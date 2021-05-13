@@ -5,17 +5,7 @@
 
 #pragma once
 
-#include "base.hxx"
 #include "baseprotocol.hxx"
-#include "data/enums.hxx"
-#include "data/position.hxx"
-#include "data/team.hxx"
-#include "data/weapon.hxx"
-#include "intel.hxx"
-#include "spawn.hxx"
-
-#include <glm/geometric.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 namespace spadesx {
 

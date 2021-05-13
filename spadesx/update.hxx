@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "data/player.hxx"
 #include "map.hxx"
 
 namespace spadesx {

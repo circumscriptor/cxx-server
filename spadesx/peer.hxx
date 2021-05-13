@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include <cstdint>
-#include <enet/enet.h>
+#include "datastream.hxx"
 
 namespace spadesx {
 

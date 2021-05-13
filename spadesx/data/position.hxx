@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "team.hxx"
+
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 

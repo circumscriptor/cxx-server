@@ -6,7 +6,6 @@
 #pragma once
 
 #include "color.hxx"
-#include "enums.hxx"
 #include "name.hxx"
 #include "score.hxx"
 

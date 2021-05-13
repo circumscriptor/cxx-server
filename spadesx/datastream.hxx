@@ -5,14 +5,10 @@
 
 #pragma once
 
-#include "data/types.hxx"
+#include "enet.hxx"
 
-#include <array>
 #include <cassert>
-#include <cstdint>
 #include <cstring>
-#include <enet/enet.h>
-#include <glm/vec3.hpp>
 
 namespace spadesx {
 

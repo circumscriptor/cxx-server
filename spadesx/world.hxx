@@ -6,11 +6,6 @@
 #pragma once
 
 #include "manager.hxx"
-#include "map.hxx"
-
-#include <cmath>
-#include <glm/fwd.hpp>
-#include <memory>
 
 namespace spadesx {
 

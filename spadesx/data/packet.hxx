@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <cstdint>
+#include "types.hxx"
 
 namespace spadesx {
 

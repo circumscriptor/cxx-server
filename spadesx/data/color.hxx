@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "types.hxx"
+#include "enums.hxx"
 
 namespace spadesx {
 

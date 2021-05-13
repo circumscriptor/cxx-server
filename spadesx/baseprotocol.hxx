@@ -5,17 +5,10 @@
 
 #pragma once
 
-#include "base.hxx"
-#include "command.hxx"
-#include "data/enums.hxx"
 #include "handler.hxx"
 
 #include <chrono>
-#include <glm/glm.hpp>
 #include <random>
-#include <stdexcept>
-#include <string>
-#include <string_view>
 
 namespace spadesx {
 

@@ -5,14 +5,7 @@
 
 #pragma once
 
-#include "connection.hxx"
-#include "data/enums.hxx"
-#include "datastream.hxx"
-
-#include <glm/fwd.hpp>
-#include <stdexcept>
-#include <string_view>
-#include <vector>
+#include "command.hxx"
 
 namespace spadesx {
 

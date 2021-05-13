@@ -5,9 +5,7 @@
 
 #pragma once
 
-#include "enums.hxx"
-
-#include <cstdint>
+#include "input.hxx"
 
 namespace spadesx {
 

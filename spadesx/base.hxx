@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "data/entity.hxx"
+#include "spawn.hxx"
 
 namespace spadesx {
 

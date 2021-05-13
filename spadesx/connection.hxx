@@ -5,14 +5,7 @@
 
 #pragma once
 
-#include "baseconnection.hxx"
-#include "data/entity.hxx"
-#include "data/enums.hxx"
-#include "data/packet.hxx"
-#include "datastream.hxx"
 #include "update.hxx"
-
-#include <iostream>
 
 namespace spadesx {
 

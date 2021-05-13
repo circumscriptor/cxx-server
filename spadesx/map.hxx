@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include "data/types.hxx"
+#include "baseconnection.hxx"
 
-#include <array>
 #include <bitset>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -16,13 +15,7 @@
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
-#include <cassert>
 #include <cmath>
-#include <cstdint>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <stdexcept>
 #include <vector>
 
 namespace bio = boost::iostreams;

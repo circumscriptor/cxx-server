@@ -5,10 +5,7 @@
 
 #pragma once
 
-#include "connection.hxx"
-#include "data/enums.hxx"
-
-#include <cstdint>
+#include "base.hxx"
 
 namespace spadesx {
 

@@ -5,7 +5,8 @@
 
 #pragma once
 
-#include <cstdint>
+#include "data/player.hxx"
+
 #include <enet/enet.h>
 #include <iostream>
 #include <stdexcept>
