@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file ctf.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -88,6 +87,11 @@ class ctf_team_data : public team_data
 class ctf_protocol : public base_protocol
 {
   public:
+    /**
+     * @brief Construct a new ctf_protocol object
+     *
+     * @param max_players Max number of players
+     */
     ctf_protocol(std::uint8_t max_players) : base_protocol(max_players), m_teams{team_type::a, team_type::b}
     {
     }
@@ -203,8 +207,8 @@ class ctf_protocol : public base_protocol
      * @brief Broadcast intel capture
      *
      * @param source Source connection
+     * @param team Team data
      * @param enemy_team Enemy team data
-     * @param winning Is this a wining capture
      * @param position Reset position
      */
     void capture_intel(connection& source, ctf_team_data& team, ctf_team_data& enemy_team, const glm::vec3& position)
@@ -364,7 +368,7 @@ class ctf_protocol : public base_protocol
     }
 
   protected:
-    float m_intel_pickup_distance{3.F};
+    float m_intel_pickup_distance{3.F}; //!< Intel pickup distance
 
     /**
      * @brief Generate intel flags

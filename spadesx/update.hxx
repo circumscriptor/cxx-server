@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file update.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -11,6 +10,10 @@
 
 namespace spadesx {
 
+/**
+ * @brief Player movement
+ *
+ */
 class player_update : public player_data
 {
   public:
@@ -23,7 +26,7 @@ class player_update : public player_data
     {
     }
 
-    static constexpr const float diagonal_multiplier = float(0.7071067811865475244);
+    static constexpr const float diagonal_multiplier = float(0.7071067811865475244); //!< Diagonal movement multiplier
 
     // void reposition(const glm::vec3& position, float time)
     // {
@@ -62,7 +65,9 @@ class player_update : public player_data
         next.y = m_position.y + m_velocity.y * modifier;
         next.z = m_position.z + offset;
 
+        //
         // check for X
+        //
 
         z = m;
 
@@ -99,7 +104,9 @@ class player_update : public player_data
             m_velocity.x = 0.F;
         }
 
+        //
         // check for Y
+        //
 
         z = m;
 
@@ -136,7 +143,9 @@ class player_update : public player_data
             m_velocity.y = 0.F;
         }
 
+        //
         // move z
+        //
 
         if (climb) {
             m_velocity.x *= 0.5F;
@@ -150,7 +159,9 @@ class player_update : public player_data
             next.z += m_velocity.z * delta * 32.F;
         }
 
+        //
         // check ground
+        //
 
         m_gliding = true;
 
@@ -176,7 +187,7 @@ class player_update : public player_data
      *
      * @return true If is ou ground or in water
      */
-    bool is_on_ground_or_wade()
+    bool is_on_ground_or_wade() const
     {
         return (m_velocity.z >= 0.F && m_velocity.z < 0.017F) && !m_gliding;
     }
@@ -280,20 +291,20 @@ class player_update : public player_data
         m_velocity.x /= modifier;
         m_velocity.y /= modifier;
 
-        float z_vel = m_velocity.z;
+        float vel_z = m_velocity.z;
 
         box_clip_move(map, delta);
 
         // check fall - slow
-        if (m_velocity.z == 0.F && (z_vel > 0.24F)) {
+        if (m_velocity.z == 0.F && vel_z > 0.24F) {
             // Slow down on fall
             m_velocity.x *= 0.5F;
             m_velocity.y *= 0.5F;
 
             // check fall - damage
-            if (z_vel > 0.58F) {
-                z_vel -= 0.58F;
-                return static_cast<int>(z_vel * z_vel * 4096); // get fall damage
+            if (vel_z > 0.58F) {
+                vel_z -= 0.58F;
+                return static_cast<int>(vel_z * vel_z * 4096); // get fall damage
             }
             return -1; // no fall damage, but sound
         }

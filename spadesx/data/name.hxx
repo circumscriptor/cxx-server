@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file name.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -32,7 +31,6 @@ class name_data
      * @brief Set name
      *
      * @param name New name
-     * @param max_size Max size
      */
     constexpr void set_name(std::string_view name) noexcept
     {

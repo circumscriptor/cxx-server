@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file kill.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -10,6 +9,10 @@
 
 namespace spadesx {
 
+/**
+ * @brief Kill command
+ *
+ */
 class kill_command : public command
 {
   public:

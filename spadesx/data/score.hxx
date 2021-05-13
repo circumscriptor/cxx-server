@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file score.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once

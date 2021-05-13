@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file types.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -17,10 +16,6 @@ namespace spadesx {
 class color3b
 {
   public:
-    std::uint8_t r{0}; //!< R-component
-    std::uint8_t g{0}; //!< G-component
-    std::uint8_t b{0}; //!< B-component
-
     /**
      * @brief Construct a new color3b object
      *
@@ -72,7 +67,6 @@ class color3b
      * @brief Convert color in ARGB format to Color3
      *
      * @param v Color in ARGB 32bit format
-     * @param color Color3 object
      */
     constexpr void from_uint32(std::uint32_t v) noexcept
     {
@@ -80,6 +74,10 @@ class color3b
         g = std::uint8_t(v >> 8);
         b = std::uint8_t(v);
     }
+
+    std::uint8_t r{0}; //!< R-component
+    std::uint8_t g{0}; //!< G-component
+    std::uint8_t b{0}; //!< B-component
 };
 
 } // namespace spadesx

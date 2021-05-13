@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file handler.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -368,7 +367,7 @@ class server_handler : public world_manager
      *
      * @param connection Connection
      * @param type Packet type
-     * @param strema Packet stream
+     * @param stream Packet stream
      */
     void default_receive(connection& connection, packet_type type, data_stream& stream)
     {
@@ -724,12 +723,12 @@ class server_handler : public world_manager
      * @param color Block color
      * @param name Name
      */
-    virtual void on_existing_player(connection& source,
-                                    team_type   team,
-                                    weapon_type weapon,
-                                    tool_type /*tool*/,
-                                    std::uint32_t /*kills*/,
-                                    const color3b& /*color*/,
+    virtual void on_existing_player(connection&      source,
+                                    team_type        team,
+                                    weapon_type      weapon,
+                                    tool_type        tool,
+                                    std::uint32_t    kills,
+                                    const color3b&   color,
                                     std::string_view name)
     {
         if (source.m_alive) {

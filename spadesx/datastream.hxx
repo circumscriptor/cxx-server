@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file datastream.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -78,8 +77,13 @@ class data_stream
      */
     data_stream(data_stream&& other) noexcept = default;
 
-    // Default copy assignment
-    auto operator=(const data_stream& other) -> data_stream& = default;
+    /**
+     * @brief Copy the contents of another data_stream object
+     *
+     * @param other Another data_stream object
+     * @return Reference to this
+     */
+    data_stream& operator=(const data_stream& other) = default;
 
     /**
      * @brief Current position

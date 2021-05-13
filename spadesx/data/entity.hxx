@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file entity.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -71,6 +70,7 @@ class entity : public position_data
     /**
      * @brief Construct a new entity object
      *
+     * @param type Entity type
      * @param id ID
      * @param team Team
      */
@@ -140,9 +140,9 @@ class entity : public position_data
     }
 
   protected:
+    entity_type  m_type; //!< Entity type
     std::uint8_t m_id;   //!< Entity's id
     team_type    m_team; //!< Entity's team
-    entity_type  m_type; //!< Entity type
 };
 
 } // namespace spadesx

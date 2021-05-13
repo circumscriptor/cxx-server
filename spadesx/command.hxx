@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file command.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -49,6 +48,8 @@ class command
      * @brief On execute
      *
      * @param args Args
+     * @param connection Source connection
+     * @param protocol Protocol
      */
     virtual void on_execute(std::string_view args, connection& connection, base_protocol& protocol)
     {
@@ -108,6 +109,7 @@ class command_manager
      *
      * @tparam T Command type
      * @param name Command name
+     * @param enable If true, call command->enable()
      */
     template<typename T>
     void register_command(const std::string& name, bool enable = true)
@@ -122,6 +124,12 @@ class command_manager
         }
     }
 
+    /**
+     * @brief Check whether command is registered
+     *
+     * @param name Command name
+     * @return true, if command is registered
+     */
     bool has_command(const std::string& name) const
     {
         auto it = m_commands.find(name);
@@ -146,7 +154,9 @@ class command_manager
      * @brief Parse command
      *
      * @param command Command
-     * @return true True on success
+     * @param connection Source connection
+     * @param protocol Protocol
+     * @return true on success
      */
     bool execute_command(std::string_view command, connection& connection, base_protocol& protocol)
     {

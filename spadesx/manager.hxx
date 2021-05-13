@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file manager.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -125,6 +124,7 @@ class connection_manager
      * @brief Broadcast input data
      *
      * @param source Source connection
+     * @param include_sender If true, include sender
      * @param unsequenced If true sets unsequenced flag
      * @param channel Channel
      */

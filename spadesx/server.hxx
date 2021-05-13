@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file server.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -11,26 +10,60 @@
 
 namespace spadesx {
 
+/**
+ * @brief Server (ENetHost wrapper)
+ *
+ */
 class server
 {
   public:
+    /**
+     * @brief Construct a new server object
+     *
+     */
     server() : server(32887)
     {
     }
 
+    /**
+     * @brief Construct a new server object
+     *
+     * @param port Port
+     */
     server(std::uint16_t port) : server(port, 32)
     {
     }
 
+    /**
+     * @brief Construct a new server object
+     *
+     * @param port Port
+     * @param connections Max number of connections
+     */
     server(std::uint16_t port, std::uint8_t connections) : server(port, connections, 0, 0)
     {
     }
 
+    /**
+     * @brief Construct a new server object
+     *
+     * @param port Port
+     * @param connections Max number of connections
+     * @param bandwidth_in Incoming bandwidth
+     * @param bandwidth_out Outcoming bandwidth
+     */
     server(std::uint16_t port, std::uint8_t connections, std::uint32_t bandwidth_in, std::uint32_t bandwidth_out)
     {
         m_host = enet::get().host(port, connections, 2, bandwidth_in, bandwidth_out);
     }
 
+    /**
+     * @brief Run protocol
+     *
+     * @param protocol Protocol
+     * @param timeout Timeout
+     * @return 0 on success
+     */
     int run(base_protocol& protocol, std::uint32_t timeout)
     {
         protocol.start();

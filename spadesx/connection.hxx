@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file connection.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -33,6 +32,10 @@ class connection : public base_connection, public player_update
     {
     }
 
+    /**
+     * @brief Construct a new connection object
+     *
+     */
     connection(const connection&) = default;
 
     /**
@@ -101,9 +104,9 @@ class connection : public base_connection, public player_update
      * @brief Send set hp packet
      *
      * @param source Source (enemy or block?)
-     * @param weapon
-     * @return true
-     * @return false
+     * @param weapon If true, source of the damage is a weapon
+     * @param channel Channel
+     * @return true on success
      */
     bool send_set_hp(const glm::vec3& source, bool weapon, std::uint8_t channel = 0)
     {

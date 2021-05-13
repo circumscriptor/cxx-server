@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file main.cxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #include "commands/kill.hxx"
@@ -9,7 +8,14 @@
 #include "ctf.hxx"
 #include "server.hxx"
 
-auto main(int argc, char** argv) -> int
+/**
+ * @brief Main?
+ *
+ * @param argc Number of arguments
+ * @param argv Arguments
+ * @return 0 on success
+ */
+int main(int argc, char** argv)
 {
     if (argc != 2) {
         std::cerr << "no map specified" << std::endl;

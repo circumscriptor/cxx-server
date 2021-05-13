@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file peer.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -11,6 +10,10 @@
 
 namespace spadesx {
 
+/**
+ * @brief ENetPeer wrapper
+ *
+ */
 class peer
 {
   public:

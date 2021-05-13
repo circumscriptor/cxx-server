@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file world.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -78,7 +77,7 @@ class world_manager : public connection_manager
     /**
      * @brief Update a player
      *
-     * @param connection Connection
+     * @param player Target connection
      * @param delta Delta time
      */
     void world_update_player(connection& player, float delta)

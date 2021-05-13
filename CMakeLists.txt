@@ -8,14 +8,12 @@ cmake_minimum_required(VERSION 3.17)
 
 project(SpadesX)
 
+#
+# Find dependencies
+#
+
 find_package(Boost REQUIRED COMPONENTS iostreams)
 find_package(PkgConfig)
-
-#
-# Add main target
-#
-
-add_executable(server "")
 
 if(PKG_CONFIG_FOUND)
     pkg_check_modules(ENet REQUIRED IMPORTED_TARGET libenet)
@@ -23,6 +21,12 @@ if(PKG_CONFIG_FOUND)
 else()
     set(ENET_LIBRARY enet)
 endif()
+
+#
+# Add main target
+#
+
+add_executable(server "")
 
 target_compile_options(server
     PRIVATE
@@ -46,3 +50,34 @@ target_compile_features(server
 )
 
 add_subdirectory(spadesx)
+
+#
+# Documentation generator
+#
+
+find_package(Doxygen OPTIONAL_COMPONENTS dot)
+
+if(DOXYGEN_FOUND)
+
+    #
+    # Doxygen options
+    #
+
+    set(DOXYGEN_QUIET YES)
+    set(DOXYGEN_PREDEFINED "DOXYGEN_SHOULD_SKIP_THIS")
+    
+    #
+    # Add documentation target
+    #
+
+    doxygen_add_docs(server_docs
+        ""
+        ALL
+        # USE_STAMP_FILE
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        COMMENT "Generating documentation"
+    )
+
+else()
+    message(STATUS "Doxygen not found")
+endif()

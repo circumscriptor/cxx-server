@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file enet.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -13,9 +12,18 @@
 
 namespace spadesx {
 
+/**
+ * @brief Helper class for ENet host creation
+ *
+ */
 class enet
 {
   public:
+    /**
+     * @brief Get singleton
+     *
+     * @return Singleton
+     */
     static enet& get()
     {
         static enet s_enet;

@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file map.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -37,13 +36,13 @@ namespace spadesx {
 class map
 {
   public:
-    static constexpr const std::uint32_t size_x        = 512;
-    static constexpr const std::uint32_t size_y        = 512;
-    static constexpr const std::uint32_t size_z        = 64;
-    static constexpr const std::uint32_t size_xy       = size_x * size_y;
-    static constexpr const std::uint32_t size_yz       = size_y * size_z;
-    static constexpr const std::uint32_t size_xyz      = size_xy * size_z;
-    static constexpr const std::uint32_t default_color = 0xFF674028;
+    static constexpr const std::uint32_t size_x        = 512;              //!< Max x-coordinate
+    static constexpr const std::uint32_t size_y        = 512;              //!< Max y-coordinate
+    static constexpr const std::uint32_t size_z        = 64;               //!< Max z-coordinate
+    static constexpr const std::uint32_t size_xy       = size_x * size_y;  //!< Horizontal area
+    static constexpr const std::uint32_t size_yz       = size_y * size_z;  //!< Vertical area
+    static constexpr const std::uint32_t size_xyz      = size_xy * size_z; //!< Max number of blocks
+    static constexpr const std::uint32_t default_color = 0xFF674028;       //!< Default color
 
     /**
      * @brief Construct a new map object
@@ -253,7 +252,9 @@ class map
     /**
      * @brief Check whether the block (or air) has a neighbor (another solid block attached)
      *
-     * @param offset The offset
+     * @param x The x-coordinate of the block
+     * @param y The y-coordinate of the block
+     * @param z The z-coordinate of the block
      * @return true If the block has a neighbor
      * @return false If the block does not have a neighbor
      */
@@ -453,7 +454,6 @@ class map
      * @brief Load map from memory (VXL format)
      *
      * @param data Beginning of the memory region
-     * @param data_end End of memory region (used for debugging)
      */
     void read_from_memory(const std::uint8_t* data)
     {
@@ -472,9 +472,9 @@ class map
      *
      * @param filepath Path to the file (VXL format file)
      */
-    void read_from_file(std::string_view name)
+    void read_from_file(std::string_view filepath)
     {
-        boost::iostreams::mapped_file_source source(std::string{name});
+        boost::iostreams::mapped_file_source source(std::string{filepath});
         if (!source.is_open()) {
             throw std::runtime_error("failed to open map file");
         }

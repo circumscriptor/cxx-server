@@ -1,7 +1,6 @@
 /**
- *
- * SpadesX
- *
+ * @file baseprotocol.hxx
+ * @brief This file is part of the experimental SpadesX project
  */
 
 #pragma once
@@ -98,7 +97,7 @@ class base_protocol : public server_handler, public command_manager
     /**
      * @brief On disconnect event
      *
-     * @param peer Peer
+     * @param connection Connection
      */
     virtual void on_disconnect(connection& connection)
     {
@@ -107,8 +106,8 @@ class base_protocol : public server_handler, public command_manager
     /**
      * @brief Handle packets
      *
-     * @param peer Peer
-     * @param packet Packet
+     * @param connection Connection
+     * @param stream Packet stream
      */
     virtual void on_receive(connection& connection, data_stream& stream)
     {
@@ -151,7 +150,7 @@ class base_protocol : public server_handler, public command_manager
      *
      * @param connection Connection
      */
-    virtual bool on_send_state(connection& /*connection*/)
+    virtual bool on_send_state(connection& connection)
     {
         return false;
     }
@@ -362,15 +361,15 @@ class base_protocol : public server_handler, public command_manager
     }
 
   protected:
-    double m_world_update_delta{0.1};
+    double m_world_update_delta{0.1}; //!< Requested world update delta time
 
-    float        m_base_trigger_distance{5.F};
-    std::uint8_t m_restock_time{15};
+    float        m_base_trigger_distance{5.F}; //!< Base trigger distance
+    std::uint8_t m_restock_time{15};           //!< Restock cooldown
 
-    std::vector<char> m_compressed_map;
-    std::size_t       m_map_position;
-    bool              m_map_used{false};
-    std::uint8_t      m_map_ownership;
+    std::vector<char> m_compressed_map;  //!< Compressed map data
+    std::size_t       m_map_position;    //!< Current compressed map offset
+    bool              m_map_used{false}; //!< Compressed map is used
+    std::uint8_t      m_map_ownership;   //!< Compressed map owner
 
     std::mt19937                                       m_generator;          //!< Random number generator
     std::uniform_real_distribution<float>              m_distribution;       //!< Real number distribution
