@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "color.hxx"
 #include "name.hxx"
 #include "score.hxx"
 

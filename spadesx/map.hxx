@@ -6,15 +6,9 @@
 #pragma once
 
 #include "baseconnection.hxx"
+#include "boostio.hxx"
 
 #include <bitset>
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/device/back_inserter.hpp>
-#include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/iostreams/filter/zlib.hpp>
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/stream.hpp>
 #include <cmath>
 #include <vector>
 
