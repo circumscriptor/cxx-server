@@ -19,14 +19,6 @@ class connection_manager
     /**
      * @brief Construct a new connection_manager object
      *
-     */
-    connection_manager() : connection_manager{32}
-    {
-    }
-
-    /**
-     * @brief Construct a new connection_manager object
-     *
      * @param max_players Max number of players
      */
     connection_manager(std::uint8_t max_players) : m_max_players{max_players}
@@ -80,18 +72,14 @@ class connection_manager
      * @param unsequenced If true sets unsequenced flag
      * @param channel Channel
      */
-    void broadcast(const connection& source,
-                   const void*       data,
-                   std::size_t       length,
-                   bool              unsequenced = false,
-                   std::uint8_t      channel     = 0)
+    void broadcast(const connection& source, packet packet, std::uint8_t channel = 0)
     {
         for (auto& connection : m_connections) {
             if (connection == source) {
                 continue;
             }
             if (!connection.is_disconnected()) {
-                connection.send_packet(data, length, unsequenced, channel);
+                connection.send(packet, channel);
             }
         }
     }
@@ -104,11 +92,11 @@ class connection_manager
      * @param unsequenced If true sets unsequenced flag
      * @param channel Channel
      */
-    void broadcast(const void* data, std::size_t length, bool unsequenced = false, std::uint8_t channel = 0)
+    void broadcast(packet packet, std::uint8_t channel = 0)
     {
         for (auto& connection : m_connections) {
             if (!connection.is_disconnected()) {
-                connection.send_packet(data, length, unsequenced, channel);
+                connection.send(packet, channel);
             }
         }
     }
@@ -126,12 +114,13 @@ class connection_manager
                               bool         unsequenced    = false,
                               std::uint8_t channel        = 0)
     {
-        data_stream stream{m_cache, packet::input_data_size};
+        packet packet(nullptr, packet::input_data_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_input_data(stream);
         if (!include_sender) {
-            broadcast(source, m_cache, packet::input_data_size, unsequenced, channel);
+            broadcast(source, packet, channel);
         } else {
-            broadcast(m_cache, packet::input_data_size, unsequenced, channel);
+            broadcast(packet, channel);
         }
     }
 
@@ -144,9 +133,10 @@ class connection_manager
      */
     void broadcast_weapon_input(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::weapon_input_size};
+        packet packet(nullptr, packet::weapon_input_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_weapon_input(stream);
-        broadcast(source, m_cache, packet::weapon_input_size, unsequenced, channel);
+        broadcast(source, packet, channel);
     }
 
     /**
@@ -160,7 +150,7 @@ class connection_manager
     {
         data_stream stream{m_cache, packet::create_player_size};
         auto        size = connection.fill_create_player(stream);
-        broadcast(m_cache, size, unsequenced, channel);
+        broadcast({m_cache, size, unsequenced}, channel);
     }
 
     /**
@@ -172,9 +162,10 @@ class connection_manager
      */
     void broadcast_leave(connection& connection, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::player_left_size};
+        packet packet(nullptr, packet::player_left_size, unsequenced);
+        auto   stream = packet.stream();
         connection.fill_player_left(stream);
-        broadcast(connection, m_cache, packet::player_left_size, unsequenced, channel);
+        broadcast(connection, packet, channel);
     }
 
     /**
@@ -198,9 +189,10 @@ class connection_manager
         victim.m_respawn_time = respawn_time;
         victim.reset_death();
 
-        data_stream stream{m_cache, packet::kill_action_size};
+        packet packet(nullptr, packet::kill_action_size, unsequenced);
+        auto   stream = packet.stream();
         victim.fill_kill_action(stream);
-        broadcast(m_cache, packet::kill_action_size, unsequenced, channel);
+        broadcast(packet, channel);
     }
 
     /**
@@ -220,9 +212,10 @@ class connection_manager
                            bool             unsequenced = false,
                            std::uint8_t     channel     = 0)
     {
-        data_stream stream{m_cache, packet::grenade_packet_size};
+        packet packet(nullptr, packet::grenade_packet_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_grenade_packet(stream, position, velocity, fuse);
-        broadcast(source, m_cache, packet::grenade_packet_size, unsequenced, channel);
+        broadcast(source, packet, channel);
     }
 
     /**
@@ -244,9 +237,10 @@ class connection_manager
                                 bool              unsequenced = false,
                                 std::uint8_t      channel     = 0)
     {
-        data_stream stream{m_cache, packet::block_action_size};
+        packet packet(nullptr, packet::block_action_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_block_action(stream, x, y, z, action);
-        broadcast(m_cache, packet::block_action_size, unsequenced, channel);
+        broadcast(packet, channel);
     }
 
     /**
@@ -264,9 +258,10 @@ class connection_manager
                               bool              unsequenced = false,
                               std::uint8_t      channel     = 0)
     {
-        data_stream stream{m_cache, packet::block_line_size};
+        packet packet(nullptr, packet::block_line_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_block_line(stream, start, end);
-        broadcast(m_cache, packet::block_line_size, unsequenced, channel);
+        broadcast(packet, channel);
     }
 
     /**
@@ -278,9 +273,10 @@ class connection_manager
      */
     void broadcast_set_tool(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::set_tool_size};
+        packet packet(nullptr, packet::set_tool_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_set_tool(stream);
-        broadcast(source, m_cache, packet::set_tool_size, unsequenced, channel);
+        broadcast(source, packet, channel);
     }
 
     /**
@@ -292,9 +288,10 @@ class connection_manager
      */
     void broadcast_set_color(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::set_color_size};
+        packet packet(nullptr, packet::set_color_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_set_color(stream);
-        broadcast(source, m_cache, packet::set_color_size, unsequenced, channel);
+        broadcast(source, packet, channel);
     }
 
     /**
@@ -306,9 +303,10 @@ class connection_manager
      */
     void broadcast_weapon_reload(connection& source, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::weapon_reload_size};
+        packet packet(nullptr, packet::weapon_reload_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_weapon_reload(stream);
-        broadcast(source, m_cache, packet::weapon_reload_size, unsequenced, channel);
+        broadcast(source, packet, channel);
     }
 
     /**
@@ -319,7 +317,8 @@ class connection_manager
      */
     void broadcast_world_update(bool unsequenced = true, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::world_update_size};
+        packet packet(nullptr, packet::world_update_size, unsequenced);
+        auto   stream = packet.stream();
         stream.write_type(packet_type::world_update);
         for (auto& connection : m_connections) {
             stream.write_vec3(connection.m_position);
@@ -327,7 +326,7 @@ class connection_manager
         }
         for (auto& connection : m_connections) {
             if (connection.is_connected()) {
-                connection.send_packet(m_cache, packet::world_update_size, unsequenced, channel);
+                connection.send(packet, channel);
             }
         }
     }
@@ -341,9 +340,10 @@ class connection_manager
      */
     void broadcast_restock(connection& target, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::restock_size};
+        packet packet(nullptr, packet::restock_size, unsequenced);
+        auto   stream = packet.stream();
         target.fill_restock(stream);
-        broadcast(m_cache, packet::restock_size, unsequenced, channel);
+        broadcast(packet, channel);
     }
 
     /**
@@ -363,13 +363,14 @@ class connection_manager
     {
         data_stream stream{m_cache, packet::chat_message_size};
         auto        size = source.fill_chat_message(stream, type, message);
+        packet      packet(m_cache, size, unsequenced);
 
         switch (type) {
             case chat_type::all:
                 if (!source.m_muted) {
                     for (auto& connection : m_connections) {
                         if (!connection.is_disconnected() && !connection.m_deaf) {
-                            connection.send_packet(m_cache, size, unsequenced, channel);
+                            connection.send(packet, channel);
                         }
                     }
                 }
@@ -381,7 +382,7 @@ class connection_manager
                             continue;
                         }
                         if (!connection.is_disconnected() && !connection.m_deaf) {
-                            connection.send_packet(m_cache, size, unsequenced, channel);
+                            connection.send(packet, channel);
                         }
                     }
                 }
@@ -401,7 +402,7 @@ class connection_manager
     {
         data_stream stream{m_cache, packet::chat_message_size};
         auto        size = fill_system_message(stream, message);
-        broadcast(m_cache, size, unsequenced, channel);
+        broadcast({m_cache, size, unsequenced}, channel);
     }
 
     /**
@@ -447,9 +448,10 @@ class connection_manager
     void
     broadcast_intel_capture(const connection& source, bool winning, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::intel_capture_size};
+        packet packet(nullptr, packet::intel_capture_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_intel_capture(stream, winning);
-        broadcast(m_cache, packet::intel_capture_size, unsequenced, channel);
+        broadcast(packet, channel);
     }
 
     /**
@@ -461,9 +463,10 @@ class connection_manager
      */
     void broadcast_intel_pickup(const connection& source, bool unsequenced = false, std::uint8_t channel = 0)
     {
-        data_stream stream{m_cache, packet::intel_pickup_size};
+        packet packet(nullptr, packet::intel_pickup_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_intel_pickup(stream);
-        broadcast(m_cache, packet::intel_pickup_size, unsequenced, channel);
+        broadcast(packet, channel);
     }
 
     /**
@@ -479,9 +482,10 @@ class connection_manager
                               bool              unsequenced = false,
                               std::uint8_t      channel     = 0)
     {
-        data_stream stream{m_cache, packet::intel_drop_size};
+        packet packet(nullptr, packet::intel_drop_size, unsequenced);
+        auto   stream = packet.stream();
         source.fill_intel_drop(stream, position);
-        broadcast(m_cache, packet::intel_drop_size, unsequenced, channel);
+        broadcast(packet, channel);
     }
 
     /**
@@ -499,12 +503,13 @@ class connection_manager
                                bool             unsequenced = false,
                                std::uint8_t     channel     = 0)
     {
-        data_stream stream{m_cache, packet::move_object_size};
+        packet packet(nullptr, packet::move_object_size, unsequenced);
+        auto   stream = packet.stream();
         stream.write_type(packet_type::move_object);
         stream.write_byte(object_id);
         stream.write_type(team);
         stream.write_vec3(position);
-        broadcast(m_cache, packet::move_object_size, unsequenced, channel);
+        broadcast(packet, channel);
     }
 
     /**

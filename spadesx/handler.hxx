@@ -6,6 +6,7 @@
 #pragma once
 
 #include "line.hxx"
+#include "manager.hxx"
 
 namespace spadesx {
 
@@ -13,23 +14,15 @@ namespace spadesx {
  * @brief Default handler
  *
  */
-class server_handler : public world_manager
+class server_handler : public connection_manager
 {
   public:
-    /**
-     * @brief Construct a new handler object
-     *
-     */
-    server_handler() : server_handler{32}
-    {
-    }
-
     /**
      * @brief Construct a new base protocol object
      *
      * @param max_players Max number of players
      */
-    server_handler(std::uint8_t max_players) : world_manager{max_players}
+    server_handler(std::uint8_t max_players) : connection_manager{max_players}, m_map{new map()}
     {
     }
 
@@ -341,7 +334,7 @@ class server_handler : public world_manager
         auto    tool   = stream.read_type<tool_type>();
         auto    kills  = stream.read_int();
         color3b color;
-        stream.read_color3b(source.color());
+        stream.read_color3b(source.m_color);
 
         const auto* data = stream.data();
         auto        left = stream.left();
@@ -470,7 +463,7 @@ class server_handler : public world_manager
      */
     virtual void on_input_data(connection& source, std::uint8_t input)
     {
-        source.set_input(input);
+        source.input_from_byte(input);
 
         source.set_jump(source.m_jump);
         source.set_crouch(source.m_crouch);
@@ -543,7 +536,7 @@ class server_handler : public world_manager
      * @param source Source connection
      * @param damage Damage
      */
-    void on_fall_damage(connection& source, int damage) override
+    virtual void on_fall_damage(connection& source, int damage)
     {
         std::cout << "fall damage: " << damage << std::endl;
         if (source.m_health > damage) {
@@ -587,7 +580,7 @@ class server_handler : public world_manager
      */
     virtual void on_set_color(connection& source, const color3b& color)
     {
-        source.color() = color;
+        source.m_color = color;
         broadcast_set_color(source);
     }
 
@@ -619,7 +612,7 @@ class server_handler : public world_manager
     {
         switch (action) {
             case block_action_type::build:
-                m_map->modify_block(x, y, z, true, source.get_color());
+                m_map->modify_block(x, y, z, true, source.m_color.to_uint());
                 break;
             case block_action_type::bullet_or_spade:
                 m_map->destroy_block(x, y, z);
@@ -655,11 +648,11 @@ class server_handler : public world_manager
             return;
         }
 
-        auto size = m_line.line(start, end);
+        auto size = m_line.generate(start, end);
 
         for (std::uint32_t i = 0; i < size; ++i) {
             const auto& block = m_line.get(i);
-            m_map->modify_block(block.x, block.y, block.z, true, source.get_color());
+            m_map->modify_block(block.x, block.y, block.z, true, source.m_color.to_uint());
         }
 
         broadcast_block_line(source, start, end);
@@ -754,11 +747,71 @@ class server_handler : public world_manager
         m_respawn_time = respawn_time;
     }
 
+    /**
+     * @brief Read map from file
+     *
+     * @param string File path
+     */
+    void load_map(std::string_view string)
+    {
+        m_map->read_from_file(string);
+    }
+
+    /**
+     * @brief Set fog color
+     *
+     * @param color Color (RGB)
+     */
+    void set_fog_color(const color3b& color)
+    {
+        m_fog_color = color;
+    }
+
+    /**
+     * @brief Update a player
+     *
+     * @param player Target connection
+     * @param delta Delta time
+     */
+    void world_update_player(connection& player, float delta)
+    {
+        auto fall_damage = player.move_player(*m_map, delta);
+        if (fall_damage > 0) {
+            on_fall_damage(player, fall_damage);
+        }
+    }
+
+    /**
+     * @brief World update
+     *
+     * @param delta Delta time
+     */
+    void world_update(float delta)
+    {
+        for (auto& connection : m_connections) {
+            if (connection.m_alive) {
+                world_update_player(connection, delta);
+            }
+        }
+    }
+
+    /**
+     * @brief Get the map object
+     *
+     * @return Map
+     */
+    map& get_map()
+    {
+        return *m_map;
+    }
+
   protected:
-    float        m_melee_distance{5.F}; //!< Melee distance
-    std::uint8_t m_melee_damage{50};    //!< Melee damage
-    block_line   m_line;                //!< Block line
-    std::uint8_t m_respawn_time{0};     //!< Current respawn time
+    float                m_melee_distance{5.F}; //!< Melee distance
+    std::uint8_t         m_melee_damage{50};    //!< Melee damage
+    block_line           m_line;                //!< Block line
+    std::uint8_t         m_respawn_time{0};     //!< Current respawn time
+    std::unique_ptr<map> m_map;                 //!< Map
+    color3b              m_fog_color;           //!< Fog color
 };
 
 } // namespace spadesx

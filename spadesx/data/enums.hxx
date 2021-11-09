@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "packet.hxx"
-
 namespace spadesx {
 
 /**

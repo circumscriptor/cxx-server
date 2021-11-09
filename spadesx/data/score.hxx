@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "color.hxx"
+#include <cstdint>
 
 namespace spadesx {
 
@@ -28,7 +28,7 @@ class score_data
      * @param score Score
      * @return true If reached score
      */
-    [[nodiscard]] constexpr bool has_reached_score(std::uint8_t score) const noexcept
+    [[nodiscard]] constexpr bool has_reached(std::uint8_t score) const noexcept
     {
         return m_score >= score;
     }
@@ -37,7 +37,7 @@ class score_data
      * @brief Reset score
      *
      */
-    constexpr void reset_score() noexcept
+    constexpr void reset() noexcept
     {
         m_score  = 0;
         m_kills  = 0;
@@ -48,7 +48,7 @@ class score_data
      * @brief Add score
      *
      */
-    constexpr score_data& add_score() noexcept
+    constexpr score_data& increase() noexcept
     {
         m_score += 1;
         return *this;
@@ -58,7 +58,7 @@ class score_data
      * @brief Add kill score
      *
      */
-    constexpr score_data& add_kill() noexcept
+    constexpr score_data& increase_kill() noexcept
     {
         m_kills += 1;
         return *this;
@@ -68,7 +68,7 @@ class score_data
      * @brief Add death score
      *
      */
-    constexpr score_data& add_death() noexcept
+    constexpr score_data& increase_death() noexcept
     {
         m_deaths += 1;
         return *this;
@@ -79,7 +79,7 @@ class score_data
      *
      * @return Score
      */
-    [[nodiscard]] constexpr std::uint8_t get_score() const noexcept
+    [[nodiscard]] constexpr std::uint8_t to_byte() const noexcept
     {
         return m_score;
     }
@@ -89,7 +89,7 @@ class score_data
      *
      * @return Number of kills
      */
-    [[nodiscard]] constexpr std::uint32_t get_kills() const noexcept
+    [[nodiscard]] constexpr std::uint32_t kills() const noexcept
     {
         return m_kills;
     }
@@ -99,7 +99,7 @@ class score_data
      *
      * @return Number of deaths
      */
-    [[nodiscard]] constexpr std::uint32_t get_deaths() const noexcept
+    [[nodiscard]] constexpr std::uint32_t deaths() const noexcept
     {
         return m_deaths;
     }

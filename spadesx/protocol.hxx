@@ -16,14 +16,14 @@ namespace spadesx {
  * @brief Protocol base
  *
  */
-class base_protocol : public server_handler, public command_manager
+class protocol : public server_handler, public command_manager
 {
   public:
     /**
      * @brief Construct a new base_protocol object
      *
      */
-    base_protocol() : base_protocol{32}
+    protocol() : protocol{32}
     {
     }
 
@@ -32,14 +32,14 @@ class base_protocol : public server_handler, public command_manager
      *
      * @param max_players Max number of players
      */
-    base_protocol(std::uint8_t max_players) :
+    protocol(std::uint8_t max_players) :
         server_handler{max_players},
         m_generator{std::random_device()()},
         m_distribution{0.F, 1.F}
     {
     }
 
-    ~base_protocol() override = default;
+    ~protocol() override = default;
 
     /**
      * @brief Check restock

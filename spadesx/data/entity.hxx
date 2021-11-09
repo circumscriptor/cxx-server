@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "enums.hxx"
 #include "position.hxx"
 
 namespace spadesx {

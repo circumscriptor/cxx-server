@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "peer.hxx"
 #include "update.hxx"
 
 namespace spadesx {
@@ -13,7 +14,7 @@ namespace spadesx {
  * @brief Connection - player data
  *
  */
-class connection : public base_connection, public player_update
+class connection : public peer, public player_update
 {
   public:
     /**
@@ -62,6 +63,119 @@ class connection : public base_connection, public player_update
     {
         return m_id != other.m_id;
     }
+    /**
+     * @brief Send map start packet
+     *
+     * @param size Size of the map
+     * @param channel Channel
+     * @return true On success
+     */
+    bool send_map_start(std::uint32_t size, std::uint8_t channel = 0)
+    {
+        packet packet(nullptr, 5, false);
+        auto   stream = packet.stream();
+        stream.write_type(packet_type::map_start);
+        stream.write_int(size);
+        return send(packet, channel);
+    }
+
+    /**
+     * @brief Send map chunk
+     *
+     * @param chunk Pointer to the memory location containing chunk
+     * @param size Size of the chunk
+     * @param unsequenced Unsequenced flag
+     * @param channel Channel
+     * @return true On success
+     */
+    bool send_map_chunk(void* chunk, std::uint32_t size, bool unsequenced = false, std::uint8_t channel = 0)
+    {
+        packet packet(nullptr, size + 1, unsequenced);
+        auto   stream = packet.stream();
+        stream.write_type(packet_type::map_chunk);
+        stream.write_array(chunk, size);
+        return send(packet, channel);
+    }
+
+    /**
+     * @brief Send generic packet
+     *
+     * @param data Pointer to the memory location containing packet data
+     * @param size Size of the packet
+     * @param unsequenced Unsequenced flag
+     * @param channel Channel
+     * @return true On success
+     */
+    bool send_packet(const void* data, std::size_t size, bool unsequenced = true, std::uint8_t channel = 0)
+    {
+        return send({data, size, unsequenced}, channel);
+    }
+
+    /**
+     * @brief Send generic packet
+     *
+     * @tparam N Size of the packet
+     * @param data Pointer to the memory location containing packet data
+     * @param unsequenced Unsequenced flag
+     * @param channel Channel
+     * @return true On success
+     */
+    template<std::size_t N>
+    bool send_packet(const std::array<std::uint8_t, N>& data, bool unsequenced = true, std::uint8_t channel = 0)
+    {
+        return send_packet(data.data(), data.size(), unsequenced, channel);
+    }
+
+    /**
+     * @brief Disconnect
+     *
+     * @param reason Disconnection reason
+     */
+    void disconnect(reason_type reason)
+    {
+        peer::disconnect(static_cast<std::uint32_t>(reason));
+        set_state(state_type::disconnected);
+    }
+
+    /**
+     * @brief Check whether connection state is disconnected
+     *
+     * @return true If state is disconnected
+     */
+    [[nodiscard]] bool is_disconnected() const noexcept
+    {
+        return m_state == state_type::disconnected;
+    }
+
+    /**
+     * @brief Check whether connection state is connecting
+     *
+     * @return true If state is connecting
+     */
+    [[nodiscard]] bool is_connecting() const noexcept
+    {
+        return m_state == state_type::connecting;
+    }
+
+    /**
+     * @brief Check whether connection state is connected
+     *
+     * @return true If state is connected
+     */
+    [[nodiscard]] bool is_connected() const noexcept
+    {
+        return m_state == state_type::connected;
+    }
+
+    /**
+     * @brief Set connection state
+     *
+     * @param state Connection state
+     */
+    void set_state(state_type state) noexcept
+    {
+        m_state = state;
+    }
 
     /**
      * @brief Send existing player packet
@@ -72,8 +186,8 @@ class connection : public base_connection, public player_update
      */
     bool send_existing_player(connection& other, std::uint8_t channel = 0)
     {
-        ENetPacket* packet = enet_packet_create(nullptr, 12 + other.m_length, ENET_PACKET_FLAG_RELIABLE);
-        data_stream stream = packet;
+        packet packet(nullptr, 12 + other.m_name_length, false);
+        auto   stream = packet.stream();
         other.fill_existing_player(stream);
         return send(packet, channel);
     }
@@ -87,8 +201,8 @@ class connection : public base_connection, public player_update
      */
     bool send_kill_action(connection& other, std::uint8_t channel = 0)
     {
-        ENetPacket* packet = enet_packet_create(nullptr, packet::kill_action_size, ENET_PACKET_FLAG_RELIABLE);
-        data_stream stream = packet;
+        packet packet(nullptr, packet::kill_action_size, false);
+        auto   stream = packet.stream();
         other.fill_kill_action(stream);
         return send(packet, channel);
     }
@@ -103,8 +217,8 @@ class connection : public base_connection, public player_update
      */
     bool send_set_hp(const glm::vec3& source, bool weapon, std::uint8_t channel = 0)
     {
-        ENetPacket* packet = enet_packet_create(nullptr, packet::set_hp_size, ENET_PACKET_FLAG_RELIABLE);
-        data_stream stream = packet;
+        packet packet(nullptr, packet::set_hp_size, false);
+        auto   stream = packet.stream();
         fill_set_hp(stream, source, weapon);
         return send(packet, channel);
     }
@@ -137,10 +251,10 @@ class connection : public base_connection, public player_update
         stream.write_type(m_team);
         stream.write_type(m_weapon);
         stream.write_type(m_tool);
-        stream.write_int(m_kills);
+        stream.write_int(m_score.kills());
         stream.write_color3b(m_color);
-        stream.write_array(m_name, m_length);
-        return 12 + m_length;
+        stream.write_array(m_name, m_name_length);
+        return 12 + m_name_length;
     }
 
     /**
@@ -156,8 +270,8 @@ class connection : public base_connection, public player_update
         stream.write_type(m_weapon);
         stream.write_type(m_team);
         stream.write_vec3(m_position);
-        stream.write_array(m_name, m_length);
-        return 16 + m_length;
+        stream.write_array(m_name, m_name_length);
+        return 16 + m_name_length;
     }
 
     /**
@@ -218,7 +332,7 @@ class connection : public base_connection, public player_update
     {
         stream.write_type(packet_type::input_data);
         stream.write_byte(m_id);
-        stream.write_byte(get_input_data());
+        stream.write_byte(input_to_byte());
     }
 
     /**
@@ -230,7 +344,7 @@ class connection : public base_connection, public player_update
     {
         stream.write_type(packet_type::weapon_input);
         stream.write_byte(m_id);
-        stream.write_byte(get_weapon_input());
+        stream.write_byte(weapon_input_to_byte());
     }
 
     /**
@@ -366,6 +480,9 @@ class connection : public base_connection, public player_update
         stream.write_byte(m_id);
         stream.write_uvec3(position);
     }
+
+  protected:
+    state_type m_state{state_type::disconnected}; //!< Connection state (used by protocol)
 };
 
 } // namespace spadesx

@@ -5,9 +5,13 @@
 
 #pragma once
 
-#include "types.hxx"
+#include "datastream.hxx"
+
+#include <enet/enet.h>
 
 namespace spadesx {
+
+class peer;
 
 /**
  * @brief Packet sizes
@@ -15,6 +19,8 @@ namespace spadesx {
  */
 class packet
 {
+    friend peer;
+
   public:
     static constexpr const std::size_t world_update_size    = 769; //!< World update packet size
     static constexpr const std::size_t input_data_size      = 3;   //!< Input data packet size
@@ -42,6 +48,42 @@ class packet
     static constexpr const std::size_t restock_size         = 2;   //!< Restock packet size
     static constexpr const std::size_t fog_color_size       = 5;   //!< Fog color packet size
     static constexpr const std::size_t weapon_reload_size   = 4;   //!< Weapon reload packet size
+
+    /**
+     * @brief Construct a new packet object
+     *
+     * @param source Source memory
+     * @param capacity Packet capacity
+     * @param unsequenced Unsequenced flag
+     */
+    packet(const void* source, std::size_t capacity, bool unsequenced = false) :
+        m_packet{enet_packet_create(source, capacity, unsequenced_to_flag(unsequenced))}
+    {
+    }
+
+    /**
+     * @brief Create data stream
+     *
+     * @return Data stream
+     */
+    [[nodiscard]] data_stream stream() noexcept
+    {
+        return {m_packet};
+    }
+
+  protected:
+    /**
+     * @brief Convert bool to ENet packet flag
+     *
+     * @param unsequenced Unsequenced flag
+     * @return ENet packet flag
+     */
+    static std::uint32_t unsequenced_to_flag(bool unsequenced)
+    {
+        return unsequenced ? ENET_PACKET_FLAG_RELIABLE : ENET_PACKET_FLAG_UNSEQUENCED;
+    }
+
+    ENetPacket* m_packet; //!< ENet packet
 };
 
 } // namespace spadesx

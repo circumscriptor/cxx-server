@@ -14,7 +14,7 @@ namespace spadesx {
  * @brief Team data
  *
  */
-class team_data : public score_data, public color_data, public name_data<10>
+class team_data : public name_data<10>
 {
   public:
     /**
@@ -36,8 +36,50 @@ class team_data : public score_data, public color_data, public name_data<10>
         return m_team;
     }
 
+    /**
+     * @brief Get reference to score data
+     *
+     * @return Reference to score data
+     */
+    color3b& color() noexcept
+    {
+        return m_color;
+    }
+
+    /**
+     * @brief Get reference to score data
+     *
+     * @return Reference to score data
+     */
+    [[nodiscard]] const color3b& color() const noexcept
+    {
+        return m_color;
+    }
+
+    /**
+     * @brief Get reference to score data
+     *
+     * @return Reference to score data
+     */
+    score_data& score() noexcept
+    {
+        return m_score;
+    }
+
+    /**
+     * @brief Get reference to score data
+     *
+     * @return Reference to score data
+     */
+    [[nodiscard]] const score_data& score() const noexcept
+    {
+        return m_score;
+    }
+
   private:
-    team_type m_team; //!< Team
+    color3b    m_color; //!< Team color
+    score_data m_score; //!< Score
+    team_type  m_team;  //!< Team
 };
 
 } // namespace spadesx

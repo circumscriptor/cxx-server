@@ -5,7 +5,9 @@
 
 #pragma once
 
-#include "baseprotocol.hxx"
+#include "protocol.hxx"
+
+#include <enet/enet.h>
 
 namespace spadesx {
 
@@ -57,13 +59,22 @@ class server
     }
 
     /**
+     * @brief Destroy the server object
+     *
+     */
+    ~server()
+    {
+        enet::get().destroy(m_host);
+    }
+
+    /**
      * @brief Run protocol
      *
      * @param protocol Protocol
      * @param timeout Timeout
      * @return 0 on success
      */
-    int run(base_protocol& protocol, std::uint32_t timeout)
+    int run(protocol& protocol, std::uint32_t timeout)
     {
         protocol.start();
         m_running = true;
@@ -81,7 +92,7 @@ class server
                         protocol.try_disconnect(event.peer);
                         break;
                     case ENET_EVENT_TYPE_RECEIVE:
-                        auto&       connection = base_protocol::peer_to_connection(event.peer);
+                        auto&       connection = protocol::peer_to_connection(event.peer);
                         data_stream stream     = event.packet;
                         protocol.on_receive(connection, stream);
                         enet_packet_destroy(event.packet);

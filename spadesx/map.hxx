@@ -5,16 +5,16 @@
 
 #pragma once
 
-#include "baseconnection.hxx"
 #include "boostio.hxx"
 
 #include <bitset>
 #include <cmath>
+#include <iostream>
 #include <vector>
 
-namespace bio = boost::iostreams;
-
 namespace spadesx {
+
+namespace bio = boost::iostreams;
 
 /**
  * @brief Game map
@@ -185,7 +185,7 @@ class map
      * @param z The z-coordinate of ...
      * @return true ...
      */
-    bool is_clip_box(float x, float y, float z) const
+    [[nodiscard]] bool is_clip_box(float x, float y, float z) const
     {
         if (x < 0.F || x >= 512.F || y < 0.F || y >= 512.F || z >= 64.F) {
             return true;
@@ -377,7 +377,7 @@ class map
      * @param y The y-coordinate of the block
      * @return The z-coordinate of the block
      */
-    [[nodiscard]] float get_height(float x, float y) const
+    [[nodiscard]] float get_height_f(float x, float y) const
     {
         return static_cast<float>(get_height(static_cast<std::uint32_t>(x), static_cast<std::uint32_t>(y)));
     }
@@ -396,7 +396,7 @@ class map
             std::uint8_t span_size = data[0]; // N
             std::uint8_t top_start = data[1]; // S
             std::uint8_t top_end   = data[2]; // E
-            std::uint8_t air_start = data[3]; // A
+            // std::uint8_t air_start = data[3]; // A - unused
 
             // air
             for (; z < top_start; ++z) {
@@ -414,14 +414,14 @@ class map
             }
 
             if (span_size == 0) { // last span in column
-                data += 4 * (top_length + 1);
+                data += ptrdiff_t(4 * (top_length + 1));
                 break;
             }
 
             // number of bottom blocks
             std::uint8_t bottom_length = (span_size - 1) - top_length; // Z = (N - 1) - K
             // move to the next span
-            data += span_size * 4;
+            data += ptrdiff_t(span_size * 4);
             // bottom ends where air begins
 
             std::uint8_t bottom_end   = data[3];                    // (M - 1) - block end, M - next span air
@@ -552,7 +552,7 @@ class map
         std::uint32_t offset = 0;
 
         result.clear();
-        result.reserve(512 * 512 * 8); // reserve at least 8 bytes per column (header + one color)
+        result.reserve(std::size_t(512 * 512 * 8)); // reserve at least 8 bytes per column (header + one color)
 
         while (offset < size_xyz) {
             write_column_to_memory(result, offset);
@@ -571,7 +571,7 @@ class map
         write_to_memory(data);
 
         result.clear();
-        result.reserve(512 * 512);
+        result.reserve(std::size_t(512 * 512));
 
         try {
             auto*                          data_in = reinterpret_cast<char*>(data.data());

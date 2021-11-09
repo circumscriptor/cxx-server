@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "world.hxx"
+#include "map.hxx"
 
 #include <glm/common.hpp>
 #include <glm/ext/vector_int3.hpp>
@@ -29,7 +29,7 @@ class block_line
      * @param v2 End position
      * @return Number of blocks in line
      */
-    std::uint32_t line(const glm::ivec3& v1, const glm::ivec3& v2)
+    std::uint32_t generate(const glm::ivec3& v1, const glm::ivec3& v2)
     {
         std::uint32_t count = 0;       // line length (in blocks)
         glm::ivec3    pos   = v1;      // current position
@@ -71,19 +71,19 @@ class block_line
 
             if (tmax.z <= tmax.x && tmax.z <= tmax.y) {
                 pos.z += step.z;
-                if (pos.z >= map::size_z) {
+                if (pos.z >= int(map::size_z)) {
                     break;
                 }
                 tmax.z += delta.z;
             } else if (tmax.x < tmax.y) {
                 pos.x += step.x;
-                if (pos.x >= map::size_x) {
+                if (pos.x >= int(map::size_x)) {
                     break;
                 }
                 tmax.x += delta.x;
             } else {
                 pos.y += step.y;
-                if (pos.y >= map::size_y) {
+                if (pos.y >= int(map::size_y)) {
                     break;
                 }
                 tmax.y += delta.y;

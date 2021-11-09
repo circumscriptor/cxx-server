@@ -7,63 +7,79 @@
 
 #include "enums.hxx"
 
+#include <cstdint>
+
 namespace spadesx {
 
 /**
- * @brief Color data
+ * @brief RGB color
  *
  */
-class color_data
+class color3b
 {
   public:
     /**
-     * @brief Construct a new color_data object
+     * @brief Construct a new color3b object
      *
      */
-    constexpr color_data() noexcept = default;
+    constexpr color3b() noexcept = default;
 
     /**
-     * @brief Convert from U32
+     * @brief Construct a new color3b object
      *
-     * @param color U32 color
+     * @param _r
+     * @param _g
+     * @param _b
      */
-    constexpr void set_color(std::uint32_t color) noexcept
+    constexpr color3b(std::uint8_t _r, std::uint8_t _g, std::uint8_t _b) noexcept : r{_r}, g{_g}, b{_b}
     {
-        m_color.from_uint32(color);
     }
 
     /**
-     * @brief Convert to U32
+     * @brief Construct a new color3b object
      *
-     * @return U32 color
+     * @param other Other color3b object to be copied
      */
-    [[nodiscard]] constexpr std::uint32_t get_color() const noexcept
+    constexpr color3b(const color3b& other) noexcept = default;
+
+    /**
+     * @brief Copy color3b object
+     *
+     * @param other Other color3b object to be copied
+     * @return Reference to this
+     */
+    constexpr color3b& operator=(const color3b& other) noexcept = default;
+
+    /**
+     * @brief Convert Color3 to ARGB 32bit format
+     *
+     * @return Color in ARGB format
+     */
+    [[nodiscard]] constexpr std::uint32_t to_uint() const noexcept
     {
-        return m_color.to_uint32();
+        std::uint32_t v = 0;
+        // v |= 0x00 << 24;
+        v |= std::uint32_t(r) << 16;
+        v |= std::uint32_t(g) << 8;
+        v |= std::uint32_t(b);
+        return v;
     }
 
     /**
-     * @brief Get color
+     * @brief Convert color in ARGB format to Color3
      *
-     * @return Color
+     * @param v Color in ARGB 32bit format
      */
-    constexpr color3b& color() noexcept
+    constexpr void from_uint(std::uint32_t v) noexcept
     {
-        return m_color;
+        r = std::uint8_t(v >> 16);
+        g = std::uint8_t(v >> 8);
+        b = std::uint8_t(v);
     }
 
-    /**
-     * @brief Get color
-     *
-     * @return Color
-     */
-    [[nodiscard]] constexpr const color3b& color() const noexcept
-    {
-        return m_color;
-    }
-
-  protected:
-    color3b m_color; //!< Color data
+    std::uint8_t r{0}; //!< R-component
+    std::uint8_t g{0}; //!< G-component
+    std::uint8_t b{0}; //!< B-component
 };
 
 } // namespace spadesx

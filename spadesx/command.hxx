@@ -12,7 +12,7 @@
 
 namespace spadesx {
 
-class base_protocol;
+class protocol;
 
 /**
  * @brief Command
@@ -50,7 +50,7 @@ class command
      * @param connection Source connection
      * @param protocol Protocol
      */
-    virtual void on_execute(std::string_view args, connection& connection, base_protocol& protocol)
+    virtual void on_execute(std::string_view args, connection& connection, protocol& protocol)
     {
     }
 
@@ -157,7 +157,7 @@ class command_manager
      * @param protocol Protocol
      * @return true on success
      */
-    bool execute_command(std::string_view command, connection& connection, base_protocol& protocol)
+    bool execute_command(std::string_view command, connection& connection, protocol& protocol)
     {
         if (command.empty() || command[0] != '/') {
             return false;

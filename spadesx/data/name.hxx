@@ -36,8 +36,8 @@ class name_data
     {
         const auto* _it  = name.begin();
         const auto* _end = name.end();
-        for (m_length = 0; _it != _end && *_it != 0 && m_length < N; ++m_length, ++_it) {
-            m_name[m_length] = *_it;
+        for (m_name_length = 0; _it != _end && *_it != 0 && m_name_length < N; ++m_name_length, ++_it) {
+            m_name[m_name_length] = *_it;
         }
     }
 
@@ -48,12 +48,12 @@ class name_data
      */
     [[nodiscard]] constexpr std::string_view name() const noexcept
     {
-        return {m_name, m_length};
+        return {m_name, m_name_length};
     }
 
   protected:
-    char        m_name[N];   //!< Name
-    std::size_t m_length{0}; //!< Length of the name
+    char        m_name[N];        //!< Name
+    std::size_t m_name_length{0}; //!< Length of the name
 };
 
 } // namespace spadesx

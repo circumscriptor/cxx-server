@@ -5,7 +5,9 @@
 
 #pragma once
 
-#include "input.hxx"
+#include "enums.hxx"
+
+#include <cstdint>
 
 namespace spadesx {
 
@@ -135,10 +137,10 @@ static constexpr std::uint8_t get_weapon_clip(weapon_type weapon)
 }
 
 /**
- * @brief Get clip ammo amount
+ * @brief Get stock ammo amount
  *
  * @param weapon Weapon
- * @return Clip ammo
+ * @return Stock ammo
  */
 static constexpr std::uint8_t get_weapon_stock(weapon_type weapon)
 {
@@ -169,57 +171,6 @@ class weapon_data
      *
      */
     constexpr weapon_data() noexcept = default;
-
-    /**
-     * @brief Set weapon data
-     *
-     * @param weapon Weapon type
-     */
-    constexpr void set_weapon(weapon_type weapon)
-    {
-        const auto& w  = weapons::get(weapon);
-        m_clip_ammo    = w.get_clip();
-        m_reserve_ammo = w.get_stock();
-        m_weapon       = weapon;
-    }
-
-    /**
-     * @brief Get weapon damage
-     *
-     * @param hit Hit type
-     * @return Weapon damage
-     */
-    [[nodiscard]] std::uint8_t get_weapon_damage(hit_type hit) const
-    {
-        return weapons::get(m_weapon).get_damage(hit);
-    }
-
-    /**
-     * @brief Get current weapon type
-     *
-     * @return Weapon type
-     */
-    [[nodiscard]] constexpr weapon_type weapon() const noexcept
-    {
-        return m_weapon;
-    }
-
-    /**
-     * @brief Change weapon type
-     *
-     * @param weapon New weapon type
-     */
-    constexpr void change_weapon(weapon_type weapon) noexcept
-    {
-        m_weapon = weapon;
-    }
-
-  protected:
-    weapon_type m_weapon{weapon_type::rifle}; //!< Current weapon
-
-  public:
-    std::uint8_t m_clip_ammo{0};    //!< Clip ammo
-    std::uint8_t m_reserve_ammo{0}; //!< Reserve ammo
 };
 
 } // namespace spadesx

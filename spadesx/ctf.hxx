@@ -5,7 +5,8 @@
 
 #pragma once
 
-#include "baseprotocol.hxx"
+#include "data/team.hxx"
+#include "protocol.hxx"
 
 namespace spadesx {
 
@@ -74,7 +75,7 @@ class ctf_team_data : public team_data
  * @brief CTF protocol
  *
  */
-class ctf_protocol : public base_protocol
+class ctf_protocol : public protocol
 {
   public:
     /**
@@ -82,21 +83,21 @@ class ctf_protocol : public base_protocol
      *
      * @param max_players Max number of players
      */
-    ctf_protocol(std::uint8_t max_players) : base_protocol(max_players), m_teams{team_type::a, team_type::b}
+    ctf_protocol(std::uint8_t max_players) : protocol(max_players), m_teams{team_type::a, team_type::b}
     {
     }
 
     void get_spawn_location(team_type team, entity& entity) override
     {
         get_spawn(team).get(get_random_float(), get_random_float(), entity.m_position);
-        entity.m_position.z = m_map->get_height(entity.m_position.x, entity.m_position.y);
+        entity.m_position.z = m_map->get_height_f(entity.m_position.x, entity.m_position.y);
     }
 
     void on_start() override
     {
         for (auto& team : m_teams) {
             team.intel().reset();
-            team.reset_score();
+            team.score().reset();
         }
         get_spawn_location(team_type::a, m_teams[0].base());
         get_spawn_location(team_type::b, m_teams[1].base());
@@ -203,9 +204,9 @@ class ctf_protocol : public base_protocol
      */
     void capture_intel(connection& source, ctf_team_data& team, ctf_team_data& enemy_team, const glm::vec3& position)
     {
-        source.add_score();
+        source.score().increase();
         enemy_team.intel().drop(position);
-        broadcast_intel_capture(source, team.add_score().has_reached_score(m_score_limit));
+        broadcast_intel_capture(source, team.score().increase().has_reached(m_score_limit));
         broadcast_move_object(enemy_team.intel().id(), enemy_team.team(), position);
     }
 
@@ -257,7 +258,7 @@ class ctf_protocol : public base_protocol
 
                 if (check_and_capture_intel(connection, team, enemy_team)) {
                     std::cout << "[  LOG  ]: intel captured by " << connection.name() << std::endl;
-                    if (team.has_reached_score(m_score_limit)) {
+                    if (team.score().has_reached(m_score_limit)) {
                         std::cout << "[  LOG  ]: end game" << std::endl;
                     }
                 }
@@ -282,8 +283,8 @@ class ctf_protocol : public base_protocol
         stream.write_array(m_teams[1].name().data(), 10);
         stream.write_type(mode_type::ctf);
         // CTF
-        stream.write_byte(m_teams[0].get_score());
-        stream.write_byte(m_teams[1].get_score());
+        stream.write_byte(m_teams[0].score().to_byte());
+        stream.write_byte(m_teams[1].score().to_byte());
         stream.write_byte(m_score_limit);
         stream.write_byte(intel_flags());
         if (!m_teams[0].intel().is_taken()) {

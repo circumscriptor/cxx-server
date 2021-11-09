@@ -6,6 +6,7 @@
 #pragma once
 
 #include "datastream.hxx"
+#include "packet.hxx"
 
 namespace spadesx {
 
@@ -104,6 +105,18 @@ class peer
             return false;
         }
         return false;
+    }
+
+    /**
+     * @brief Send packet
+     *
+     * @param packet Packet to be sent
+     * @param channel Channel to be used
+     * @return true Success
+     */
+    bool send(packet packet, std::uint8_t channel = 0)
+    {
+        return send(packet.m_packet, channel);
     }
 
   private:

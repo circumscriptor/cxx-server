@@ -5,10 +5,12 @@
 
 #pragma once
 
+#include "data/color.hxx"
 #include "enet.hxx"
 
 #include <cassert>
 #include <cstring>
+#include <string_view>
 
 namespace spadesx {
 

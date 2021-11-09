@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../baseprotocol.hxx"
+#include "../protocol.hxx"
 
 namespace spadesx {
 
@@ -24,7 +24,7 @@ class kill_command : public command
     {
     }
 
-    void on_execute(std::string_view /*args*/, connection& connection, base_protocol& protocol) override
+    void on_execute(std::string_view /*args*/, connection& connection, protocol& protocol) override
     {
         if (connection.m_alive) {
             protocol.kill_and_broadcast(connection, connection, kill_type::weapon, 1);

@@ -41,7 +41,7 @@ target_link_libraries(server
 
 target_include_directories(server
     PRIVATE
-        ${PROJECT_SOURCE_DIR}/Spades
+        ${PROJECT_SOURCE_DIR}/spadesx
 )
 
 target_compile_features(server
