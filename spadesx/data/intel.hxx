@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "base.hxx"
+#include "player.hxx"
 
 namespace spadesx {
 
@@ -21,7 +21,7 @@ class intel_data : public entity
      *
      * @param team Team
      */
-    constexpr intel_data(team_type team) noexcept : entity{entity_type::intel, object_id::intel_id(team), team}
+    intel_data(team_type team) noexcept : entity{entity_type::intel, object_id::intel_id(team), team}
     {
     }
 
@@ -29,7 +29,7 @@ class intel_data : public entity
      * @brief Reset intel (same as drop)
      *
      */
-    constexpr void reset() noexcept
+    void reset() noexcept
     {
         m_taken  = false;
         m_holder = object_id::invalid;
@@ -39,7 +39,7 @@ class intel_data : public entity
      * @brief Drop intel (return back to previous location)
      *
      */
-    constexpr void drop() noexcept
+    void drop() noexcept
     {
         m_taken  = false;
         m_holder = object_id::invalid;
@@ -49,7 +49,7 @@ class intel_data : public entity
      * @brief Drop intel
      *
      */
-    constexpr void drop(const glm::vec3& position) noexcept
+    void drop(const glm::vec3& position) noexcept
     {
         m_position = position;
         m_taken    = false;
@@ -61,7 +61,7 @@ class intel_data : public entity
      *
      * @param player Player
      */
-    constexpr void pick(std::uint8_t player) noexcept
+    void pick(std::uint8_t player) noexcept
     {
         m_holder = player;
         m_taken  = true;
@@ -70,11 +70,11 @@ class intel_data : public entity
     /**
      * @brief Pick intel
      *
-     * @param connection Connection (player)
+     * @param player Player
      */
-    constexpr void pick(const connection& connection) noexcept
+    void pick(const player_data& player) noexcept
     {
-        m_holder = connection.id();
+        m_holder = player.id();
         m_taken  = true;
     }
 
@@ -83,7 +83,7 @@ class intel_data : public entity
      *
      * @return true If taken
      */
-    [[nodiscard]] constexpr bool is_taken() const noexcept
+    [[nodiscard]] bool is_taken() const noexcept
     {
         return m_taken;
     }
@@ -93,7 +93,7 @@ class intel_data : public entity
      *
      * @return Holder
      */
-    [[nodiscard]] constexpr std::uint8_t holder() const noexcept
+    [[nodiscard]] std::uint8_t holder() const noexcept
     {
         return m_holder;
     }
@@ -104,7 +104,7 @@ class intel_data : public entity
      * @param id Player ID
      * @return true If is taken by the given player
      */
-    [[nodiscard]] constexpr bool is_held_by(std::uint8_t id) const noexcept
+    [[nodiscard]] bool is_held_by(std::uint8_t id) const noexcept
     {
         return m_taken && m_holder == id;
     }
@@ -112,12 +112,12 @@ class intel_data : public entity
     /**
      * @brief Check whether the intel taken by the given player
      *
-     * @param connection Connection (player)
+     * @param player Player
      * @return true If is taken by the given player
      */
-    [[nodiscard]] constexpr bool is_held_by(const connection& connection) const noexcept
+    [[nodiscard]] bool is_held_by(const player_data& player) const noexcept
     {
-        return m_taken && m_holder == connection.id();
+        return m_taken && m_holder == player.id();
     }
 
   private:

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "spawn.hxx"
+#include "entity.hxx"
 
 namespace spadesx {
 
@@ -21,7 +21,7 @@ class base_data : public entity
      *
      * @param team Team
      */
-    constexpr base_data(team_type team) noexcept : entity{entity_type::base, object_id::base_id(team), team}
+    base_data(team_type team) noexcept : entity{entity_type::base, object_id::base_id(team), team}
     {
     }
 };

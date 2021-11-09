@@ -6,6 +6,7 @@
 #pragma once
 
 #include "entity.hxx"
+#include "name.hxx"
 #include "score.hxx"
 #include "weapon.hxx"
 

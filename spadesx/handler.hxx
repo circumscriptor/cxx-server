@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "line.hxx"
+#include "data/line.hxx"
 #include "manager.hxx"
 
 namespace spadesx {
