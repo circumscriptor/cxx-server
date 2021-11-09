@@ -5,7 +5,6 @@ Dependencies: `boost-devel, glm-devel, enet-devel`
 Build:
 ```
 mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-cmake --build .
+cmake -B ./build -DCMAKE_BUILD_TYPE=Release .
+cmake --build ./build 
 ```
