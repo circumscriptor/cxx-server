@@ -46,6 +46,7 @@ class player_data : public entity, public name_data<16>
         m_health       = 100;
         m_tool         = tool_type::gun;
         m_restock_time = 0;
+        m_grenades     = 3;
     }
 
     /**
@@ -62,6 +63,7 @@ class player_data : public entity, public name_data<16>
         m_tool         = tool_type::gun;
         m_respawn_time = 0;
         m_restock_time = 0;
+        m_grenades     = 3;
     }
 
     /**
@@ -206,6 +208,12 @@ class player_data : public entity, public name_data<16>
 
     std::uint8_t m_clip_ammo{0};    //!< Clip ammo
     std::uint8_t m_reserve_ammo{0}; //!< Reserve ammo
+
+    //
+    // Grenade
+    //
+
+    std::uint8_t m_grenades{3}; //!< Grenades count
 
     //
     // Transformation

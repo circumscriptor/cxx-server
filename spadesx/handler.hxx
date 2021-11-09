@@ -5,8 +5,13 @@
 
 #pragma once
 
+#include "data/enums.hxx"
+#include "data/grenade.hxx"
 #include "data/line.hxx"
 #include "manager.hxx"
+
+#include <glm/gtx/string_cast.hpp>
+#include <list>
 
 namespace spadesx {
 
@@ -548,6 +553,49 @@ class server_handler : public connection_manager
     }
 
     /**
+     * @brief On grenade explosion
+     *
+     * @param grenade Grenade
+     */
+    virtual void on_grenade_explosion(const grenade& grenade)
+    {
+        auto id = grenade.id();
+        if (id >= m_max_players) {
+            return;
+        }
+        for (auto& connection : m_connections) {
+            if (connection.id() == id || !grenade.is_same_team(connection)) {
+                if (auto distance = grenade.distance(connection); distance <= m_grenade_distance) {
+                    if (auto& source = m_connections[id]; source.is_connected()) {
+                        if (!ray::intersects(*m_map, connection.m_position, grenade.m_position)) {
+                            int dmg = int(4096.F / (distance * distance));
+
+                            glm::ivec3 v0 = grenade.m_position;
+                            glm::ivec3 v1 = connection.m_position;
+                            std::cout << "boom (" << v0.x << ", " << v0.y << ", " << v0.z << ") -> (" << v1.x << ", "
+                                      << v1.y << ", " << v1.z << ")\n";
+
+                            if (connection.m_health < dmg) {
+                                kill_and_broadcast(source, connection, kill_type::grenade, m_respawn_time);
+                            } else {
+                                connection.m_health -= dmg;
+                                connection.send_set_hp(source.m_position, true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (auto id = grenade.id(); id < m_max_players) {
+            if (auto& source = m_connections[id]; source.is_connected()) {
+                glm::ivec3 v = grenade.m_position;
+                m_map->destroy_block_grenade(v.x, v.y, v.z);
+                broadcast_block_action(source, v.x, v.y, v.z, block_action_type::grenade);
+            }
+        }
+    }
+
+    /**
      * @brief Throw grenade
      *
      * @param source Source connection
@@ -557,7 +605,12 @@ class server_handler : public connection_manager
      */
     virtual void on_grenade_throw(connection& source, const glm::vec3& position, const glm::vec3& velocity, float fuse)
     {
-        broadcast_grenade(source, position, velocity, fuse);
+        if (source.m_grenades > 0) {
+            --source.m_grenades;
+
+            m_grenades.emplace_back(source, position, velocity, fuse);
+            broadcast_grenade(source, position, velocity, fuse);
+        }
     }
 
     /**
@@ -613,6 +666,7 @@ class server_handler : public connection_manager
         switch (action) {
             case block_action_type::build:
                 m_map->modify_block(x, y, z, true, source.m_color.to_uint());
+                std::cout << "place (" << x << ", " << y << ", " << z << ")\n";
                 break;
             case block_action_type::bullet_or_spade:
                 m_map->destroy_block(x, y, z);
@@ -620,7 +674,6 @@ class server_handler : public connection_manager
             case block_action_type::spade_secondary:
                 m_map->destroy_block_secondary(x, y, z);
                 break;
-                // TODO: Add grenade
             default:
                 return;
         }
@@ -793,6 +846,15 @@ class server_handler : public connection_manager
                 world_update_player(connection, delta);
             }
         }
+        for (auto it = m_grenades.begin(), end = m_grenades.end(); it != end;) {
+            it->update(*m_map, delta);
+            if (it->m_fuse <= 0.F) {
+                on_grenade_explosion(*it);
+                it = m_grenades.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 
     /**
@@ -806,12 +868,14 @@ class server_handler : public connection_manager
     }
 
   protected:
-    float                m_melee_distance{5.F}; //!< Melee distance
-    std::uint8_t         m_melee_damage{50};    //!< Melee damage
-    block_line           m_line;                //!< Block line
-    std::uint8_t         m_respawn_time{0};     //!< Current respawn time
-    std::unique_ptr<map> m_map;                 //!< Map
-    color3b              m_fog_color;           //!< Fog color
+    float                m_melee_distance{5.F};    //!< Melee distance
+    float                m_grenade_distance{16.F}; //!< Grenade distance
+    std::uint8_t         m_melee_damage{50};       //!< Melee damage
+    block_line           m_line;                   //!< Block line
+    std::uint8_t         m_respawn_time{0};        //!< Current respawn time
+    std::unique_ptr<map> m_map;                    //!< Map
+    color3b              m_fog_color;              //!< Fog color
+    std::list<grenade>   m_grenades;               //!< List of currently active grenades
 };
 
 } // namespace spadesx

@@ -64,6 +64,7 @@ class protocol : public server_handler, public command_manager
         source.m_reserve_ammo = get_weapon_stock(source.weapon());
         source.m_restock_time = restock_time;
         source.m_health       = 100;
+        source.m_grenades     = 3;
         broadcast_restock(source);
     }
 
@@ -269,12 +270,15 @@ class protocol : public server_handler, public command_manager
             }
         }
 
-        double delta = std::chrono::duration<double>(now - m_world_update_timer).count();
-        if (delta >= m_world_update_delta) {
+        if (double delta = std::chrono::duration<double>(now - m_local_update_timer).count();
+            delta >= m_local_update_delta) {
+            m_local_update_timer = now;
+            world_update(static_cast<float>(delta));
+        }
+
+        if (double delta = std::chrono::duration<double>(now - m_world_update_timer).count();
+            delta >= m_world_update_delta) {
             m_world_update_timer = now;
-            // update world
-            // ...
-            world_update(static_cast<float>(delta)); // or m_world_update_delta?
             broadcast_world_update();
         }
     }
@@ -354,7 +358,8 @@ class protocol : public server_handler, public command_manager
     }
 
   protected:
-    double m_world_update_delta{0.1}; //!< Requested world update delta time
+    double m_world_update_delta{0.1};        //!< Requested world update delta time
+    double m_local_update_delta{1.0 / 60.0}; //!< Requested local update delta time
 
     float        m_base_trigger_distance{5.F}; //!< Base trigger distance
     std::uint8_t m_restock_time{15};           //!< Restock cooldown
@@ -368,6 +373,7 @@ class protocol : public server_handler, public command_manager
     std::uniform_real_distribution<float>              m_distribution;       //!< Real number distribution
     std::chrono::time_point<std::chrono::steady_clock> m_one_second_timer;   //!< Respawn timer
     std::chrono::time_point<std::chrono::steady_clock> m_world_update_timer; //!< World update timer
+    std::chrono::time_point<std::chrono::steady_clock> m_local_update_timer; //!< World update timer local
 };
 
 } // namespace spadesx

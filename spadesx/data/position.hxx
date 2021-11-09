@@ -17,6 +17,17 @@ namespace spadesx {
 class position_data
 {
   public:
+    constexpr position_data() noexcept = default;
+
+    /**
+     * @brief Construct a new position data object
+     *
+     * @param position Initial possition
+     */
+    constexpr position_data(const glm::vec3& position) noexcept : m_position{position}
+    {
+    }
+
     /**
      * @brief Reset position data
      *
@@ -37,7 +48,7 @@ class position_data
         return glm::distance(m_position, position.m_position);
     }
 
-    glm::vec3 m_position; //!< Player position
+    glm::vec3 m_position{0.F, 0.F, 0.F}; //!< Player position
 };
 
 } // namespace spadesx

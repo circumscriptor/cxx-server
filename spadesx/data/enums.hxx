@@ -124,6 +124,6 @@ enum class team_type { spectator = 0xFF, a = 0, b = 1, neutral = 2 };
  * @brief Entity type
  *
  */
-enum class entity_type { player, base, intel };
+enum class entity_type { player, base, intel, grenade };
 
 } // namespace spadesx

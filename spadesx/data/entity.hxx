@@ -79,6 +79,21 @@ class entity : public position_data
     }
 
     /**
+     * @brief Construct a new entity object
+     *
+     * @param type Entity type
+     * @param id ID
+     * @param team Team
+     */
+    constexpr entity(entity_type type, std::uint8_t id, team_type team, const glm::vec3& position) noexcept :
+        position_data{position},
+        m_type{type},
+        m_id{id},
+        m_team{team}
+    {
+    }
+
+    /**
      * @brief Get entity type
      *
      * @return Entity type

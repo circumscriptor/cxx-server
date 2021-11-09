@@ -10,11 +10,13 @@ set(HEADERS_SERVER_DATA
     color.hxx
     entity.hxx
     enums.hxx
+    grenade.hxx
     intel.hxx
     line.hxx
     name.hxx
     player.hxx
     position.hxx
+    ray.hxx
     score.hxx
     spawn.hxx
     team.hxx

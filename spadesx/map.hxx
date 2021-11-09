@@ -30,6 +30,7 @@ class map
     static constexpr const std::uint32_t size_yz       = size_y * size_z;  //!< Vertical area
     static constexpr const std::uint32_t size_xyz      = size_xy * size_z; //!< Max number of blocks
     static constexpr const std::uint32_t default_color = 0xFF674028;       //!< Default color
+    static constexpr const std::uint32_t size_mask_h   = size_x - 1;       //!< Mask for horizontal coordinates
 
     /**
      * @brief Construct a new map object
@@ -42,6 +43,19 @@ class map
      *
      */
     ~map() = default;
+
+    /**
+     * @brief Check whether given coordinates are valid (signed int)
+     *
+     * @param x The x-coordinate of the block
+     * @param y The y-coordinate of the block
+     * @param z The z-coordinate of the block
+     * @return true If given coordinates are valid
+     */
+    static bool is_valid(int x, int y, int z)
+    {
+        return x >= 0 && x < 512 && y >= 0 && y < 512 && z >= 0 && z <= 61;
+    }
 
     /**
      * @brief Returns true if map has been modified since last compression
@@ -111,6 +125,30 @@ class map
         }
         set_block(offset, false);
         m_changed = true;
+    }
+
+    /**
+     * @brief Destroy up-to 27 blocks
+     *
+     * @param x The x-coordinate of the grenade explosion
+     * @param y The y-coordinate of the grenade explosion
+     * @param z The z-coordinate of the grenade explosion
+     */
+    void destroy_block_grenade(int x, int y, int z)
+    {
+        for (int dz = -1; dz < 2; ++dz) {
+            for (int dy = -1; dy < 2; ++dy) {
+                for (int dx = -1; dx < 2; ++dx) {
+                    auto _x = x + dx;
+                    auto _y = y + dy;
+                    auto _z = z + dz;
+                    if (map::is_valid(_x, _y, _z)) {
+                        set_block(_x, _y, _z, false);
+                        m_changed = true;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -185,19 +223,53 @@ class map
      * @param z The z-coordinate of ...
      * @return true ...
      */
-    [[nodiscard]] bool is_clip_box(float x, float y, float z) const
+    [[nodiscard]] bool is_clip_box(int x, int y, int z) const
     {
-        if (x < 0.F || x >= 512.F || y < 0.F || y >= 512.F || z >= 64.F) {
+        if (x < 0 || x >= 512 || y < 0 || y >= 512 || z >= 64) {
             return true;
         }
-        if (z < 0.F) {
+        if (z < 0) {
             return false;
         }
-        auto _z = static_cast<std::uint32_t>(std::floor(z));
-        if (_z == 63) {
-            _z = 62;
+        if (z == 63) {
+            z = 62;
         }
-        return is_block(static_cast<std::uint32_t>(std::floor(x)), static_cast<std::uint32_t>(std::floor(y)), _z);
+        return is_block(static_cast<std::uint32_t>(x), static_cast<std::uint32_t>(y), static_cast<std::uint32_t>(z));
+    }
+
+    /**
+     * @brief Same as is_block, but water is empty and out of bounds returns false
+     *
+     * @param x The x-coordinate of ...
+     * @param y The y-coordinate of ...
+     * @param z The z-coordinate of ...
+     * @return true ...
+     */
+    [[nodiscard]] bool is_clip_world(int x, int y, int z) const
+    {
+        if (x < 0 || x >= 512 || y < 0 || y >= 512 || z < 0) {
+            return false;
+        }
+        if (z > 63) {
+            return true;
+        }
+        if (z == 63) {
+            z = 62;
+        }
+        return is_block(static_cast<std::uint32_t>(x), static_cast<std::uint32_t>(y), static_cast<std::uint32_t>(z));
+    }
+
+    /**
+     * @brief Same as is_block, but water is empty and out of bounds returns true
+     *
+     * @param x The x-coordinate of ...
+     * @param y The y-coordinate of ...
+     * @param z The z-coordinate of ...
+     * @return true ...
+     */
+    [[nodiscard]] bool is_clip_box(float x, float y, float z) const
+    {
+        return is_clip_box(int(std::floor(x)), int(std::floor(y)), int(std::floor(z)));
     }
 
     /**
@@ -299,6 +371,26 @@ class map
     [[nodiscard]] bool is_block(std::uint32_t x, std::uint32_t y, std::uint32_t z) const
     {
         return is_block(get_offset(x, y, z));
+    }
+
+    /**
+     * @brief Check whether the block at the given coordinates is solid (with wrapping)
+     *
+     * @param x The x-coordinate of the block
+     * @param y The y-coordinate of the block
+     * @param z The z-coordinate of the block
+     * @return true If the block is solid
+     * @return false If the block is not solid, i.e. is air
+     */
+    [[nodiscard]] bool is_block_wrap(int x, int y, int z) const
+    {
+        if (z < 0) {
+            return false;
+        }
+        if (z >= 64) {
+            return true;
+        }
+        return is_block(x & size_mask_h, y & size_mask_h, z);
     }
 
     /**
