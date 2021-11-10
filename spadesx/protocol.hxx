@@ -273,7 +273,8 @@ class protocol : public server_handler, public command_manager
         if (double delta = std::chrono::duration<double>(now - m_local_update_timer).count();
             delta >= m_local_update_delta) {
             m_local_update_timer = now;
-            world_update(static_cast<float>(delta));
+            world_update(float(delta));
+            grenades_update(float(delta));
         }
 
         if (double delta = std::chrono::duration<double>(now - m_world_update_timer).count();

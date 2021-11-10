@@ -569,12 +569,6 @@ class server_handler : public connection_manager
                     if (auto& source = m_connections[id]; source.is_connected()) {
                         if (!ray::intersects(*m_map, connection.m_position, grenade.m_position)) {
                             int dmg = int(4096.F / (distance * distance));
-
-                            glm::ivec3 v0 = grenade.m_position;
-                            glm::ivec3 v1 = connection.m_position;
-                            std::cout << "boom (" << v0.x << ", " << v0.y << ", " << v0.z << ") -> (" << v1.x << ", "
-                                      << v1.y << ", " << v1.z << ")\n";
-
                             if (connection.m_health < dmg) {
                                 kill_and_broadcast(source, connection, kill_type::grenade, m_respawn_time);
                             } else {
@@ -586,12 +580,10 @@ class server_handler : public connection_manager
                 }
             }
         }
-        if (auto id = grenade.id(); id < m_max_players) {
-            if (auto& source = m_connections[id]; source.is_connected()) {
-                glm::ivec3 v = grenade.m_position;
-                m_map->destroy_block_grenade(v.x, v.y, v.z);
-                broadcast_block_action(source, v.x, v.y, v.z, block_action_type::grenade);
-            }
+        if (auto& source = m_connections[id]; source.is_connected()) {
+            glm::ivec3 v = grenade.m_position;
+            m_map->destroy_block_grenade(v.x, v.y, v.z);
+            broadcast_block_action(source, v.x, v.y, v.z, block_action_type::grenade);
         }
     }
 
@@ -665,13 +657,21 @@ class server_handler : public connection_manager
     {
         switch (action) {
             case block_action_type::build:
+                if (m_map->is_block(x, y, z)) {
+                    return;
+                }
                 m_map->modify_block(x, y, z, true, source.m_color.to_uint());
-                std::cout << "place (" << x << ", " << y << ", " << z << ")\n";
                 break;
             case block_action_type::bullet_or_spade:
+                if (!m_map->is_block(x, y, z)) {
+                    return;
+                }
                 m_map->destroy_block(x, y, z);
                 break;
             case block_action_type::spade_secondary:
+                if (!m_map->is_block(x, y, z)) {
+                    return;
+                }
                 m_map->destroy_block_secondary(x, y, z);
                 break;
             default:
@@ -846,6 +846,15 @@ class server_handler : public connection_manager
                 world_update_player(connection, delta);
             }
         }
+    }
+
+    /**
+     * @brief Update all active grenades
+     *
+     * @param delta Delta time
+     */
+    void grenades_update(float delta)
+    {
         for (auto it = m_grenades.begin(), end = m_grenades.end(); it != end;) {
             it->update(*m_map, delta);
             if (it->m_fuse <= 0.F) {

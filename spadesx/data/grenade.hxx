@@ -42,10 +42,10 @@ class grenade : public entity
         // Update fuse time
         m_fuse -= delta;
 
-        // Update position
-        glm::vec3 prev = m_position;
+        // Update postion
 
-        float dt = delta * 32.F;
+        glm::vec3 prev = m_position;
+        float     dt   = delta * 32.F;
 
         m_velocity.z += delta;
         m_position += m_velocity * dt;
@@ -54,11 +54,11 @@ class grenade : public entity
         if (map.is_clip_world(b.x, b.y, b.z)) {
             glm::ivec3 a = glm::floor(prev);
 
-            if (b.z != a.z && ((b.x == a.x && b.y == a.y) || !map.is_clip_box(b.x, b.y, a.z))) {
+            if (b.z != a.z && ((b.x == a.x && b.y == a.y) || !map.is_clip_world(b.x, b.y, a.z))) {
                 m_velocity.z = -m_velocity.z;
-            } else if (b.x != a.x && ((b.y == a.y && b.z == a.z) || !map.is_clip_box(a.x, b.y, b.z))) {
+            } else if (b.x != a.x && ((b.y == a.y && b.z == a.z) || !map.is_clip_world(a.x, b.y, b.z))) {
                 m_velocity.x = -m_velocity.x;
-            } else if (b.y != a.y && ((b.x == a.x && b.z == a.z) || !map.is_clip_box(b.x, a.y, b.z))) {
+            } else if (b.y != a.y && ((b.x == a.x && b.z == a.z) || !map.is_clip_world(b.x, a.y, b.z))) {
                 m_velocity.y = -m_velocity.y;
             }
 

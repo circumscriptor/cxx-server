@@ -40,7 +40,7 @@ class ray
         glm::ivec3 v5 = glm::vec3{v3.x * v4.z - v3.z * v4.x, v3.y * v4.z - v3.z * v4.y, v3.y * v4.x - v3.x * v4.y};
         glm::ivec3 v6 = v4;
 
-        for (count = count > 128 ? 128 : count; count != 0; --count) {
+        for (count = std::min(count, 128); count != 0; --count) {
             if (((v5.x | v5.y) >= 0) && (v0.z != v1.z)) {
                 v0.z += v2.z;
                 v5.x -= v6.x;

@@ -6,7 +6,6 @@
 #pragma once
 
 #include "peer.hxx"
-#include "update.hxx"
 
 namespace spadesx {
 
@@ -14,7 +13,7 @@ namespace spadesx {
  * @brief Connection - player data
  *
  */
-class connection : public peer, public player_update
+class connection : public peer, public player_data
 {
   public:
     /**
@@ -22,7 +21,7 @@ class connection : public peer, public player_update
      *
      * @param id Connection ID
      */
-    connection(std::uint8_t id) : player_update{id}
+    connection(std::uint8_t id) : player_data{id}
     {
     }
 
@@ -31,6 +30,8 @@ class connection : public peer, public player_update
      *
      */
     connection(const connection&) = default;
+
+    // TODO: Maybe add destructor (and call disconnect?)?
 
     /**
      * @brief Check whether this connection has valid ID
