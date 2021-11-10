@@ -21,6 +21,7 @@ class grenade : public entity
      * @brief Construct a new grenade object
      *
      * @param source Source player
+     * @param position Initial position
      * @param velocity Initial velocity
      * @param fuse Initial fuse time
      */

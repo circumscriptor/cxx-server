@@ -71,8 +71,8 @@ if(DOXYGEN_FOUND)
     # Add documentation target
     #
 
-    doxygen_add_docs(server_docs
-        ""
+    doxygen_add_docs(docs
+        "spadesx"
         ALL
         # USE_STAMP_FILE
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}

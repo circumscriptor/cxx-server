@@ -9,6 +9,10 @@
 
 namespace spadesx {
 
+/**
+ * @brief Auxiliary class for line intersection calculation
+ *
+ */
 class ray
 {
   public:

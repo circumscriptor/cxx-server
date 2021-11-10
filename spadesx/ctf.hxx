@@ -87,6 +87,7 @@ class ctf_protocol : public protocol
     {
     }
 
+    // TODO: Add more general spawn location function
     void get_spawn_location(team_type team, entity& entity) override
     {
         get_spawn(team).get(get_random_float(), get_random_float(), entity.m_position);

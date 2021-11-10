@@ -67,9 +67,7 @@ class connection_manager
      * @brief Broadcast same data to multiple connections (except source)
      *
      * @param source Source connection
-     * @param data Data
-     * @param length Length of data
-     * @param unsequenced If true sets unsequenced flag
+     * @param packet Packet to be broadcastted
      * @param channel Channel
      */
     void broadcast(const connection& source, packet packet, std::uint8_t channel = 0)
@@ -87,9 +85,7 @@ class connection_manager
     /**
      * @brief Broadcast same data to multiple connections
      *
-     * @param data Data
-     * @param length Length of data
-     * @param unsequenced If true sets unsequenced flag
+     * @param packet Packet to be broadcastted
      * @param channel Channel
      */
     void broadcast(packet packet, std::uint8_t channel = 0)
