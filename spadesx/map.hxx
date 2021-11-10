@@ -45,19 +45,6 @@ class map
     ~map() = default;
 
     /**
-     * @brief Check whether given coordinates are valid (signed int)
-     *
-     * @param x The x-coordinate of the block
-     * @param y The y-coordinate of the block
-     * @param z The z-coordinate of the block
-     * @return true If given coordinates are valid
-     */
-    static bool is_valid(int x, int y, int z)
-    {
-        return x >= 0 && x < 512 && y >= 0 && y < 512 && z >= 0 && z <= 61;
-    }
-
-    /**
      * @brief Returns true if map has been modified since last compression
      *
      * @return true If map has been modified since last compression
@@ -137,15 +124,22 @@ class map
     void destroy_block_grenade(int x, int y, int z)
     {
         for (int dz = -1; dz < 2; ++dz) {
+            auto _z = z + dz;
+            if (_z < 0 || _z > 61) {
+                continue;
+            }
             for (int dy = -1; dy < 2; ++dy) {
+                auto _y = y + dy;
+                if (_y < 0 || y >= 512) {
+                    continue;
+                }
                 for (int dx = -1; dx < 2; ++dx) {
                     auto _x = x + dx;
-                    auto _y = y + dy;
-                    auto _z = z + dz;
-                    if (map::is_valid(_x, _y, _z)) {
-                        set_block(_x, _y, _z, false);
-                        m_changed = true;
+                    if (_x < 0 || x >= 512) {
+                        continue;
                     }
+                    set_block(_x, _y, _z, false);
+                    m_changed = true;
                 }
             }
         }
@@ -354,7 +348,7 @@ class map
      * @param z The z-coordinate of the block
      * @return The offset of the block
      */
-    static std::uint32_t get_offset(std::uint32_t x, std::uint32_t y, std::uint32_t z)
+    static std::uint32_t get_offset(std::uint32_t x, std::uint32_t y, std::uint32_t z) noexcept
     {
         return (((y << 9) + x) << 6) + z;
     }

@@ -159,18 +159,4 @@ static constexpr std::uint8_t get_weapon_damage(weapon_type weapon, hit_type hit
     return weapons::get(weapon).get_damage(hit);
 }
 
-/**
- * @brief Weapon data
- *
- */
-class weapon_data
-{
-  public:
-    /**
-     * @brief Construct a new weapon data object
-     *
-     */
-    constexpr weapon_data() noexcept = default;
-};
-
 } // namespace spadesx
