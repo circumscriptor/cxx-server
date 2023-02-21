@@ -1,26 +1,19 @@
 
-project_generate_version(
-    ${CMAKE_CURRENT_BINARY_DIR}/Generated/Version.hpp
-    FROM_PROJECT
-)
-
-project_add_executable(cxx-server
+project_add_executable(CxxServer
     HEADERS
-        connection.hxx
-        ctf.hxx
-        datastream.hxx
-        enet.hxx
-        handler.hxx
-        manager.hxx
-        map.hxx
-        peer.hxx
-        protocol.hxx
-        server.hxx
+        Protocol.hpp
+        Server.hpp
     SOURCES
-        main.cxx
+        Main.cpp
+        Protocol.cpp
+        Server.cpp
     LIBRARIES
         CONAN_PKG::glm
         CONAN_PKG::enet
+)
+
+project_generate_headers(CxxServer
+    FROM_PROJECT
 )
 
 #
@@ -29,3 +22,4 @@ project_add_executable(cxx-server
 
 add_subdirectory(data)
 add_subdirectory(commands)
+add_subdirectory(Details)

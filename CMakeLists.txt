@@ -6,7 +6,9 @@ cmake_minimum_required(VERSION 3.24)
 #
 #
 
-project(CxxServer)
+project(CxxServer
+    VERSION 0.1.0
+)
 
 #
 # Options
@@ -33,7 +35,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET "hidden" CACHE STRING "Value for symbol visibili
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake/Modules")
 
 include(AddExecutable)
-include(GenerateVersion)
+include(GenerateHeaders)
 
 #
 # Import dependencies

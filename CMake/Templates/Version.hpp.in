@@ -8,7 +8,26 @@
 
 #pragma once
 
-#define @GENERATED_NAMESPACE@_VERSION_MAJOR @GENERATED_VERSION_MAJOR@
-#define @GENERATED_NAMESPACE@_VERSION_MINOR @GENERATED_VERSION_MINOR@
-#define @GENERATED_NAMESPACE@_VERSION_PATCH @GENERATED_VERSION_PATCH@
-#define @GENERATED_NAMESPACE@_VERSION       "@GENERATED_VERSION@"
+///
+/// @brief Major version number
+///
+///
+#define @GENERATED_NAME@_VERSION_MAJOR @GENERATED_VERSION_MAJOR@
+
+///
+/// @brief Minor version number
+///
+///
+#define @GENERATED_NAME@_VERSION_MINOR @GENERATED_VERSION_MINOR@
+
+///
+/// @brief Patch version number
+///
+///
+#define @GENERATED_NAME@_VERSION_PATCH @GENERATED_VERSION_PATCH@
+
+///
+/// @brief Combined version string with extra suffix
+///
+///
+#define @GENERATED_NAME@_VERSION "@GENERATED_VERSION@"

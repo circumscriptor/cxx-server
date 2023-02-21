@@ -2,7 +2,6 @@
 # Function for adding sources and headers to a target
 #
 # project_target_sources(<target_name>
-#   [NAMESPACE <namespace>]
 #   [PRECOMPILED item...]
 #   [HEADERS item...]
 #   [SOURCES item...]
@@ -10,9 +9,6 @@
 # )
 #
 # Adds sources and headers to a target <target_name>.
-#
-#   NAMESPACE
-#       Namespace for target alias. (By default set to PROJECT_NAME)
 #
 #   PRECOMPILED
 #       Precompiles headers for the target and dependent targets.
@@ -36,26 +32,20 @@ function(project_target_sources target_name)
     list(TRANSFORM arg_HEADERS PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
     list(TRANSFORM arg_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
 
-    if(NOT arg_NAMESPACE)
-        set(arg_NAMESPACE ${PROJECT_NAME})
-    endif()
-
-    set(full_target_name ${arg_NAMESPACE}${target_name})
-
-    target_sources(${full_target_name}
+    target_sources(${target_name}
         PRIVATE
             ${arg_PRECOMPILED}
             ${arg_HEADERS}
             ${arg_SOURCES}
     )
 
-    target_precompile_headers(${full_target_name}
+    target_precompile_headers(${target_name}
         PUBLIC
             $<$<COMPILE_LANGUAGE:CXX>:${arg_PRECOMPILED}>
     )
 
     foreach(object_target ${arg_OBJECTS})
-        target_sources(${full_target_name}
+        target_sources(${target_name}
             PRIVATE
                 $<TARGET_OBJECTS:${object_target}>
         )

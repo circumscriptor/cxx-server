@@ -43,10 +43,8 @@ function(project_add_executable target_name)
         set(arg_NAMESPACE ${PROJECT_NAME})
     endif()
 
-    set(full_target_name ${arg_NAMESPACE}${target_name})
-
-    add_executable(${full_target_name})
-    add_executable(${arg_NAMESPACE}::${target_name} ALIAS ${full_target_name})
+    add_executable(${target_name})
+    add_executable(${arg_NAMESPACE}::${target_name} ALIAS ${target_name})
 
     project_target_sources(${target_name} NAMESPACE ${arg_NAMESPACE}
         PRECOMPILED
@@ -59,14 +57,14 @@ function(project_add_executable target_name)
             ${arg_OBJECTS}
     )
 
-    target_link_libraries(${full_target_name}
+    target_link_libraries(${target_name}
         PUBLIC
             Common::Public
         PRIVATE
             Common::Private
     )
 
-    target_link_libraries(${full_target_name}
+    target_link_libraries(${target_name}
         PRIVATE
             ${arg_LIBRARIES}
     )
