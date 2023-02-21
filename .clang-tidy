@@ -1,6 +1,22 @@
 ---
-Checks:          '*,-readability-magic-numbers,-modernize-use-trailing-return-type,-misc-non-private-member-variables-in-classes,-modernize-avoid-c-arrays,-altera-*,-cppcoreguidelines-*,-llvmlibc-*,-fuchsia-*,-google-*,-hicpp-*'
+Checks: '
+    clang-diagnostic-*,
+    clang-analyzer-*,
+    bugprone-*,
+    cert-*,
+    cppcoreguidelines-*,
+    google-*,
+    hicpp-*,
+    misc-*,
+    modernize-*,
+    performance-*,
+    portability-*,
+    readability-*,
+    -modernize-use-trailing-return-type
+'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
-FormatStyle:     file
-CheckOptions:
+AnalyzeTemporaryDtors: false
+FormatStyle: none
+User: none
+...
