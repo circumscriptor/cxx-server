@@ -32,6 +32,9 @@ set(CMAKE_CXX_VISIBILITY_PRESET "hidden" CACHE STRING "Value for symbol visibili
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake/Modules")
 
+include(AddExecutable)
+include(GenerateVersion)
+
 #
 # Import dependencies
 #

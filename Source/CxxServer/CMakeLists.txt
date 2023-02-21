@@ -1,13 +1,31 @@
-add_executable(cxx - server)
 
-    add_subdirectory(data) add_subdirectory(commands)
+project_generate_version(
+    ${CMAKE_CURRENT_BINARY_DIR}/Generated/Version.hpp
+    FROM_PROJECT
+)
 
-        set(HEADERS_SERVER connection.hxx ctf.hxx datastream.hxx enet.hxx handler.hxx manager.hxx map.hxx peer.hxx protocol.hxx server.hxx)
+project_add_executable(cxx-server
+    HEADERS
+        connection.hxx
+        ctf.hxx
+        datastream.hxx
+        enet.hxx
+        handler.hxx
+        manager.hxx
+        map.hxx
+        peer.hxx
+        protocol.hxx
+        server.hxx
+    SOURCES
+        main.cxx
+    LIBRARIES
+        CONAN_PKG::glm
+        CONAN_PKG::enet
+)
 
-            target_sources(cxx - server PRIVATE $ { HEADERS_SERVER } main.cxx)
+#
+# Add subdirectories
+#
 
-                target_precompile_headers(cxx - server PRIVATE $ { HEADERS_SERVER })
-
-                    target_compile_features(cxx - server PRIVATE cxx_std_23)
-
-                        target_link_libraries(cxx - server PRIVATE CONAN_PKG::glm CONAN_PKG::enet)
+add_subdirectory(data)
+add_subdirectory(commands)
