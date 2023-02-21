@@ -1,5 +1,7 @@
 include_guard(GLOBAL)
 
+include(DetectCompiler)
+
 #
 # Add common targets
 #
@@ -90,10 +92,10 @@ endif()
 
 target_link_libraries(CommonPublic
     INTERFACE
-        WarpPlatformDefinitions
+        Definitions::Compiler
 )
 
 target_link_libraries(CommonPrivate
     INTERFACE
-        CommonPublic
+        Common::Public
 )
