@@ -9,12 +9,9 @@
 #pragma once
 
 #include <cstdint>
-
-#include <bitsery/bitsery.h>
-
 #include <glm/vec3.hpp>
 
-namespace cxxserver::Details::Packets {
+namespace cxxserver::details::packets {
 
 enum class Packet
 {
@@ -53,7 +50,7 @@ enum class Packet
     MAP_CACHED        = 31
 };
 
-} // namespace cxxserver::Details::Packets
+} // namespace cxxserver::details::packets
 
 namespace bitsery {
 

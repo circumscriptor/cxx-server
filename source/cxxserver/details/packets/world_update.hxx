@@ -8,15 +8,12 @@
 
 #pragma once
 
-#include "Common.hpp"
-
-#include <bitsery/traits/array.h>
-
-#include <glm/vec3.hpp>
+#include "common.hxx"
 
 #include <array>
+#include <glm/vec3.hpp>
 
-namespace cxxserver::Details::Packets {
+namespace cxxserver::details::packets {
 
 struct PlayerUpdate
 {
@@ -44,4 +41,4 @@ struct WorldUpdate
     }
 };
 
-} // namespace cxxserver::Details::Packets
+} // namespace cxxserver::details::packets

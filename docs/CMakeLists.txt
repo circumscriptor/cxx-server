@@ -11,7 +11,7 @@ set(DOXYGEN_DOT_GRAPH_MAX_NODES 100)
 #
 
 doxygen_add_docs(docs
-    ${PROJECT_SOURCE_DIR}/Source
+    ${PROJECT_SOURCE_DIR}/source
     # USE_STAMP_FILE
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMENT "Generating documentation"
