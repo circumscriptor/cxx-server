@@ -14,7 +14,7 @@
 
 namespace cxxserver::details {
 
-class ProtocolV75 : public cxxserver::Protocol
+class ProtocolV75 : public Protocol
 {
   public:
 

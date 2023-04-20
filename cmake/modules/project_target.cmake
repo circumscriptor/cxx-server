@@ -4,6 +4,8 @@ include(GenerateExportHeader)
 # project_generate_version
 include(project_version)
 
+include(project_compiler)
+
 #
 # Add target sources
 #

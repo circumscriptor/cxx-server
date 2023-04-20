@@ -36,6 +36,7 @@ class Protocol
 {
   public:
 
+    Protocol()                             = default;
     Protocol(const Protocol &)             = delete;
     Protocol(Protocol &&)                  = delete;
     Protocol & operator=(const Protocol &) = delete;
