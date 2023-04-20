@@ -47,14 +47,14 @@ class Protocol
     ///
     /// @param peer ..
     ///
-    virtual void try_connect(ENetPeer * peer) = 0;
+    virtual void tryConnect(ENetPeer * peer) = 0;
 
     ///
     /// @brief ...
     ///
     /// @param peer ...
     ///
-    virtual void try_disconnect(ENetPeer * peer) = 0;
+    virtual void tryDisconnect(ENetPeer * peer) = 0;
 
     ///
     /// @brief ...
@@ -62,7 +62,7 @@ class Protocol
     /// @param peer ...
     /// @param packet ...
     ///
-    virtual void try_receive(ENetPeer * peer, ENetPacket * packet) = 0;
+    virtual void tryReceive(ENetPeer * peer, ENetPacket * packet) = 0;
 
     ///
     /// @brief ...
@@ -70,7 +70,7 @@ class Protocol
     /// @param version ...
     /// @return ...
     ///
-    static Protocol * Create(Version version);
+    static Protocol * create(Version version);
 };
 
 } // namespace cxxserver

@@ -6,6 +6,7 @@ include(GenerateExportHeader)
 #
 # project_target_sources(
 #   [TARGET <target_name>]
+#   [DIRECTORY <source_directory>]
 #   [HEADERS_PRIVATE ...]
 #   [HEADERS_PUBLIC ...]
 #   [HEADERS_TESTS ...]
@@ -19,7 +20,11 @@ include(GenerateExportHeader)
 function(project_target_sources)
     # Arguments
     unset(options)
-    set(one_value_args TARGET)
+    set(one_value_args
+        TARGET
+        DIRECTORY
+        NO_INSTALL
+    )
     set(multi_value_args
         HEADERS_PRIVATE
         HEADERS_PUBLIC
@@ -30,8 +35,19 @@ function(project_target_sources)
     )
     cmake_parse_arguments(arg "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
+    if(NOT arg_DIRECTORY)
+        set(arg_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
+
+    list(TRANSFORM arg_HEADERS_PRIVATE PREPEND ${arg_DIRECTORY}/)
+    list(TRANSFORM arg_HEADERS_PUBLIC PREPEND ${arg_DIRECTORY}/)
+    list(TRANSFORM arg_HEADERS_TESTS PREPEND ${arg_DIRECTORY}/)
+    list(TRANSFORM arg_SOURCES_COMMON PREPEND ${arg_DIRECTORY}/)
+    list(TRANSFORM arg_SOURCES_TARGET PREPEND ${arg_DIRECTORY}/)
+    list(TRANSFORM arg_SOURCES_TESTS PREPEND ${arg_DIRECTORY}/)
+
     # Object sources
-    if(arg_HEADERS_PRIVATE OR arg_HEADERS_PUBLIC OR arg_SOURCES_COMMON)
+    if(arg_HEADERS_PRIVATE OR arg_SOURCES_COMMON)
         target_sources(
             ${arg_TARGET}-common-objects
             PRIVATE
@@ -50,7 +66,7 @@ function(project_target_sources)
     endif()
 
     # Target sources
-    if(arg_SOURCES_TARGET)
+    if(arg_HEADERS_PUBLIC OR arg_SOURCES_TARGET)
         target_sources(
             ${arg_TARGET}
             PRIVATE
@@ -75,6 +91,14 @@ function(project_target_sources)
             PRIVATE
                 ${arg_HEADERS_TESTS}
                 ${arg_SOURCES_TESTS}
+        )
+    endif()
+
+    if(NOT arg_NO_INSTALL)
+        install(
+            FILES
+                ${arg_HEADERS_PUBLIC}
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAMESPACE}
         )
     endif()
 endfunction()
@@ -385,7 +409,11 @@ function(project_new_target)
         NO_TESTS
         NO_INSTALL
     )
-    set(one_value_args TARGET NAMESPACE)
+    set(one_value_args
+        TARGET
+        NAMESPACE
+        DIRECTORY
+    )
     set(multi_value_args
         DEFINITIONS_PRIVATE
         DEFINITIONS_PUBLIC
@@ -422,6 +450,11 @@ function(project_new_target)
     # Set namespace
     if(NOT arg_NAMESPACE)
         set(arg_NAMESPACE ${PROJECT_NAME})
+    endif()
+
+    # Set directory
+    if(NOT arg_DIRECTORY)
+        set(arg_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
     # Count
@@ -624,8 +657,13 @@ function(project_new_target)
     )
 
     # Sources
+    if(NOT arg_NO_INSTALL)
+        set(no_install NO_INSTALL)
+    endif()
+
     project_target_sources(
         TARGET ${arg_TARGET}
+        DIRECTORY ${arg_DIRECTORY}
         HEADERS_PRIVATE
             ${arg_HEADERS_PRIVATE}
         HEADERS_PUBLIC
@@ -638,6 +676,7 @@ function(project_new_target)
             ${arg_SOURCES_TARGET}
         SOURCES_TESTS
             ${arg_SOURCES_TESTS}
+        ${no_install}
     )
 
     # Include directories
@@ -708,12 +747,6 @@ function(project_new_target)
             LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        )
-
-        install(
-            FILES
-                ${arg_HEADERS_PUBLIC}
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAMESPACE}
         )
     endif()
 endfunction()

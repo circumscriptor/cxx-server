@@ -44,13 +44,13 @@ bool Server::service(Protocol & protocol)
             case ENET_EVENT_TYPE_NONE:
                 break;
             case ENET_EVENT_TYPE_CONNECT:
-                protocol.try_connect(event.peer);
+                protocol.tryConnect(event.peer);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
-                protocol.try_disconnect(event.peer);
+                protocol.tryDisconnect(event.peer);
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
-                protocol.try_receive(event.peer, event.packet);
+                protocol.tryReceive(event.peer, event.packet);
                 enet_packet_destroy(event.packet);
                 break;
         }

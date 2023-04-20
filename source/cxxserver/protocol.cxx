@@ -12,9 +12,15 @@
 
 namespace cxxserver {
 
-Protocol * Protocol::Create([[maybe_unused]] Version version)
+Protocol * Protocol::create(Version version)
 {
-    return nullptr;
+    switch (version)
+    {
+        case Version::V75:
+        case Version::V76:
+        default:
+            return nullptr;
+    }
 }
 
 } // namespace cxxserver

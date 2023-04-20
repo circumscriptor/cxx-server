@@ -1,20 +1,18 @@
 ///
-/// @file Protocol.cpp
+/// @file protocol_v75.cxx
 /// @brief ...
 ///
 /// @copyright Copyright (c) 2023
 ///
 ///
 
-#include "Protocol.hpp"
+#include "protocol_v75.hxx"
 
-#include <cxxserver/Connection.hpp>
+#include <cxxserver/connection.hxx>
 
-namespace cxxserver::Details::V75 {
+namespace cxxserver::details {
 
-Protocol::~Protocol() = default;
-
-void Protocol::try_connect(ENetPeer * peer)
+void ProtocolV75::tryConnect(ENetPeer * peer)
 {
     if (peer->eventData != static_cast<std::uint32_t>(Version::V75))
     {
@@ -31,7 +29,7 @@ void Protocol::try_connect(ENetPeer * peer)
     // TODO(none): Connect
 }
 
-void Protocol::try_disconnect(ENetPeer * peer)
+void ProtocolV75::tryDisconnect(ENetPeer * peer)
 {
     if (peer->data != nullptr)
     {
@@ -40,10 +38,10 @@ void Protocol::try_disconnect(ENetPeer * peer)
     }
 }
 
-void Protocol::try_receive(ENetPeer * peer, [[maybe_unused]] ENetPacket * packet)
+void ProtocolV75::tryReceive(ENetPeer * peer, [[maybe_unused]] ENetPacket * packet)
 {
     [[maybe_unused]] auto * connection = static_cast<Connection *>(peer->data);
     // TODO(none): Receive
 }
 
-} // namespace cxxserver::Details::V75
+} // namespace cxxserver::details
