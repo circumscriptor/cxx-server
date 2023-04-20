@@ -8,7 +8,9 @@
 
 #include "Protocol.hpp"
 
-namespace CxxServer::Details::V75 {
+#include <cxxserver/Connection.hpp>
+
+namespace cxxserver::Details::V75 {
 
 Protocol::~Protocol() = default;
 
@@ -26,21 +28,22 @@ void Protocol::try_connect(ENetPeer * peer)
         return;
     }
 
-    // TODO: Connect
+    // TODO(none): Connect
 }
 
 void Protocol::try_disconnect(ENetPeer * peer)
 {
     if (peer->data != nullptr)
     {
-        // TODO: Disconnect
+        [[maybe_unused]] auto * connection = static_cast<Connection *>(peer->data);
+        // TODO(none): Notify disconnect
     }
 }
 
 void Protocol::try_receive(ENetPeer * peer, [[maybe_unused]] ENetPacket * packet)
 {
-    [[maybe_unused]] auto * connection = peer->data;
-    // TODO: Receive
+    [[maybe_unused]] auto * connection = static_cast<Connection *>(peer->data);
+    // TODO(none): Receive
 }
 
-} // namespace CxxServer::Details::V75
+} // namespace cxxserver::Details::V75

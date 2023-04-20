@@ -8,11 +8,9 @@
 
 #pragma once
 
-#include <CxxServer/Generated/ClassDefinitions.hpp>
-
 #include <enet/enet.h>
 
-namespace CxxServer {
+namespace cxxserver {
 
 enum class Version
 {
@@ -38,8 +36,6 @@ class Protocol
 {
   public:
 
-    CXXSERVER_CLASS_DEFAULT_VIRTUAL_OUT_OF_LINE(Protocol)
-
     virtual void try_connect(ENetPeer * peer)                      = 0;
 
     virtual void try_disconnect(ENetPeer * peer)                   = 0;
@@ -49,4 +45,4 @@ class Protocol
     static Protocol * Create(Version version);
 };
 
-} // namespace CxxServer
+} // namespace cxxserver

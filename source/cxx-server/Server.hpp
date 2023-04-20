@@ -5,13 +5,11 @@
 
 #pragma once
 
-#include <CxxServer/Generated/ClassDefinitions.hpp>
-
 #include <enet/enet.h>
 
 #include <cstdint>
 
-namespace CxxServer {
+namespace cxxserver {
 
 class Protocol;
 
@@ -34,8 +32,6 @@ struct ServerCreateInfo
 class Server
 {
   public:
-
-    CXXSERVER_CLASS_DELETE_COPY_AND_MOVE(Server)
 
     ///
     /// @brief Construct a new Server object
@@ -64,4 +60,4 @@ class Server
     std::uint32_t mTimeout;
 };
 
-} // namespace CxxServer
+} // namespace cxxserver

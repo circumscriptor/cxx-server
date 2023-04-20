@@ -6,7 +6,10 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 #include <unordered_map>
+
+#include "connection.hxx"
 
 namespace spadesx {
 

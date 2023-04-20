@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <enet/enet.h>
 
-namespace CxxServer {
+namespace cxxserver {
 
 Protocol::~Protocol() = default;
 
@@ -26,4 +26,4 @@ Protocol * Protocol::Create(Version version)
     return nullptr;
 }
 
-} // namespace CxxServer
+} // namespace cxxserver

@@ -1,5 +1,5 @@
 
-project_target_sources(CxxServer
+project_target_sources(cxxserver
     HEADERS
         kill.hxx
         say.hxx

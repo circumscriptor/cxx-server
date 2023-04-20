@@ -2,7 +2,7 @@
 
 #include "Protocol.hpp"
 
-namespace CxxServer {
+namespace cxxserver {
 
 Server::Server(const ServerCreateInfo & config)
     : mTimeout { config.timeout }
@@ -57,4 +57,4 @@ bool Server::service(Protocol & protocol)
     }
 }
 
-} // namespace CxxServer
+} // namespace cxxserver

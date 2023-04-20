@@ -55,7 +55,7 @@ if(COMPILER_CLANG OR COMPILER_CLANG_CL)
             -Weverything
             -Wno-c++98-compat
             -Wno-c++98-compat-pedantic
-            -Wno-error=padded
+            -Wno-padded
     )
 elseif(COMPILER_MSVC)
     target_compile_options(CommonPrivate
