@@ -1,48 +1,20 @@
 include_guard(GLOBAL)
 
-include(DetectCompiler)
+include(project_compiler)
 
 #
 # Add common targets
 #
 
-add_library(CommonPublic INTERFACE)
-add_library(CommonPrivate INTERFACE)
+add_library(common-public INTERFACE)
+add_library(common-private INTERFACE)
 
-add_library(Common::Public ALIAS CommonPublic)
-add_library(Common::Private ALIAS CommonPrivate)
+add_library(${PROJECT_NAME}::common-public ALIAS common-public)
+add_library(${PROJECT_NAME}::common-private ALIAS common-private)
 
-#
-# Include directories
-#
-
-target_include_directories(CommonPublic
-    INTERFACE
-        "${PROJECT_SOURCE_DIR}/Source"
-        "${PROJECT_BINARY_DIR}/Source" # For generated files
-)
-
-#
-# Compile definitions
-#
-
-target_compile_definitions(CommonPublic
-    INTERFACE
-        BUILD_SHARED_LIBS=$<BOOL:${BUILD_SHARED_LIBS}>
-)
-
-target_compile_definitions(CommonPrivate
+target_compile_definitions(common-private
     INTERFACE
         _CRT_SECURE_NO_WARNINGS
-)
-
-#
-# Compile features
-#
-
-target_compile_features(CommonPublic
-    INTERFACE
-        cxx_std_20
 )
 
 #
@@ -50,7 +22,7 @@ target_compile_features(CommonPublic
 #
 
 if(COMPILER_CLANG OR COMPILER_CLANG_CL)
-    target_compile_options(CommonPrivate
+    target_compile_options(common-private
         INTERFACE
             -Weverything
             -Wno-c++98-compat
@@ -58,12 +30,12 @@ if(COMPILER_CLANG OR COMPILER_CLANG_CL)
             -Wno-padded
     )
 elseif(COMPILER_MSVC)
-    target_compile_options(CommonPrivate
+    target_compile_options(common-private
         INTERFACE
             /W4
     )
 elseif(COMPILER_GNU)
-    target_compile_options(CommonPrivate
+    target_compile_options(common-private
         INTERFACE
             -Wall
             -Wextra
@@ -82,7 +54,6 @@ elseif(COMPILER_GNU)
             -Wnull-dereference
             -Wuseless-cast
             -Wdouble-promotion
-            -Wno-comment # GCC does not like comments ending with backslash ('\')
     )
 endif()
 
@@ -90,12 +61,12 @@ endif()
 # Link libraries
 #
 
-target_link_libraries(CommonPublic
+target_link_libraries(common-public
     INTERFACE
         Definitions::Compiler
 )
 
-target_link_libraries(CommonPrivate
+target_link_libraries(common-private
     INTERFACE
-        Common::Public
+        Common::common-public
 )

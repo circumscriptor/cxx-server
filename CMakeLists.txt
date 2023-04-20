@@ -40,8 +40,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET "hidden" CACHE STRING "Value for symbol visibili
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
 
-include(ProjectTarget)
-include(GenerateHeaders)
+include(project_target)
 
 #
 # Import dependencies

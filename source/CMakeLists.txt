@@ -4,6 +4,7 @@ project_new_target(
     NAMESPACE cxxserver
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cxxserver
     EXECUTABLE
+    VERSION_FROM_PROJECT
     HEADERS_PUBLIC
         server.hxx
         connection.hxx

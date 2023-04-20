@@ -1,6 +1,9 @@
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
+# project_generate_version
+include(project_version)
+
 #
 # Add target sources
 #
@@ -19,11 +22,12 @@ include(GenerateExportHeader)
 #
 function(project_target_sources)
     # Arguments
-    unset(options)
+    set(options
+        NO_INSTALL
+    )
     set(one_value_args
         TARGET
         DIRECTORY
-        NO_INSTALL
     )
     set(multi_value_args
         HEADERS_PRIVATE
@@ -35,9 +39,9 @@ function(project_target_sources)
     )
     cmake_parse_arguments(arg "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
-    if(NOT arg_DIRECTORY)
-        set(arg_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    endif()
+    # if(NOT arg_DIRECTORY)
+    #     set(arg_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    # endif()
 
     list(TRANSFORM arg_HEADERS_PRIVATE PREPEND ${arg_DIRECTORY}/)
     list(TRANSFORM arg_HEADERS_PUBLIC PREPEND ${arg_DIRECTORY}/)
@@ -406,13 +410,19 @@ function(project_new_target)
         STATIC
         SHARED
         HEADER_ONLY
+        VERSION_FROM_PROJECT
         NO_TESTS
         NO_INSTALL
+        NO_VERSION
     )
     set(one_value_args
         TARGET
         NAMESPACE
         DIRECTORY
+        VERSION_MAJOR
+        VERSION_MINOR
+        VERSION_PATCH
+        VERSION_SUFFIX
     )
     set(multi_value_args
         DEFINITIONS_PRIVATE
@@ -453,9 +463,9 @@ function(project_new_target)
     endif()
 
     # Set directory
-    if(NOT arg_DIRECTORY)
-        set(arg_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    endif()
+    # if(NOT arg_DIRECTORY)
+    #     set(arg_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    # endif()
 
     # Count
     unset(count)
@@ -692,18 +702,39 @@ function(project_new_target)
 
     # Default options
     if(NOT arg_HEADER_ONLY)
-        if(MSVC)
-            target_compile_options(
-                ${arg_TARGET}-common-private
+        if(COMPILER_CLANG OR COMPILER_CLANG_CL)
+            target_compile_options(${arg_TARGET}-common-private
+                INTERFACE
+                    -Weverything
+                    -Wno-c++98-compat
+                    -Wno-c++98-compat-pedantic
+                    -Wno-padded
+            )
+        elseif(COMPILER_MSVC)
+            target_compile_options(${arg_TARGET}-common-private
                 INTERFACE
                     /W4
             )
-        else()
-            target_compile_options(
-                ${arg_TARGET}-common-private
+        elseif(COMPILER_GNU)
+            target_compile_options(${arg_TARGET}-common-private
                 INTERFACE
                     -Wall
                     -Wextra
+                    -Wshadow
+                    -Wnon-virtual-dtor
+                    -Wold-style-cast
+                    -Wcast-align
+                    -Wunused
+                    -Woverloaded-virtual
+                    -Wconversion
+                    -Wsign-conversion
+                    -Wmisleading-indentation
+                    -Wduplicated-cond
+                    -Wduplicated-branches
+                    -Wlogical-op
+                    -Wnull-dereference
+                    -Wuseless-cast
+                    -Wdouble-promotion
             )
         endif()
     endif()
@@ -735,6 +766,37 @@ function(project_new_target)
             install(
                 FILES
                     ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_export.hxx
+                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAMESPACE}
+            )
+        endif()
+    endif()
+
+    # Version
+    if(NOT arg_NO_VERSION)
+        if(arg_VERSION_FROM_PROJECT)
+            set(from_project FROM_PROJECT)
+        endif()
+
+        project_generate_version(
+            BASE_NAME ${base_name_to_lower}
+            FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_version.hxx
+            MAJOR ${arg_VERSION_MAJOR}
+            MINOR ${arg_VERSION_MINOR}
+            PATCH ${arg_VERSION_PATCH}
+            SUFFIX ${arg_VERSION_SUFFIX}
+            ${from_project}
+        )
+
+        project_target_sources(
+            TARGET ${arg_TARGET}
+            HEADERS_PUBLIC
+                ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_version.hxx
+        )
+
+        if(NOT arg_NO_INSTALL)
+            install(
+                FILES
+                    ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_version.hxx
                 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAMESPACE}
             )
         endif()

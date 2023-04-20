@@ -33,17 +33,3 @@ else()
     set(COMPILER_GNU ON CACHE INTERNAL "")
     message("WARN: Other compiler, using GNU compiler settings")
 endif()
-
-#
-# Add definitions target
-#
-
-add_library(CompilerDefinitions INTERFACE)
-add_library(Definitions::Compiler ALIAS CompilerDefinitions)
-
-foreach(opt ${compiler_definitions})
-    target_compile_definitions(CompilerDefinitions
-        INTERFACE
-            $<$<BOOL:${${opt}}>:${opt}>
-    )
-endforeach()
