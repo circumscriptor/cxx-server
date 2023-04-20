@@ -1,6 +1,6 @@
-#include "Server.hpp"
+#include "server.hxx"
 
-#include "Protocol.hpp"
+#include "protocol.hxx"
 
 namespace cxxserver {
 

@@ -1,5 +1,5 @@
 ///
-/// @file Connection.hpp
+/// @file connection.hxx
 /// @brief ...
 ///
 /// @copyright Copyright (c) 2023
@@ -10,8 +10,8 @@
 
 #include <cstdint>
 
-using ENetPeer   = struct _ENetPacket;
-using ENetPacket = struct _ENetPeer;
+using ENetPeer   = struct _ENetPeer;
+using ENetPacket = struct _ENetPacket;
 
 namespace cxxserver {
 

@@ -1,5 +1,5 @@
 ///
-/// @file Connection.cpp
+/// @file connection.cxx
 /// @brief ...
 ///
 /// @copyright Copyright (c) 2023
@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include "Connection.hpp"
+#include "connection.hxx"
 
 #include <cassert>
+#include <enet/enet.h>
 
 namespace cxxserver {
 

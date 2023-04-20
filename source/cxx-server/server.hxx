@@ -1,5 +1,5 @@
 /**
- * @file Server.hpp
+ * @file server.hxx
  * @brief This file is part of the experimental SpadesX project
  */
 

@@ -3,23 +3,7 @@
  * @brief This file is part of the experimental SpadesX project
  */
 
-// #include "commands/kill.hxx"
-// #include "commands/say.hxx"
-// #include "ctf.hxx"
-#include "Protocol.hpp"
-#include "Server.hpp"
-
-#include <bitsery/adapter/buffer.h>
-#include <bitsery/traits/string.h>
-#include <bitsery/traits/vector.h>
-
-#include <enet/enet.h>
-
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <memory>
-#include <vector>
+#include "server.hxx"
 
 /**
  * @brief Main entry
