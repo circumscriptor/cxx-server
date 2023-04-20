@@ -9,9 +9,9 @@
 #pragma once
 
 #include <cstdint>
-#include <cxxserver/Generated/ClassDefinitions.hpp>
 
-#include <enet/enet.h>
+using ENetPeer   = struct _ENetPacket;
+using ENetPacket = struct _ENetPeer;
 
 namespace cxxserver {
 
@@ -20,8 +20,6 @@ class Connection
   public:
 
     static const std::uint8_t INVALID = 0xFF;
-
-    CXXSERVER_CLASS_DEFAULT_ALL(Connection)
 
     void apply(ENetPeer * peer);
 
