@@ -6,15 +6,15 @@ project_new_target(
     EXECUTABLE
     VERSION_FROM_PROJECT
     HEADERS_PUBLIC
-        server_api.hxx
+        api/server_api.hxx
     HEADERS_PRIVATE
         connection.hxx
         protocol.hxx
         server.hxx
     SOURCES_COMMON
+        api/server_api.cxx
         connection.cxx
         protocol.cxx
-        server_api.cxx
         server.cxx
     SOURCES_TARGET
         main.cxx

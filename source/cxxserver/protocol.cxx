@@ -8,8 +8,8 @@
 
 #include "protocol.hxx"
 
-#include "cxxserver/server_api.hxx"
-#include "details/v75/protocol_v75.hxx"
+#include <cxxserver/api/server_api.hxx>
+#include <cxxserver/details/v75/protocol_v75.hxx>
 
 #include <cassert>
 

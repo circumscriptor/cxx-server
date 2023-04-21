@@ -8,8 +8,7 @@
 
 #include "server_api.hxx"
 
-#include "server.hxx"
-
+#include <cxxserver/server.hxx>
 #include <memory>
 
 namespace cxxserver {
@@ -62,6 +61,11 @@ bool ServerApi::init()
 void ServerApi::stop()
 {
     enet_deinitialize();
+}
+
+std::string_view ServerApi::version()
+{
+    return CXXSERVER_VERSION;
 }
 
 } // namespace cxxserver

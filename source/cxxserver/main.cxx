@@ -3,7 +3,7 @@
 /// @brief This file is part of the experimental SpadesX project
 ///
 
-#include "server_api.hxx"
+#include <cxxserver/api/server_api.hxx>
 #include <memory>
 
 ///

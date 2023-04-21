@@ -755,19 +755,19 @@ function(project_new_target)
         generate_export_header(
             ${arg_TARGET}
             BASE_NAME ${arg_BASE_NAME}
-            EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_export.hxx
+            EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAMESPACE}/export.hxx
         )
 
         project_target_sources(
             TARGET ${arg_TARGET}
             HEADERS_PUBLIC
-                ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_export.hxx
+                ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAMESPACE}/export.hxx
         )
 
         if(NOT arg_NO_INSTALL)
             install(
                 FILES
-                    ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_export.hxx
+                    ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAMESPACE}/export.hxx
                 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAMESPACE}
             )
         endif()
@@ -781,7 +781,7 @@ function(project_new_target)
 
         project_generate_version(
             BASE_NAME ${base_name_to_lower}
-            FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_version.hxx
+            FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAMESPACE}/version.hxx
             MAJOR ${arg_VERSION_MAJOR}
             MINOR ${arg_VERSION_MINOR}
             PATCH ${arg_VERSION_PATCH}
@@ -792,13 +792,13 @@ function(project_new_target)
         project_target_sources(
             TARGET ${arg_TARGET}
             HEADERS_PUBLIC
-                ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_version.hxx
+                ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAMESPACE}/version.hxx
         )
 
         if(NOT arg_NO_INSTALL)
             install(
                 FILES
-                    ${CMAKE_CURRENT_BINARY_DIR}/${base_name_to_lower}_version.hxx
+                    ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAMESPACE}/version.hxx
                 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAMESPACE}
             )
         endif()

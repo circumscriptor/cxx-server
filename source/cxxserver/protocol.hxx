@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "server_api.hxx"
-
+#include <cxxserver/api/server_api.hxx>
 #include <enet/enet.h>
 
 namespace cxxserver {

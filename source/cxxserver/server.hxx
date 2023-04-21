@@ -8,19 +8,18 @@
 
 #pragma once
 
-#include "server_api.hxx"
-
 #include <cstdint>
+#include <cxxserver/api/server_api.hxx>
 #include <enet/enet.h>
 
 namespace cxxserver {
 
 class Protocol;
 
-/**
- * @brief Server (ENetHost wrapper)
- *
- */
+///
+/// @brief Server (ENetHost wrapper)
+///
+///
 class Server
 {
   public:
@@ -37,18 +36,18 @@ class Server
     ///
     explicit Server(const ServerApi::CreateInfo & config);
 
-    /**
-     * @brief Destroy the Server object
-     *
-     */
+    ///
+    /// @brief Destroy the Server object
+    ///
+    ///
     ~Server();
 
-    /**
-     * @brief Run protocol
-     *
-     * @param protocol Protocol
-     * @return 0 on success
-     */
+    ///
+    /// @brief Run protocol
+    ///
+    /// @param protocol Protocol
+    /// @return 0 on success
+    ///
     bool service(Protocol & protocol);
 
   private:

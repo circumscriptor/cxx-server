@@ -8,9 +8,12 @@
 
 #pragma once
 
+#include <cxxserver/version.hxx>
+
 #include <array>
 #include <cstdint>
 #include <functional>
+#include <string_view>
 
 namespace cxxserver {
 
@@ -123,6 +126,13 @@ class ServerApi
     ///
     ///
     static void stop();
+
+    ///
+    /// @brief Get compiled version string
+    ///
+    /// @return Compiled version string
+    ///
+    static std::string_view version();
 };
 
 } // namespace cxxserver
