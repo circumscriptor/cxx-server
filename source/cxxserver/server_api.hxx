@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <functional>
 
@@ -56,6 +57,10 @@ enum class HandlerResult
 ///
 using HandlerType = std::function<HandlerResult(const class Packet &)>;
 
+///
+/// @brief Server API
+///
+///
 class ServerApi
 {
   public:
@@ -77,12 +82,12 @@ class ServerApi
         ProtocolVersion protocol { ProtocolVersion::V75 };         //!< Protocol version
     };
 
-    ServerApi();
+    ServerApi()                              = default;
     ServerApi(const ServerApi &)             = delete;
     ServerApi(ServerApi &&)                  = delete;
     ServerApi & operator=(const ServerApi &) = delete;
     ServerApi & operator=(ServerApi &&)      = delete;
-    virtual ~ServerApi();
+    virtual ~ServerApi()                     = default;
 
     ///
     /// @brief Run server (blocks)
@@ -106,6 +111,18 @@ class ServerApi
     /// @return Pointer to server API or nullptr
     ///
     static ServerApi * create(const CreateInfo & createInfo);
+
+    ///
+    /// @brief Initialize library
+    ///
+    ///
+    static bool init();
+
+    ///
+    /// @brief Deinitialize library
+    ///
+    ///
+    static void stop();
 };
 
 } // namespace cxxserver

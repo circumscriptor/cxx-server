@@ -9,7 +9,6 @@ project_new_target(
         server_api.hxx
     HEADERS_PRIVATE
         connection.hxx
-        enet.hxx
         protocol.hxx
         server.hxx
     SOURCES_COMMON

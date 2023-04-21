@@ -1,7 +1,10 @@
-/**
- * @file server.hxx
- * @brief This file is part of the experimental SpadesX project
- */
+///
+/// @file server.hxx
+/// @brief Server
+///
+/// @copyright Copyright (c) 2023
+///
+///
 
 #pragma once
 

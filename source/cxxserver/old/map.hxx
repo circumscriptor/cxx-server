@@ -597,13 +597,13 @@ class map
     //     read_from_memory(data);
     // }
 
-    /**
-     * @brief Write single column from offset to memory
-     *
-     * @param result Result
-     * @param offset Offset
-     */
-    void write_column_to_memory(std::vector<std::uint8_t> & result, std::uint32_t & offset)
+    ///
+    /// @brief Write single column from offset to memory
+    ///
+    /// @param result Result
+    /// @param offset Offset
+    ///
+    void writeColumnToMemory(std::vector<std::uint8_t> & result, std::uint32_t & offset)
     {
         for (std::uint32_t z = 0; z < size_z;)
         {
@@ -681,11 +681,11 @@ class map
         offset += 64;
     }
 
-    /**
-     * @brief Write map to memory (to VXL format)
-     *
-     * @param result Output (vector)
-     */
+    ///
+    /// @brief Write map to memory (to VXL format)
+    ///
+    /// @param result Output (vector)
+    ///
     void write_to_memory(std::vector<std::uint8_t> & result)
     {
         std::uint32_t offset = 0;
@@ -695,7 +695,7 @@ class map
 
         while (offset < size_xyz)
         {
-            write_column_to_memory(result, offset);
+            writeColumnToMemory(result, offset);
         }
     }
 

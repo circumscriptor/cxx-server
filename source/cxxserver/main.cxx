@@ -1,35 +1,35 @@
-/**
- * @file main.cxx
- * @brief This file is part of the experimental SpadesX project
- */
+///
+/// @file main.cxx
+/// @brief This file is part of the experimental SpadesX project
+///
 
-#include "server.hxx"
+#include "server_api.hxx"
+#include <memory>
 
-/**
- * @brief Main entry
- *
- * @param argc Number of arguments
- * @param argv Arguments
- * @return 0 on success
- */
+///
+/// @brief Main entry
+///
+/// @param argc Number of arguments
+/// @param argv Arguments
+/// @return 0 on success
+///
 int main([[maybe_unused]] int argc, [[maybe_unused]] char ** argv)
 {
-    // if (enet_initialize() < 0)
-    // {
-    //     // error
-    //     return 1;
-    // }
+    if (not cxxserver::ServerApi::init())
+    {
+        return 1;
+    }
 
-    // cxxserver::ServerCreateInfo createInfo;
-    // createInfo.timeout = 1;
+    {
+        cxxserver::ServerApi::CreateInfo      createInfo; // default
+        std::unique_ptr<cxxserver::ServerApi> serverApi { cxxserver::ServerApi::create(createInfo) };
+        if (serverApi)
+        {
+            // serverApi->registerHandler(0, [](const class Packet & packet) -> cxxserver::HandlerResult { return cxxserver::HandlerResult::VALID; });
+            serverApi->run();
+        }
+    }
 
-    // {
-    //     std::unique_ptr<cxxserver::Protocol> protocol { cxxserver::Protocol::Create(cxxserver::Version::V75) };
-
-    //     cxxserver::Server server { createInfo };
-    //     server.service(*protocol);
-    // }
-
-    // enet_deinitialize();
+    cxxserver::ServerApi::stop();
     return 0;
 }

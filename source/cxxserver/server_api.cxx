@@ -8,7 +8,6 @@
 
 #include "server_api.hxx"
 
-#include "enet.hxx"
 #include "server.hxx"
 
 #include <memory>
@@ -37,16 +36,6 @@ class ServerApiImpl : public ServerApi
     std::unique_ptr<Protocol> mProtocol {};
 };
 
-ServerApi::ServerApi()
-{
-    ENet::get().init();
-}
-
-ServerApi::~ServerApi()
-{
-    ENet::get().stop();
-}
-
 ServerApiImpl::ServerApiImpl(const CreateInfo & createInfo)
     : mServer { std::make_unique<Server>(createInfo) }
     , mProtocol { Protocol::create(createInfo.protocol) }
@@ -63,6 +52,16 @@ void ServerApiImpl::registerHandler([[maybe_unused]] std::uint8_t packetType, [[
 ServerApi * ServerApi::create(const CreateInfo & createInfo)
 {
     return new ServerApiImpl(createInfo);
+}
+
+bool ServerApi::init()
+{
+    return enet_initialize() < 0;
+}
+
+void ServerApi::stop()
+{
+    enet_deinitialize();
 }
 
 } // namespace cxxserver
