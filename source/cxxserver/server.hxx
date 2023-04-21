@@ -34,7 +34,7 @@ class Server
     ///
     /// @param config Create information
     ///
-    explicit Server(const ServerApi::CreateInfo & config);
+    explicit Server(const IServerApi::CreateInfo & config);
 
     ///
     /// @brief Destroy the Server object

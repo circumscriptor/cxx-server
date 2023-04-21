@@ -64,7 +64,7 @@ using HandlerType = std::function<HandlerResult(const class Packet &)>;
 /// @brief Server API
 ///
 ///
-class ServerApi
+class IServerApi
 {
   public:
 
@@ -85,12 +85,12 @@ class ServerApi
         ProtocolVersion protocol { ProtocolVersion::V75 };         //!< Protocol version
     };
 
-    ServerApi()                              = default;
-    ServerApi(const ServerApi &)             = delete;
-    ServerApi(ServerApi &&)                  = delete;
-    ServerApi & operator=(const ServerApi &) = delete;
-    ServerApi & operator=(ServerApi &&)      = delete;
-    virtual ~ServerApi()                     = default;
+    IServerApi()                               = default;
+    IServerApi(const IServerApi &)             = delete;
+    IServerApi(IServerApi &&)                  = delete;
+    IServerApi & operator=(const IServerApi &) = delete;
+    IServerApi & operator=(IServerApi &&)      = delete;
+    virtual ~IServerApi()                      = default;
 
     ///
     /// @brief Run server (blocks)
@@ -113,7 +113,7 @@ class ServerApi
     /// @param createInfo Server API options
     /// @return Pointer to server API or nullptr
     ///
-    static ServerApi * create(const CreateInfo & createInfo);
+    static IServerApi * create(const CreateInfo & createInfo);
 
     ///
     /// @brief Initialize library

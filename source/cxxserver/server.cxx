@@ -4,7 +4,7 @@
 
 namespace cxxserver {
 
-Server::Server(const ServerApi::CreateInfo & config)
+Server::Server(const IServerApi::CreateInfo & config)
     : mTimeout { config.timeout }
 {
     ENetAddress address;

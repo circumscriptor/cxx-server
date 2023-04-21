@@ -13,18 +13,18 @@
 
 namespace cxxserver {
 
-class ServerApiImpl : public ServerApi
+class ServerApi : public IServerApi
 {
   public:
 
-    ServerApiImpl(const ServerApiImpl &)             = delete;
-    ServerApiImpl(ServerApiImpl &&)                  = delete;
-    ServerApiImpl & operator=(const ServerApiImpl &) = delete;
-    ServerApiImpl & operator=(ServerApiImpl &&)      = delete;
+    ServerApi(const ServerApi &)             = delete;
+    ServerApi(ServerApi &&)                  = delete;
+    ServerApi & operator=(const ServerApi &) = delete;
+    ServerApi & operator=(ServerApi &&)      = delete;
 
-    explicit ServerApiImpl(const CreateInfo & createInfo);
+    explicit ServerApi(const CreateInfo & createInfo);
 
-    ~ServerApiImpl() override = default;
+    ~ServerApi() override = default;
 
     int  run() override;
     void registerHandler(std::uint8_t packetType, HandlerType handler) override;
@@ -35,35 +35,35 @@ class ServerApiImpl : public ServerApi
     std::unique_ptr<Protocol> mProtocol {};
 };
 
-ServerApiImpl::ServerApiImpl(const CreateInfo & createInfo)
+ServerApi::ServerApi(const CreateInfo & createInfo)
     : mServer { std::make_unique<Server>(createInfo) }
     , mProtocol { Protocol::create(createInfo.protocol) }
 {
 }
 
-int ServerApiImpl::run()
+int ServerApi::run()
 {
     return mServer->service(*mProtocol) ? 0 : 1;
 }
 
-void ServerApiImpl::registerHandler([[maybe_unused]] std::uint8_t packetType, [[maybe_unused]] HandlerType handler) { }
+void ServerApi::registerHandler([[maybe_unused]] std::uint8_t packetType, [[maybe_unused]] HandlerType handler) { }
 
-ServerApi * ServerApi::create(const CreateInfo & createInfo)
+IServerApi * IServerApi::create(const CreateInfo & createInfo)
 {
-    return new ServerApiImpl(createInfo);
+    return new ServerApi(createInfo);
 }
 
-bool ServerApi::init()
+bool IServerApi::init()
 {
     return enet_initialize() < 0;
 }
 
-void ServerApi::stop()
+void IServerApi::stop()
 {
     enet_deinitialize();
 }
 
-std::string_view ServerApi::version()
+std::string_view IServerApi::version()
 {
     return CXXSERVER_VERSION;
 }
