@@ -9,11 +9,10 @@
 #pragma once
 
 #include <cstdint>
-#include <glm/vec3.hpp>
 
 namespace cxxserver::details::packets {
 
-enum class Packet
+enum class PacketType
 {
     POSITION_DATA     = 0,
     ORIENTATION_DATA  = 1,
@@ -51,23 +50,3 @@ enum class Packet
 };
 
 } // namespace cxxserver::details::packets
-
-namespace bitsery {
-
-template <typename SerializerType>
-inline void serialize(SerializerType & serializer, glm::vec3 & vector)
-{
-    serializer.value4b(vector.x);
-    serializer.value4b(vector.y);
-    serializer.value4b(vector.z);
-}
-
-template <typename SerializerType>
-inline void serialize(SerializerType & serializer, glm::ivec3 & vector)
-{
-    serializer.value4b(vector.x);
-    serializer.value4b(vector.y);
-    serializer.value4b(vector.z);
-}
-
-} // namespace bitsery

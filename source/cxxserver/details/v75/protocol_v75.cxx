@@ -14,7 +14,7 @@ namespace cxxserver::details {
 
 void ProtocolV75::tryConnect(ENetPeer * peer)
 {
-    if (peer->eventData != static_cast<std::uint32_t>(Version::V75))
+    if (peer->eventData != static_cast<std::uint32_t>(ProtocolVersion::V75))
     {
         enet_peer_disconnect(peer, static_cast<std::uint32_t>(DisconnectReason::WRONG_PROTOCOL_VERSION));
         return;

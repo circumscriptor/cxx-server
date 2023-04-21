@@ -30,8 +30,9 @@ set(CMAKE_COLOR_MAKEFILE ON CACHE BOOL "Enable Make output with colors")
 set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "Install path")
 
 set(CMAKE_C_VISIBILITY_PRESET "hidden" CACHE STRING "Value for symbol visibility compile flags for C")
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "C++ standard")
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard")
 set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE BOOL "Require C++ standard")
+set(CMAKE_CXX_EXTENSIONS OFF CACHE BOOL "Allow C++ extensions")
 set(CMAKE_CXX_VISIBILITY_PRESET "hidden" CACHE STRING "Value for symbol visibility compile flags for C++")
 
 #

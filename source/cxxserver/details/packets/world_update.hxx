@@ -13,6 +13,26 @@
 #include <array>
 #include <glm/vec3.hpp>
 
+namespace bitsery {
+
+template <typename SerializerType>
+inline void serialize(SerializerType & serializer, glm::vec3 & vector)
+{
+    serializer.value4b(vector.x);
+    serializer.value4b(vector.y);
+    serializer.value4b(vector.z);
+}
+
+template <typename SerializerType>
+inline void serialize(SerializerType & serializer, glm::ivec3 & vector)
+{
+    serializer.value4b(vector.x);
+    serializer.value4b(vector.y);
+    serializer.value4b(vector.z);
+}
+
+} // namespace bitsery
+
 namespace cxxserver::details::packets {
 
 struct PlayerUpdate

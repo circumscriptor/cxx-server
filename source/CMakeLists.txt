@@ -6,13 +6,17 @@ project_new_target(
     EXECUTABLE
     VERSION_FROM_PROJECT
     HEADERS_PUBLIC
-        server.hxx
+        server_api.hxx
+    HEADERS_PRIVATE
         connection.hxx
+        enet.hxx
         protocol.hxx
+        server.hxx
     SOURCES_COMMON
-        server.cxx
         connection.cxx
         protocol.cxx
+        server_api.cxx
+        server.cxx
     SOURCES_TARGET
         main.cxx
     LINK_PRIVATE

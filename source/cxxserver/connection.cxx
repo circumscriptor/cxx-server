@@ -6,8 +6,6 @@
 ///
 ///
 
-#pragma once
-
 #include "connection.hxx"
 
 #include <cassert>

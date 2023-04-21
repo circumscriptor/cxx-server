@@ -8,29 +8,11 @@
 
 #pragma once
 
+#include "server_api.hxx"
+
 #include <enet/enet.h>
 
 namespace cxxserver {
-
-enum class Version
-{
-    V75 = 3,
-    V76 = 4
-};
-
-/**
- * @brief Disconnect reason
- *
- */
-enum class DisconnectReason
-{
-    UNKNOWN                = 0,
-    BANNED                 = 1,
-    IP_LIMIT_EXCEEDED      = 2,
-    WRONG_PROTOCOL_VERSION = 3,
-    SERVER_FULL            = 4,
-    KICKED                 = 10
-};
 
 class Protocol
 {
@@ -71,7 +53,7 @@ class Protocol
     /// @param version ...
     /// @return ...
     ///
-    static Protocol * create(Version version);
+    static Protocol * create(ProtocolVersion version);
 };
 
 } // namespace cxxserver
