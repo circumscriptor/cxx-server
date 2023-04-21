@@ -45,12 +45,14 @@ function(project_target_sources)
     #     set(arg_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     # endif()
 
-    list(TRANSFORM arg_HEADERS_PRIVATE PREPEND ${arg_DIRECTORY}/)
-    list(TRANSFORM arg_HEADERS_PUBLIC PREPEND ${arg_DIRECTORY}/)
-    list(TRANSFORM arg_HEADERS_TESTS PREPEND ${arg_DIRECTORY}/)
-    list(TRANSFORM arg_SOURCES_COMMON PREPEND ${arg_DIRECTORY}/)
-    list(TRANSFORM arg_SOURCES_TARGET PREPEND ${arg_DIRECTORY}/)
-    list(TRANSFORM arg_SOURCES_TESTS PREPEND ${arg_DIRECTORY}/)
+    if(arg_DIRECTORY)
+        list(TRANSFORM arg_HEADERS_PRIVATE PREPEND ${arg_DIRECTORY}/)
+        list(TRANSFORM arg_HEADERS_PUBLIC PREPEND ${arg_DIRECTORY}/)
+        list(TRANSFORM arg_HEADERS_TESTS PREPEND ${arg_DIRECTORY}/)
+        list(TRANSFORM arg_SOURCES_COMMON PREPEND ${arg_DIRECTORY}/)
+        list(TRANSFORM arg_SOURCES_TARGET PREPEND ${arg_DIRECTORY}/)
+        list(TRANSFORM arg_SOURCES_TESTS PREPEND ${arg_DIRECTORY}/)
+    endif()
 
     # Object sources
     if(arg_HEADERS_PRIVATE OR arg_SOURCES_COMMON)
@@ -500,7 +502,7 @@ function(project_new_target)
     if(arg_EXECUTABLE)
         add_executable(${arg_TARGET})
         add_executable(${arg_NAMESPACE}::${arg_TARGET} ALIAS ${arg_TARGET})
-        message(STATUS "Executable ${arg_TARGET} with alias ${arg_NAMESPACE}::${arg_TARGET}")
+        message(STATUS "Project: Adding executable ${arg_TARGET} with alias ${arg_NAMESPACE}::${arg_TARGET}")
     else()
         if(arg_LIBRARY)
             unset(target_type)
@@ -514,7 +516,7 @@ function(project_new_target)
 
         add_library(${arg_TARGET} ${target_type})
         add_library(${arg_NAMESPACE}::${arg_TARGET} ALIAS ${arg_TARGET})
-        message(STATUS "Library ${arg_TARGET} with alias ${arg_NAMESPACE}::${arg_TARGET}")
+        message(STATUS "Project: Adding library ${arg_TARGET} with alias ${arg_NAMESPACE}::${arg_TARGET}")
     endif()
 
     # Common public options
@@ -572,6 +574,8 @@ function(project_new_target)
             ${arg_NAMESPACE}::${arg_TARGET}-tests
             ALIAS ${arg_TARGET}-tests
         )
+
+        message(STATUS "Project: Adding tests ${arg_TARGET}-tests with alias ${arg_NAMESPACE}::${arg_TARGET}-tests")
 
         target_link_libraries(
             ${arg_TARGET}-tests
@@ -669,7 +673,7 @@ function(project_new_target)
     )
 
     # Sources
-    if(NOT arg_NO_INSTALL)
+    if(arg_NO_INSTALL)
         set(no_install NO_INSTALL)
     endif()
 
