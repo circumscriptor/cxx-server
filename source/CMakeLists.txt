@@ -1,36 +1,46 @@
+#
+# Set linters
+#
 
-project_new_target(
-    TARGET cxxserver
-    NAMESPACE cxxserver
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cxxserver
-    EXECUTABLE
-    VERSION_FROM_PROJECT
-    HEADERS_PUBLIC
-        api/server_api.hxx
-    HEADERS_PRIVATE
-        connection.hxx
-        protocol.hxx
-        server.hxx
-    SOURCES_COMMON
-        api/server_api.cxx
-        connection.cxx
-        protocol.cxx
-        server.cxx
-    SOURCES_TARGET
-        main.cxx
-    LINK_PRIVATE
-        CONAN_PKG::glm
-        CONAN_PKG::enet
-        CONAN_PKG::bitsery
-    NO_TESTS
-)
+if(CXXSERVER_ENABLE_CPPCHECK AND CPPCHECK)
+    set(CMAKE_C_CPPCHECK "${CXXSERVER_PROPERTY_CPPCHECK}")
+    set(CMAKE_CXX_CPPCHECK "${CXXSERVER_PROPERTY_CPPCHECK}")
+endif()
 
-# details/v75
-project_target_sources(
-    TARGET cxxserver
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cxxserver/details/v75
-    HEADERS_PRIVATE
-        protocol_v75.hxx
-    SOURCES_COMMON
-        protocol_v75.cxx
-)
+if(CXXSERVER_ENABLE_CLANG_TIDY AND CLANG_TIDY)
+    set(CMAKE_C_CLANG_TIDY "${CXXSERVER_PROPERTY_CLANG_TIDY}")
+    set(CMAKE_CXX_CLANG_TIDY "${CXXSERVER_PROPERTY_CLANG_TIDY}")
+    set(CMAKE_C_CLANG_TIDY_EXPORT_FIXES_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    set(CMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
+
+if(CXXSERVER_ENABLE_INCLUDE_WHAT_YOU_USE AND INCLUDE_WHAT_YOU_USE)
+    set(CMAKE_C_INCLUDE_WHAT_YOU_USE "${CXXSERVER_PROPERTY_INCLUDE_WHAT_YOU_USE}")
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${CXXSERVER_PROPERTY_INCLUDE_WHAT_YOU_USE}")
+endif()
+
+#
+# Add subdirectories
+#
+
+add_subdirectory(cxxserver)
+
+#
+# Documentation
+#
+
+if(DOXYGEN_FOUND)
+    # Doxygen options
+    set(DOXYGEN_QUIET YES)
+    set(DOXYGEN_OUTPUT_DIRECTORY ${CXXSERVER_DOCUMENTATION_DIRECTORY})
+    set(DOXYGEN_EXTRACT_ALL YES)
+
+    # Add documentation target
+    doxygen_add_docs(
+        docs
+        ${CXXSERVER_SOURCE_DIRECTORY}
+        WORKING_DIRECTORY ${CXXSERVER_SOURCE_DIRECTORY}
+        COMMENT "Generating documentation"
+        # ALL
+    )
+endif()

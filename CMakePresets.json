@@ -1,0 +1,353 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 27,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "common",
+            "warnings": {
+                "dev": true,
+                "deprecated": true,
+                "uninitialized": true,
+                "unusedCli": true,
+                "systemVars": false
+            },
+            "errors": {
+                "dev": true,
+                "deprecated": true
+            },
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install"
+            },
+            "environment": {
+                "CC": "clang",
+                "CXX": "clang++"
+            },
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build",
+            "hidden": true
+        },
+        {
+            "name": "dev-common",
+            "cacheVariables": {
+                "CXXSERVER_WITH_DEV_VALUES": true,
+                "CXXSERVER_WITH_TESTS": false,
+                "CXXSERVER_WITH_ASAN": false,
+                "CXXSERVER_WITH_LSAN": false,
+                "CXXSERVER_WITH_MSAN": false,
+                "CXXSERVER_WITH_SCOV": false,
+                "CXXSERVER_WITH_TSAN": false,
+                "CXXSERVER_WITH_UBSAN": false,
+                "CXXSERVER_WITH_LIBCXX": true,
+                "CXXSERVER_ENABLE_CLANG_TIDY": false,
+                "CXXSERVER_ENABLE_CPPCHECK": false,
+                "CXXSERVER_ENABLE_DOCUMENTATION": true,
+                "CXXSERVER_ENABLE_INCLUDE_WHAT_YOU_USE": false,
+                "CXXSERVER_ENABLE_INSTALL_FHS": false,
+                "CXXSERVER_EXPORT_THIRD_PARTY_COMMANDS": true,
+                "CXXSERVER_WITH_FAST_OPTIMIZATION": false,
+                "CXXSERVER_WITH_NATIVE_ARCHITECTURE": false,
+                "CXXSERVER_WITH_SECURE_ALLOCATOR": false,
+                "CXXSERVER_WITH_STACK_PROTECTOR": false,
+                "CMAKE_DISABLE_PRECOMPILE_HEADERS": true,
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": false,
+                "CMAKE_POSITION_INDEPENDENT_CODE": false,
+                "CMAKE_UNITY_BUILD": false
+            },
+            "hidden": true
+        },
+        {
+            "name": "ci-common",
+            "cacheVariables": {
+                "CXXSERVER_WITH_DEV_VALUES": true,
+                "CXXSERVER_WITH_TESTS": false,
+                "CXXSERVER_WITH_ASAN": true,
+                "CXXSERVER_WITH_LSAN": true,
+                "CXXSERVER_WITH_MSAN": false,
+                "CXXSERVER_WITH_SCOV": true,
+                "CXXSERVER_WITH_TSAN": false,
+                "CXXSERVER_WITH_UBSAN": true,
+                "CXXSERVER_WITH_LIBCXX": true,
+                "CXXSERVER_ENABLE_CLANG_TIDY": true,
+                "CXXSERVER_ENABLE_CPPCHECK": false,
+                "CXXSERVER_ENABLE_DOCUMENTATION": true,
+                "CXXSERVER_ENABLE_INCLUDE_WHAT_YOU_USE": true,
+                "CXXSERVER_ENABLE_INSTALL_FHS": false,
+                "CXXSERVER_EXPORT_THIRD_PARTY_COMMANDS": false,
+                "CXXSERVER_WITH_FAST_OPTIMIZATION": true,
+                "CXXSERVER_WITH_NATIVE_ARCHITECTURE": true,
+                "CXXSERVER_WITH_SECURE_ALLOCATOR": true,
+                "CXXSERVER_WITH_STACK_PROTECTOR": true,
+                "CMAKE_DISABLE_PRECOMPILE_HEADERS": true,
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": true,
+                "CMAKE_POSITION_INDEPENDENT_CODE": true,
+                "CMAKE_UNITY_BUILD": false
+            },
+            "hidden": true
+        },
+        {
+            "name": "dev-test",
+            "inherits": [
+                "common",
+                "dev-common"
+            ],
+            "cacheVariables": {
+                "CXXSERVER_WITH_TESTS": true
+            },
+            "hidden": false
+        },
+        {
+            "name": "dev-dist",
+            "inherits": [
+                "common",
+                "dev-common"
+            ],
+            "hidden": false
+        },
+        {
+            "name": "ci-test",
+            "inherits": [
+                "common",
+                "ci-common"
+            ],
+            "cacheVariables": {
+                "CXXSERVER_WITH_TESTS": true
+            },
+            "hidden": false
+        },
+        {
+            "name": "ci-dist",
+            "inherits": [
+                "common",
+                "ci-common"
+            ],
+            "hidden": false
+        },
+        {
+            "name": "release",
+            "inherits": [
+                "common"
+            ],
+            "cacheVariables": {
+                "CXXSERVER_WITH_DEV_VALUES": false,
+                "CXXSERVER_WITH_TESTS": false,
+                "CXXSERVER_WITH_ASAN": false,
+                "CXXSERVER_WITH_LSAN": false,
+                "CXXSERVER_WITH_MSAN": false,
+                "CXXSERVER_WITH_SCOV": false,
+                "CXXSERVER_WITH_TSAN": false,
+                "CXXSERVER_WITH_UBSAN": false,
+                "CXXSERVER_WITH_LIBCXX": true,
+                "CXXSERVER_ENABLE_CLANG_TIDY": false,
+                "CXXSERVER_ENABLE_CPPCHECK": false,
+                "CXXSERVER_ENABLE_DOCUMENTATION": false,
+                "CXXSERVER_ENABLE_INCLUDE_WHAT_YOU_USE": false,
+                "CXXSERVER_ENABLE_INSTALL_FHS": false,
+                "CXXSERVER_EXPORT_THIRD_PARTY_COMMANDS": false,
+                "CXXSERVER_WITH_FAST_OPTIMIZATION": true,
+                "CXXSERVER_WITH_NATIVE_ARCHITECTURE": true,
+                "CXXSERVER_WITH_SECURE_ALLOCATOR": false,
+                "CXXSERVER_WITH_STACK_PROTECTOR": true,
+                "CMAKE_DISABLE_PRECOMPILE_HEADERS": false,
+                "CMAKE_EXPORT_COMPILE_COMMANDS": false,
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": true,
+                "CMAKE_POSITION_INDEPENDENT_CODE": true,
+                "CMAKE_UNITY_BUILD": true
+            },
+            "hidden": false
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "dev-test-build",
+            "configurePreset": "dev-test",
+            "configuration": "Debug",
+            "hidden": false
+        },
+        {
+            "name": "dev-dist-build",
+            "configurePreset": "dev-dist",
+            "configuration": "RelWithDebInfo",
+            "hidden": false
+        },
+        {
+            "name": "ci-test-build",
+            "configurePreset": "ci-test",
+            "configuration": "Debug",
+            "hidden": false
+        },
+        {
+            "name": "ci-dist-build",
+            "configurePreset": "ci-dist",
+            "configuration": "RelWithDebInfo",
+            "hidden": false
+        },
+        {
+            "name": "release-build",
+            "configurePreset": "release",
+            "configuration": "Release",
+            "targets": [
+                "cxxserver",
+                "strip"
+            ],
+            "hidden": false
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "dev-test-run",
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": true,
+                "enableFailover": true
+            },
+            "configurePreset": "dev-test",
+            "configuration": "Debug",
+            "hidden": false
+        },
+        {
+            "name": "ci-test-run",
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": true,
+                "enableFailover": true
+            },
+            "configurePreset": "ci-test",
+            "configuration": "Debug",
+            "hidden": false
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "dev-dist-package",
+            "configurePreset": "dev-dist",
+            "packageDirectory": "${sourceDir}/build/package/dev-dist",
+            "configurations": [
+                "RelWithDebInfo"
+            ],
+            "generators": [
+                "ZIP",
+                "TGZ"
+            ],
+            "hidden": false
+        },
+        {
+            "name": "ci-dist-package",
+            "configurePreset": "ci-dist",
+            "packageDirectory": "${sourceDir}/build/package/ci-dist",
+            "configurations": [
+                "RelWithDebInfo"
+            ],
+            "generators": [
+                "ZIP",
+                "TGZ"
+            ],
+            "hidden": false
+        },
+        {
+            "name": "release-package",
+            "configurePreset": "release",
+            "packageDirectory": "${sourceDir}/build/package/release",
+            "configurations": [
+                "Release"
+            ],
+            "generators": [
+                "ZIP",
+                "TGZ"
+            ],
+            "hidden": false
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "dev-test-workflow",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "dev-test"
+                },
+                {
+                    "type": "build",
+                    "name": "dev-test-build"
+                },
+                {
+                    "type": "test",
+                    "name": "dev-test-run"
+                }
+            ]
+        },
+        {
+            "name": "dev-dist-workflow",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "dev-dist"
+                },
+                {
+                    "type": "build",
+                    "name": "dev-dist-build"
+                },
+                {
+                    "type": "package",
+                    "name": "dev-dist-package"
+                }
+            ]
+        },
+        {
+            "name": "ci-test-workflow",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "ci-test"
+                },
+                {
+                    "type": "build",
+                    "name": "ci-test-build"
+                },
+                {
+                    "type": "test",
+                    "name": "ci-test-run"
+                }
+            ]
+        },
+        {
+            "name": "ci-dist-workflow",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "ci-dist"
+                },
+                {
+                    "type": "build",
+                    "name": "ci-dist-build"
+                },
+                {
+                    "type": "package",
+                    "name": "ci-dist-package"
+                }
+            ]
+        },
+        {
+            "name": "release-workflow",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "release"
+                },
+                {
+                    "type": "build",
+                    "name": "release-build"
+                },
+                {
+                    "type": "package",
+                    "name": "release-package"
+                }
+            ]
+        }
+    ]
+}
