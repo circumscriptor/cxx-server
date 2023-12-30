@@ -44,8 +44,21 @@ public:
     static const std::uint32_t SHIFT_X         = BITS_Z + BITS_Y;
     static const std::uint32_t SHIFT_Y         = BITS_Z;
     static const std::uint32_t SHIFT_Z         = 0;
+    static const std::uint32_t SHIFT_R         = 16;
+    static const std::uint32_t SHIFT_G         = 8;
+    static const std::uint32_t SHIFT_B         = 0;
+    static const std::uint32_t SHIFT_A         = 24;
 
-    static const std::uint8_t BIT_SOLID        = 0x01; //!< Block data bit: is solid
+    // Bits
+    static const std::uint8_t BIT_SOLID = 0x01; //!< Block data bit: is solid
+
+    // Block limits
+    static const std::int32_t LIMIT_BREAKABLE    = 61;
+    static const std::int32_t LIMIT_GROUND_LEVEL = 62;
+    static const std::int32_t LIMIT_WATER_LEVEL  = 63;
+    static const std::int32_t LIMIT_MAX_X        = SIZE_X;
+    static const std::int32_t LIMIT_MAX_Y        = SIZE_Y;
+    static const std::int32_t LIMIT_MAX_Z        = SIZE_Z;
 
     ///
     /// @brief Construct a new map object

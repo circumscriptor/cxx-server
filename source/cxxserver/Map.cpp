@@ -16,7 +16,7 @@ namespace cxxserver {
 
 void Map::modify_block(glm::uvec3 coords, bool value, std::uint32_t color)
 {
-    if (coords.z > 61) {
+    if (coords.z > LIMIT_BREAKABLE) {
         return; // bottom blocks cannot be modified
     }
     auto offset = Map::to_offset(coords);
@@ -28,7 +28,7 @@ void Map::modify_block(glm::uvec3 coords, bool value, std::uint32_t color)
 
 void Map::destroy_block(glm::uvec3 coords)
 {
-    if (coords.z > 61) {
+    if (coords.z > LIMIT_BREAKABLE) {
         return; // bottom blocks cannot be broken
     }
     set_solid(coords, false);
@@ -37,14 +37,14 @@ void Map::destroy_block(glm::uvec3 coords)
 
 void Map::destroy_block_secondary(glm::uvec3 coords)
 {
-    if (coords.z > 61) {
+    if (coords.z > LIMIT_BREAKABLE) {
         return; // bottom blocks cannot be broken
     }
     auto offset = Map::to_offset(coords);
     if (coords.z > 0) {
         set_solid(offset - 1, false);
     }
-    if (coords.z < 61) {
+    if (coords.z < LIMIT_BREAKABLE) {
         set_solid(offset + 1, false);
     }
     set_solid(offset, false);
@@ -53,19 +53,19 @@ void Map::destroy_block_secondary(glm::uvec3 coords)
 
 void Map::destroy_block_grenade(glm::ivec3 coords)
 {
-    for (int dz = -1; dz < 2; ++dz) {
-        auto zCheck = coords.z + dz;
-        if (zCheck < 0 || zCheck > 61) {
+    for (std::int32_t zOffset = -1; zOffset < 2; ++zOffset) {
+        std::int32_t zCheck = coords.z + zOffset;
+        if (zCheck < 0 || zCheck > LIMIT_BREAKABLE) {
             continue;
         }
-        for (int dy = -1; dy < 2; ++dy) {
-            auto yCheck = coords.y + dy;
-            if (yCheck < 0 || yCheck >= 512) {
+        for (std::int32_t yOffset = -1; yOffset < 2; ++yOffset) {
+            std::int32_t yCheck = coords.y + yOffset;
+            if (yCheck < 0 || yCheck >= LIMIT_MAX_Y) {
                 continue;
             }
-            for (int dx = -1; dx < 2; ++dx) {
-                auto xCheck = coords.x + dx;
-                if (xCheck < 0 || xCheck >= 512) {
+            for (std::int32_t xOffset = -1; xOffset < 2; ++xOffset) {
+                std::int32_t xCheck = coords.x + xOffset;
+                if (xCheck < 0 || xCheck >= LIMIT_MAX_Z) {
                     continue;
                 }
                 set_solid(coords, false);
@@ -98,14 +98,14 @@ void Map::set_solid(glm::uvec3 coords, bool value)
 
 bool Map::is_clip_box(glm::ivec3 coords) const
 {
-    if (coords.x < 0 || coords.x >= 512 || coords.y < 0 || coords.y >= 512 || coords.z >= 64) {
+    if (coords.x < 0 || coords.x >= LIMIT_MAX_X || coords.y < 0 || coords.y >= LIMIT_MAX_X || coords.z >= LIMIT_MAX_Z) {
         return true;
     }
     if (coords.z < 0) {
         return false;
     }
-    if (coords.z == 63) {
-        coords.z = 62;
+    if (coords.z == LIMIT_WATER_LEVEL) {
+        coords.z = LIMIT_GROUND_LEVEL;
     }
     return is_solid(coords);
 }
@@ -117,14 +117,14 @@ bool Map::is_clip_box_f(glm::vec3 coords) const
 
 bool Map::is_clip_world(glm::ivec3 coords) const
 {
-    if (coords.x < 0 || coords.x >= 512 || coords.y < 0 || coords.y >= 512 || coords.z >= 64) {
+    if (coords.x < 0 || coords.x >= LIMIT_MAX_X || coords.y < 0 || coords.y >= LIMIT_MAX_X || coords.z >= LIMIT_MAX_Z) {
         return false;
     }
     if (coords.z < 0) {
         return false;
     }
-    if (coords.z == 63) {
-        coords.z = 62;
+    if (coords.z == LIMIT_WATER_LEVEL) {
+        coords.z = LIMIT_GROUND_LEVEL;
     }
     return is_solid(coords);
 }
@@ -213,23 +213,22 @@ bool Map::has_neighbor(std::uint32_t offset) const
 std::uint32_t Map::get_color(std::uint32_t offset) const
 {
     assert(offset < SIZE_XYZ);
-    const Block&  block  = m_blocks.at(offset);
-    std::uint32_t color  = 0;
-    color               |= static_cast<std::uint32_t>(block.b);
-    color               |= static_cast<std::uint32_t>(block.g) << 8U;
-    color               |= static_cast<std::uint32_t>(block.r) << 16U;
-    color               |= static_cast<std::uint32_t>(0xFF) << 24U;
+    const Block&  block = m_blocks.at(offset);
+    std::uint32_t color{};
+    color |= static_cast<std::uint32_t>(block.r) << SHIFT_R;
+    color |= static_cast<std::uint32_t>(block.g) << SHIFT_G;
+    color |= static_cast<std::uint32_t>(block.b) << SHIFT_B;
+    color |= static_cast<std::uint32_t>(DEFAULT_COLOR_A) << SHIFT_A;
     return color;
 }
 
-void Map::set_color(std::uint32_t offset, std::uint32_t value)
+void Map::set_color(std::uint32_t offset, std::uint32_t value) // NOLINT(bugprone-easily-swappable-parameters)
 {
     assert(offset < SIZE_XYZ);
     Block& block = m_blocks.at(offset);
-
-    block.r      = static_cast<std::uint8_t>(value >> 16U);
-    block.g      = static_cast<std::uint8_t>(value >> 8U);
-    block.b      = static_cast<std::uint8_t>(value);
+    block.r      = static_cast<std::uint8_t>(value >> SHIFT_R);
+    block.g      = static_cast<std::uint8_t>(value >> SHIFT_G);
+    block.b      = static_cast<std::uint8_t>(value >> SHIFT_B);
 }
 
 std::uint32_t Map::get_height(glm::uvec2 coords) const
